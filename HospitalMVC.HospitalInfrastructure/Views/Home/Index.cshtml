@@ -1,0 +1,14 @@
+﻿@{
+    ViewData["Title"] = "Hospital Database";
+}
+
+<h1>Hospital Database</h1>
+<p>Select one of the options below to view details for each table:</p>
+
+<ul>
+    <li>@Html.ActionLink("View Departments", "Index", "Departments")</li>
+    <li>@Html.ActionLink("View Doctors", "Index", "Doctors")</li>
+    <li>@Html.ActionLink("View Patients", "Index", "Patients")</li>
+    <li>@Html.ActionLink("View Appointments", "Index", "Appointments")</li>
+    <li>@Html.ActionLink("View Rooms", "Index", "Rooms")</li>
+</ul>
