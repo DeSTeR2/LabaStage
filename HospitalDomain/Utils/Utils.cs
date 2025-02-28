@@ -14,10 +14,10 @@
                 }
             }
 
-            if (id == 0)
+            if (id == 0 && ids.Count > 0)
             {
                 id = ids[^1] + 1;
-            }
+            } 
 
             return id;
         }

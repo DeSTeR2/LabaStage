@@ -24,7 +24,10 @@ namespace HospitalMVC.HospitalInfrastructure.Controllers
         {
             try
             {
-                var hospitalContext = _context.Appointments.Include(a => a.PatientNavigation).Include(a => a.DoctorNavigation);
+                var hospitalContext = _context.Appointments
+                    .Include(a => a.PatientNavigation)
+                    .Include(a => a.DoctorNavigation)
+                    .Include(a => a.RoomNavigation);
                 return View(await hospitalContext.ToListAsync());
             }
             catch
@@ -44,6 +47,7 @@ namespace HospitalMVC.HospitalInfrastructure.Controllers
             var appointment = await _context.Appointments
                 .Include(a => a.DoctorNavigation)
                 .Include(a => a.PatientNavigation)
+                .Include(a => a.RoomNavigation)
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (appointment == null)
             {
@@ -56,61 +60,82 @@ namespace HospitalMVC.HospitalInfrastructure.Controllers
         // GET: Appointments/Create
         public IActionResult Create()
         {
-            ViewData["Doctor"] = new SelectList(
-                _context.Doctors.Select(d => new { d.Id, Name = d.Name + " (" + d.Contact + ")" }),
-                "Id", "Name"
-            );
+            // You don't need to create a new Appointment instance here
+            // Instead, you just want to pass an empty Appointment model if needed
+            var appointment = new Appointment();  // Still passing an empty Appointment model if needed
 
+            // Filter available doctors (those who are not booked for the selected date and time, for the full 1-hour appointment)
+            var availableDoctors = _context.Doctors
+                .Where(d => !_context.Appointments
+                    .Any(a => a.Doctor == d.Id && a.Date == appointment.Date &&
+                              a.Time < appointment.Time.AddHours(1) && a.Time.AddHours(1) > appointment.Time))
+                .ToList();
+
+            ViewData["Doctor"] = new SelectList(availableDoctors, "Id", "Name");
+
+            // Filter available rooms (those which are not booked for the selected date and time, for the full 1-hour appointment)
+            var availableRooms = _context.Rooms
+                .Where(r => !_context.Appointments
+                    .Any(a => a.Room == r.Id && a.Date == appointment.Date &&
+                              a.Time < appointment.Time.AddHours(1) && a.Time.AddHours(1) > appointment.Time))
+                .ToList();
+
+            ViewData["Room"] = new SelectList(availableRooms, "Id", "Type");
+
+            // Filter patients (no changes to this part)
             ViewData["Patient"] = new SelectList(
                 _context.Patients.Select(p => new { p.Id, Name = p.Name + " (" + p.Contacts + ")" }),
-                "Id", "Name"
-            );
-            return View();
+                "Id", "Name");
+
+            return View(appointment);  // Pass the empty appointment model to the view
         }
+
+
+
 
         // POST: Appointments/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Date,Time,Reason,Doctor,Patient")] Appointment appointment)
+        public async Task<IActionResult> Create([Bind("Id,Date,Time,Reason,Doctor,Patient,Room")] Appointment appointment)
         {
-            int id = Utils.Util.GetId(
-                _context.Appointments
-                .Select(a => a.Id)
-                .OrderBy(id => id)
-                .ToList()
-                );
+            // Check if the selected doctor and room are available at the selected date and time
+            var doctorAvailable = !_context.Appointments
+                .Any(a => a.Doctor == appointment.Doctor && a.Date == appointment.Date &&
+                          a.Time < appointment.Time.AddHours(1) && a.Time.AddHours(1) > appointment.Time);
 
-            appointment.Id = id;
-            appointment.PatientNavigation = await _context.Patients.FindAsync(appointment.Patient);
-            appointment.DoctorNavigation = await _context.Doctors.FindAsync(appointment.Doctor);
+            var roomAvailable = !_context.Appointments
+                .Any(a => a.Room == appointment.Room && a.Date == appointment.Date &&
+                          a.Time < appointment.Time.AddHours(1) && a.Time.AddHours(1) > appointment.Time);
 
-            ModelState.Remove("Id");
-            ModelState.Remove("DoctorNavigation");
-            ModelState.Remove("PatientNavigation");
-
-            TryValidateModel(ModelState);
-
-            if (ModelState.IsValid)
+            if (!doctorAvailable || !roomAvailable)
             {
-                _context.Add(appointment);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+                ModelState.AddModelError("", "The selected doctor or room is not available at the specified time.");
+                // Re-fetch available doctors and rooms if the selected ones are unavailable
+                ViewData["Doctor"] = new SelectList(
+                    _context.Doctors.Where(d => !_context.Appointments
+                        .Any(a => a.Doctor == d.Id && a.Date == appointment.Date &&
+                                  a.Time < appointment.Time.AddHours(1) && a.Time.AddHours(1) > appointment.Time))
+                    .ToList(), "Id", "Name");
+
+                ViewData["Room"] = new SelectList(
+                    _context.Rooms.Where(r => !_context.Appointments
+                        .Any(a => a.Room == r.Id && a.Date == appointment.Date &&
+                                  a.Time < appointment.Time.AddHours(1) && a.Time.AddHours(1) > appointment.Time))
+                    .ToList(), "Id", "Type");
+
+                ViewData["Patient"] = new SelectList(
+                    _context.Patients.Select(p => new { p.Id, Name = p.Name + " (" + p.Contacts + ")" }),
+                    "Id", "Name");
+
+                return View(appointment); // Return the view with error and keep the selected data
             }
 
-            ViewData["Doctor"] = new SelectList(
-                _context.Doctors.Select(d => new { d.Id, Name = d.Name + " (" + d.Contact + ")" }),
-                "Id", "Name", appointment.Doctor
-            );
-
-            ViewData["Patient"] = new SelectList(
-                _context.Patients.Select(p => new { p.Id, Name = p.Name + " (" + p.Contacts + ")" }),
-                "Id", "Name", appointment.Patient
-            );
-
-            return View(appointment);
+            // If doctor and room are available, proceed with appointment creation
+            _context.Add(appointment);
+            await _context.SaveChangesAsync();
+            return RedirectToAction(nameof(Index));
         }
+
 
         // GET: Appointments/Edit/5
         public async Task<IActionResult> Edit(int? id)
@@ -120,29 +145,39 @@ namespace HospitalMVC.HospitalInfrastructure.Controllers
                 return NotFound();
             }
 
-            var appointment = _context.Appointments
+            var appointment = await _context.Appointments
                 .Include(a => a.DoctorNavigation)
                 .Include(a => a.PatientNavigation)
-                .ToList()
-                .Find(a => a.Id == id);
+                .Include(a => a.RoomNavigation)
+                .FirstOrDefaultAsync(a => a.Id == id);
 
             if (appointment == null)
             {
                 return NotFound();
             }
 
+            // Filter available doctors (those who are not booked for the selected date and time, for the full 1-hour appointment, excluding the current doctor's appointment)
             ViewData["Doctor"] = new SelectList(
-                _context.Doctors.Select(d => new { d.Id, Name = d.Name + " (" + d.Contact + ")" }),
-                "Id", "Name", appointment.Doctor
-            );
+                _context.Doctors.Where(d => !_context.Appointments
+                    .Any(a => a.Doctor == d.Id && a.Date == appointment.Date &&
+                              a.Time < appointment.Time.AddHours(1) && a.Time.AddHours(1) > appointment.Time) || d.Id == appointment.Doctor),
+                "Id", "Name");
 
+            // Filter available rooms (those which are not booked for the selected date and time, for the full 1-hour appointment, excluding the current room)
+            ViewData["Room"] = new SelectList(
+                _context.Rooms.Where(r => !_context.Appointments
+                    .Any(a => a.Room == r.Id && a.Date == appointment.Date &&
+                              a.Time < appointment.Time.AddHours(1) && a.Time.AddHours(1) > appointment.Time) || r.Id == appointment.Room),
+                "Id", "Type");
+
+            // Filter patients
             ViewData["Patient"] = new SelectList(
                 _context.Patients.Select(p => new { p.Id, Name = p.Name + " (" + p.Contacts + ")" }),
-                "Id", "Name", appointment.Patient
-            );
+                "Id", "Name");
 
             return View(appointment);
         }
+
 
 
         // POST: Appointments/Edit/5
@@ -150,7 +185,7 @@ namespace HospitalMVC.HospitalInfrastructure.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Date,Time,Reason,Doctor,Patient")] Appointment appointment)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Date,Time,Reason,Doctor,Patient,Room")] Appointment appointment)
         {
             if (id != appointment.Id)
             {
@@ -159,9 +194,11 @@ namespace HospitalMVC.HospitalInfrastructure.Controllers
 
             appointment.PatientNavigation = await _context.Patients.FindAsync(appointment.Patient);
             appointment.DoctorNavigation = await _context.Doctors.FindAsync(appointment.Doctor);
+            appointment.RoomNavigation = await _context.Rooms.FindAsync(appointment.Room);
 
             ModelState.Remove("DoctorNavigation");
             ModelState.Remove("PatientNavigation");
+            ModelState.Remove("RoomNavigation");
 
             TryValidateModel(ModelState);
 
