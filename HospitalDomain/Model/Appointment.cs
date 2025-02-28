@@ -6,35 +6,41 @@ namespace HospitalDomain.Model;
 
 public partial class Appointment
 {
-    [Required(ErrorMessage = "Поле є обов'язковим")]
-    [Display(Name = "Ідентифікатор")]
+    [Required(ErrorMessage = "Field is required")]
+    [Display(Name = "Appointment ID")]
     public int Id { get; set; }
 
-    [Required(ErrorMessage = "Дата є обов'язковою")]
-    [Display(Name = "Дата прийому")]
+    [Required(ErrorMessage = "Date is required")]
+    [Display(Name = "Appointment Date")]
     public DateOnly Date { get; set; }
 
-    [Required(ErrorMessage = "Час є обов'язковим")]
-    [Display(Name = "Час прийому")]
+    [Required(ErrorMessage = "Time is required")]
+    [Display(Name = "Appointment Time")]
     public TimeOnly Time { get; set; }
 
-    [Display(Name = "Причина прийому")]
+    [Display(Name = "Reason for Appointment")]
     public string? Reason { get; set; }
 
-    [Required(ErrorMessage = "Оберіть лікаря")]
-    [Display(Name = "Лікар")]
+    [Required(ErrorMessage = "Please select a doctor")]
+    [Display(Name = "Doctor")]
     public int Doctor { get; set; }
 
-    [Required(ErrorMessage = "Оберіть пацієнта")]
-    [Display(Name = "Пацієнт")]
+    [Required(ErrorMessage = "Please select a patient")]
+    [Display(Name = "Patient")]
     public int Patient { get; set; }
 
-    [Display(Name = "Дані лікаря")]
+    [Required(ErrorMessage = "Please select a room")]
+    [Display(Name = "Room")]
+    public int Room { get; set; }
+
+    [Display(Name = "Doctor Information")]
     public virtual Doctor DoctorNavigation { get; set; } = null!;
 
-    [Display(Name = "Дані пацієнта")]
+    [Display(Name = "Patient Information")]
     public virtual Patient PatientNavigation { get; set; } = null!;
+    [Display(Name = "Room Information")]
+    public virtual Patient RoomNavigation { get; set; } = null!;
 
-    [Display(Name = "Кімнати для прийому")]
+    [Display(Name = "Appointment Rooms")]
     public virtual ICollection<Room> Rooms { get; set; } = new List<Room>();
 }

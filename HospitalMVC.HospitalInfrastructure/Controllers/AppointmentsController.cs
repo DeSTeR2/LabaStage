@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using HospitalDomain.Model;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace HospitalMVC.HospitalInfrastructure.Controllers
 {
@@ -55,8 +56,15 @@ namespace HospitalMVC.HospitalInfrastructure.Controllers
         // GET: Appointments/Create
         public IActionResult Create()
         {
-            ViewData["Doctor"] = new SelectList(_context.Doctors, "Id", "Contact");
-            ViewData["Patient"] = new SelectList(_context.Patients, "Id", "Contacts");
+            ViewData["Doctor"] = new SelectList(
+                _context.Doctors.Select(d => new { d.Id, Name = d.Name + " (" + d.Contact + ")" }),
+                "Id", "Name"
+            );
+
+            ViewData["Patient"] = new SelectList(
+                _context.Patients.Select(p => new { p.Id, Name = p.Name + " (" + p.Contacts + ")" }),
+                "Id", "Name"
+            );
             return View();
         }
 
@@ -67,14 +75,40 @@ namespace HospitalMVC.HospitalInfrastructure.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("Id,Date,Time,Reason,Doctor,Patient")] Appointment appointment)
         {
+            int id = Utils.Util.GetId(
+                _context.Appointments
+                .Select(a => a.Id)
+                .OrderBy(id => id)
+                .ToList()
+                );
+
+            appointment.Id = id;
+            appointment.PatientNavigation = await _context.Patients.FindAsync(appointment.Patient);
+            appointment.DoctorNavigation = await _context.Doctors.FindAsync(appointment.Doctor);
+
+            ModelState.Remove("Id");
+            ModelState.Remove("DoctorNavigation");
+            ModelState.Remove("PatientNavigation");
+
+            TryValidateModel(ModelState);
+
             if (ModelState.IsValid)
             {
                 _context.Add(appointment);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["Doctor"] = new SelectList(_context.Doctors, "Id", "Contact", appointment.Doctor);
-            ViewData["Patient"] = new SelectList(_context.Patients, "Id", "Contacts", appointment.Patient);
+
+            ViewData["Doctor"] = new SelectList(
+                _context.Doctors.Select(d => new { d.Id, Name = d.Name + " (" + d.Contact + ")" }),
+                "Id", "Name", appointment.Doctor
+            );
+
+            ViewData["Patient"] = new SelectList(
+                _context.Patients.Select(p => new { p.Id, Name = p.Name + " (" + p.Contacts + ")" }),
+                "Id", "Name", appointment.Patient
+            );
+
             return View(appointment);
         }
 
@@ -86,15 +120,30 @@ namespace HospitalMVC.HospitalInfrastructure.Controllers
                 return NotFound();
             }
 
-            var appointment = await _context.Appointments.FindAsync(id);
+            var appointment = _context.Appointments
+                .Include(a => a.DoctorNavigation)
+                .Include(a => a.PatientNavigation)
+                .ToList()
+                .Find(a => a.Id == id);
+
             if (appointment == null)
             {
                 return NotFound();
             }
-            ViewData["Doctor"] = new SelectList(_context.Doctors, "Id", "Contact", appointment.Doctor);
-            ViewData["Patient"] = new SelectList(_context.Patients, "Id", "Contacts", appointment.Patient);
+
+            ViewData["Doctor"] = new SelectList(
+                _context.Doctors.Select(d => new { d.Id, Name = d.Name + " (" + d.Contact + ")" }),
+                "Id", "Name", appointment.Doctor
+            );
+
+            ViewData["Patient"] = new SelectList(
+                _context.Patients.Select(p => new { p.Id, Name = p.Name + " (" + p.Contacts + ")" }),
+                "Id", "Name", appointment.Patient
+            );
+
             return View(appointment);
         }
+
 
         // POST: Appointments/Edit/5
         // To protect from overposting attacks, enable the specific properties you want to bind to.
@@ -107,6 +156,14 @@ namespace HospitalMVC.HospitalInfrastructure.Controllers
             {
                 return NotFound();
             }
+
+            appointment.PatientNavigation = await _context.Patients.FindAsync(appointment.Patient);
+            appointment.DoctorNavigation = await _context.Doctors.FindAsync(appointment.Doctor);
+
+            ModelState.Remove("DoctorNavigation");
+            ModelState.Remove("PatientNavigation");
+
+            TryValidateModel(ModelState);
 
             if (ModelState.IsValid)
             {
@@ -128,8 +185,16 @@ namespace HospitalMVC.HospitalInfrastructure.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["Doctor"] = new SelectList(_context.Doctors, "Id", "Contact", appointment.Doctor);
-            ViewData["Patient"] = new SelectList(_context.Patients, "Id", "Contacts", appointment.Patient);
+            else
+            {
+                foreach (var modelError in ModelState.Values.SelectMany(v => v.Errors))
+                {
+                    Console.WriteLine(modelError.ErrorMessage);
+                }
+
+            }
+            ViewData["Doctor"] = new SelectList(_context.Doctors, "Id", "Contact", appointment.DoctorNavigation.Name);
+            ViewData["Patient"] = new SelectList(_context.Patients, "Id", "Contacts", appointment.PatientNavigation.Name);
             return View(appointment);
         }
 

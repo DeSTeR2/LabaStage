@@ -60,6 +60,50 @@ namespace HospitalMVC.HospitalInfrastructure.Controllers
             return View(doctor);
         }
 
+        // POST: Departments/UpdateDoctorsDepartment
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> UpdateDoctorsDepartment(int newDepartmentId)
+        {
+            var doctors = TempData["DoctorsToUpdate"] as List<Doctor>;
+            var departmentIdToDelete = TempData["DepartmentIdToDelete"] as int?;
+
+            if (doctors == null || departmentIdToDelete == null)
+            {
+                return RedirectToAction(nameof(Index));
+            }
+
+            if (newDepartmentId == 0)
+            {
+                // Handle error: No department selected
+                ModelState.AddModelError("", "You must select a new department.");
+                return View("SelectNewDepartment", new SelectNewDepartmentViewModel
+                {
+                    DoctorSelections = SelectNewDepartmentViewModel.Convert(doctors),
+                    Departments = _context.Departments.ToList()
+                });
+            }
+
+            // Update the doctors' department to the new department
+            foreach (var doctor in doctors)
+            {
+                doctor.Department = newDepartmentId;
+                _context.Doctors.Update(doctor);
+            }
+
+            // Delete the old department
+            var departmentToDelete = await _context.Departments.FindAsync(departmentIdToDelete);
+            if (departmentToDelete != null)
+            {
+                _context.Departments.Remove(departmentToDelete);
+            }
+
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction(nameof(Index));
+        }
+
+
         // POST: Doctors/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -139,6 +183,20 @@ namespace HospitalMVC.HospitalInfrastructure.Controllers
             }
 
             return RedirectToAction(nameof(Index));
+        }
+
+        // GET: Doctors/Details/5
+        public async Task<IActionResult> Details(int? id)
+        {
+            if (id == null)
+                return NotFound();
+
+            var doctors = await _context.Doctors.Include(d => d.DepartmentNavigation)
+                                               .FirstOrDefaultAsync(m => m.Id == id);
+            if (doctors == null)
+                return NotFound();
+
+            return View(doctors);
         }
 
         private bool DoctorExists(int id)

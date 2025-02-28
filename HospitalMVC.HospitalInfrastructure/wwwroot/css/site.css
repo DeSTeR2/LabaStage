@@ -29,3 +29,1324 @@ body {
 .form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
   text-align: start;
 }
+
+/* Table Styling */
+.department-table {
+    width: 100%;
+    margin-top: 20px;
+    border-collapse: collapse;
+    /* Optional styling for table borders */
+    border: 1px solid #ddd;
+}
+
+
+/* Table Header Styling */
+.table-header th {
+    background-color: #1b6ec2; /* Header background */
+    color: white;
+    text-align: center;
+    padding: 10px;
+}
+
+/* Table Row Styling */
+.department-table td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+/* Hover Effect for Table Rows */
+.department-table tr:hover {
+    background-color: #f5f5f5; /* Light grey on hover */
+}
+
+/* Action Links Column */
+.action-links {
+    text-align: center;
+}
+
+    /* Styling Action Links */
+    .action-links a {
+        color: #0077cc;
+        font-weight: 600;
+        text-decoration: none;
+        padding: 5px 10px;
+    }
+
+        /* Action Links Hover Styling */
+        .action-links a:hover {
+            color: #1b6ec2; /* Hover color */
+            text-decoration: underline;
+        }
+
+/* General Button Styling */
+.btn-primary {
+    color: #fff;
+    background-color: #1b6ec2;
+    border-color: #1861ac;
+}
+
+    .btn-primary:hover {
+        background-color: #1861ac;
+        border-color: #154d91;
+    }
+
+/* Pagination Container Styling (Optional) */
+.pagination-container {
+    margin-top: 20px;
+    text-align: center;
+}
+
+/* Page Title Styling */
+.page-title {
+    font-size: 2rem;
+    font-weight: bold;
+    margin-bottom: 20px;
+    color: #0077cc; /* You can customize this color */
+}
+
+/* Custom Footer */
+.footer {
+    background-color: #f8f9fa;
+    text-align: center;
+    padding: 20px;
+    margin-top: 30px;
+    border-top: 1px solid #e5e5e5;
+}
+
+    /* Footer links and text styling */
+    .footer a {
+        color: #0077cc;
+        text-decoration: none;
+    }
+
+        .footer a:hover {
+            text-decoration: underline;
+        }
+
+/* Form Control Styling */
+.form-control {
+    border-radius: 4px;
+    padding: 10px;
+    border: 1px solid #ced4da;
+}
+
+.text-danger {
+    color: #dc3545;
+}
+
+/* Custom Card for Structured Content */
+.card {
+    border-radius: 8px;
+    box-shadow: 0 .25rem .75rem rgba(0, 0, 0, .05);
+}
+
+.card-header {
+    background-color: #f8f9fa;
+    font-weight: bold;
+}
+
+.card-body {
+    padding: 20px;
+}
+
+.form-group label {
+    font-weight: bold;
+    color: #333;
+}
+
+.form-group input,
+.form-group select {
+    border-radius: 0.3rem;
+    padding: 10px;
+    border: 1px solid #ccc;
+}
+
+.invalid-feedback {
+    color: #dc3545;
+}
+
+input.is-invalid, select.is-invalid, textarea.is-invalid {
+    border-color: #dc3545;
+}
+
+/* Base Font Size for better readability */
+html {
+    font-size: 14px;
+}
+
+@media (min-width: 768px) {
+    html {
+        font-size: 16px;
+    }
+}
+
+/* Focus Effect for Interactive Elements */
+.btn:focus,
+.btn:active:focus,
+.btn-link.nav-link:focus,
+.form-control:focus,
+.form-check-input:focus {
+    box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
+}
+
+html {
+    position: relative;
+    min-height: 100%;
+}
+
+body {
+    margin-bottom: 60px; /* Make space for the footer */
+}
+
+/* Floating Placeholder Styling */
+.form-floating > .form-control-plaintext::placeholder,
+.form-floating > .form-control::placeholder {
+    color: var(--bs-secondary-color);
+    text-align: end;
+}
+
+.form-floating > .form-control-plaintext:focus::placeholder,
+.form-floating > .form-control:focus::placeholder {
+    text-align: start;
+}
+
+/* Table Styling */
+.department-table {
+    width: 100%;
+    margin-top: 20px;
+    border-collapse: collapse;
+    border: 1px solid #ddd; /* Optional styling for table borders */
+}
+
+/* Table Header Styling */
+.table-header th {
+    background-color: #1b6ec2; /* Header background */
+    color: white;
+    text-align: center;
+    padding: 10px;
+    font-size: 1.1rem; /* Slightly larger font */
+}
+
+/* Table Row Styling */
+.department-table td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid #e0e0e0;
+    font-size: 1rem;
+}
+
+/* Hover Effect for Table Rows */
+.department-table tr:hover {
+    background-color: #f5f5f5; /* Light grey on hover */
+}
+
+/* Action Links Column */
+.action-links {
+    text-align: center;
+}
+
+    /* Styling Action Links */
+    .action-links a {
+        color: #0077cc;
+        font-weight: 600;
+        text-decoration: none;
+        padding: 5px 10px;
+        display: inline-block;
+        transition: color 0.3s ease;
+    }
+
+        /* Action Links Hover Styling */
+        .action-links a:hover {
+            color: #1b6ec2; /* Hover color */
+            text-decoration: underline;
+        }
+
+/* General Button Styling */
+.btn-primary {
+    color: #fff;
+    background-color: #1b6ec2;
+    border-color: #1861ac;
+    padding: 10px 20px; /* Add padding for a better button look */
+    border-radius: 5px;
+    font-weight: bold;
+}
+
+    .btn-primary:hover {
+        background-color: #1861ac;
+        border-color: #154d91;
+    }
+
+/* Pagination Container Styling (Optional) */
+.pagination-container {
+    margin-top: 20px;
+    text-align: center;
+}
+
+/* Page Title Styling */
+.page-title {
+    font-size: 2rem;
+    font-weight: bold;
+    margin-bottom: 20px;
+    color: #0077cc; /* You can customize this color */
+    text-align: center;
+}
+
+/* Custom Footer */
+.footer {
+    background-color: #f8f9fa;
+    text-align: center;
+    padding: 20px;
+    margin-top: 30px;
+    border-top: 1px solid #e5e5e5;
+}
+
+    .footer a {
+        color: #0077cc;
+        text-decoration: none;
+    }
+
+        .footer a:hover {
+            text-decoration: underline;
+        }
+
+/* Form Control Styling */
+.form-control {
+    border-radius: 4px;
+    padding: 10px;
+    border: 1px solid #ced4da;
+    font-size: 1rem;
+}
+
+.text-danger {
+    color: #dc3545;
+}
+
+/* Custom Card for Structured Content */
+.card {
+    border-radius: 8px;
+    box-shadow: 0 .25rem .75rem rgba(0, 0, 0, .05);
+    margin-top: 20px;
+}
+
+.card-header {
+    background-color: #f8f9fa;
+    font-weight: bold;
+    font-size: 1.2rem;
+    padding: 15px;
+}
+
+.card-body {
+    padding: 20px;
+    background-color: #fff;
+}
+
+.form-group label {
+    font-weight: bold;
+    color: #333;
+}
+
+.form-group input,
+.form-group select {
+    border-radius: 0.3rem;
+    padding: 10px;
+    border: 1px solid #ccc;
+    font-size: 1rem;
+}
+
+.invalid-feedback {
+    color: #dc3545;
+}
+
+input.is-invalid, select.is-invalid, textarea.is-invalid {
+    border-color: #dc3545;
+}
+
+/* Responsive Design for Small Devices */
+@media (max-width: 768px) {
+    .department-table td,
+    .department-table th {
+        padding: 8px;
+        font-size: 0.9rem;
+    }
+
+    .btn-primary {
+        padding: 8px 16px; /* Reduce button size for mobile */
+    }
+
+    .footer {
+        font-size: 0.9rem;
+    }
+}
+
+/* Hover Effects for Cards */
+.card:hover {
+    box-shadow: 0 .5rem 1rem rgba(0, 0, 0, 0.1);
+}
+
+/* Enhanced Button Styles for Primary Actions */
+.btn-primary {
+    background-color: #1b6ec2;
+    border-color: #1861ac;
+}
+
+    .btn-primary:hover {
+        background-color: #1861ac;
+        border-color: #154d91;
+    }
+
+    .btn-primary:focus, .btn-primary:active {
+        box-shadow: 0 0 0 0.25rem rgba(56, 155, 255, 0.5);
+    }
+
+/* Input and Select Fields for Consistency */
+input.form-control, select.form-control {
+    background-color: #f8f9fa;
+    border: 1px solid #ddd;
+    padding: 10px;
+    font-size: 1rem;
+}
+
+    input.form-control:focus, select.form-control:focus {
+        border-color: #1b6ec2;
+        box-shadow: 0 0 0 0.25rem rgba(56, 155, 255, 0.5);
+    }
+
+/* Custom Border Radius for Buttons */
+.btn, .form-control, .card {
+    border-radius: 8px;
+}
+
+/* Centered Modal Popup */
+.modal-content {
+    border-radius: 10px;
+    box-shadow: 0 .5rem 1rem rgba(0, 0, 0, 0.1);
+}
+
+.modal-header, .modal-body {
+    padding: 20px;
+}
+
+.modal-header {
+    background-color: #1b6ec2;
+    color: #fff;
+}
+
+/* Enhanced Input Fields with Focus Effects */
+input:focus, select:focus, textarea:focus {
+    border-color: #1b6ec2;
+    box-shadow: 0 0 0 0.25rem rgba(56, 155, 255, 0.5);
+}
+
+/* Style for Alert Messages */
+.alert {
+    border-radius: 4px;
+    padding: 15px;
+    margin-top: 20px;
+}
+
+.alert-success {
+    background-color: #28a745;
+    color: white;
+}
+
+.alert-danger {
+    background-color: #dc3545;
+    color: white;
+}
+
+.alert-info {
+    background-color: #17a2b8;
+    color: white;
+}
+
+.alert-warning {
+    background-color: #ffc107;
+    color: white;
+}
+
+/* Default Link Styling */
+a {
+    color: #0077cc;
+    text-decoration: none;
+    transition: color 0.3s ease, text-decoration 0.3s ease;
+}
+
+    a:hover {
+        color: #1b6ec2;
+        text-decoration: underline;
+    }
+
+    a:focus {
+        outline: none;
+        box-shadow: 0 0 0 0.2rem rgba(56, 155, 255, 0.5);
+    }
+
+/* Navbar Styling */
+.navbar {
+    background-color: #ffffff;
+    border-bottom: 2px solid #e5e5e5; /* Subtle border for separation */
+}
+
+.navbar-brand {
+    color: #0077cc;
+    font-weight: bold;
+    font-size: 1.5rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    transition: color 0.3s ease;
+}
+
+    .navbar-brand:hover {
+        color: #1b6ec2;
+    }
+
+.navbar-toggler {
+    border: none;
+    background-color: transparent;
+}
+
+.navbar-toggler-icon {
+    background-color: #0077cc; /* Change color of the toggle icon */
+}
+
+.navbar-collapse {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.navbar-nav {
+    padding-left: 0;
+    margin-bottom: 0;
+    list-style: none;
+}
+
+.nav-item {
+    margin-right: 20px;
+}
+
+.nav-link {
+    color: #0077cc;
+    font-weight: 500;
+    font-size: 1rem;
+    text-transform: capitalize;
+    transition: color 0.3s ease, background-color 0.3s ease;
+}
+
+    .nav-link:hover {
+        color: #1b6ec2;
+        background-color: rgba(0, 119, 204, 0.1); /* Light background on hover */
+        border-radius: 4px;
+    }
+
+    /* Active Link Styling */
+    .nav-link.active {
+        color: #ffffff;
+        background-color: #1b6ec2;
+        border-radius: 4px;
+    }
+
+/* Navbar Collapse (Responsive View) */
+@media (max-width: 768px) {
+    .navbar-collapse {
+        display: block;
+        text-align: center;
+    }
+
+    .nav-item {
+        margin: 10px 0;
+    }
+
+    .navbar-toggler-icon {
+        background-color: #0077cc;
+    }
+}
+
+/* Additional Navbar Styling */
+.navbar-light .navbar-nav .nav-link {
+    color: rgba(0, 0, 0, 0.5);
+}
+
+    .navbar-light .navbar-nav .nav-link:hover {
+        color: #0077cc;
+    }
+
+    .navbar-light .navbar-nav .nav-link:focus {
+        color: #0056b3;
+    }
+
+/* Navbar Dropdown Menu (if you plan to use dropdowns) */
+.navbar-nav .dropdown-menu {
+    background-color: #ffffff;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.navbar-nav .dropdown-item {
+    color: #0077cc;
+    font-weight: 500;
+}
+
+    .navbar-nav .dropdown-item:hover {
+        background-color: rgba(0, 119, 204, 0.1);
+        color: #1b6ec2;
+    }
+
+/* Ensure navbar stays at the top */
+body {
+    padding-top: 80px; /* Prevent content from hiding under the fixed navbar */
+}
+
+footer {
+    background-color: #f8f9fa;
+    padding: 20px;
+    text-align: center;
+    border-top: 1px solid #e5e5e5;
+    margin-top: 30px;
+}
+
+    /* Footer Links */
+    footer a {
+        color: #0077cc;
+        text-decoration: none;
+    }
+
+        footer a:hover {
+            text-decoration: underline;
+        }
+
+/* General Styles */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f7fb;
+    margin: 0;
+    padding: 0;
+}
+
+.container {
+    width: 80%;
+    margin: 20px auto;
+    padding: 20px;
+}
+
+/* Page Title */
+.page-title {
+    font-size: 2.5rem;
+    font-weight: bold;
+    color: #1b6ec2;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+/* Description Text */
+.description-text {
+    font-size: 1.2rem;
+    color: #555;
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+/* Card List Styling */
+.options-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 20px;
+    margin-top: 20px;
+}
+
+/* Card Styling */
+.card {
+    background-color: white;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    transition: box-shadow 0.3s ease-in-out;
+    padding: 20px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+    .card:hover {
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    }
+
+.card-title {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 10px;
+}
+
+.card-text {
+    font-size: 1rem;
+    color: #666;
+    margin-bottom: 20px;
+}
+
+/* Link Styling */
+.btn-link {
+    background: none;
+    color: #0077cc;
+    text-decoration: none;
+    font-weight: 600;
+    padding: 8px;
+    display: inline-block;
+    transition: color 0.3s ease, transform 0.3s ease;
+}
+
+    .btn-link:hover {
+        color: #1b6ec2;
+        transform: scale(1.05);
+        text-decoration: underline;
+    }
+
+/* Centered "Rooms" Card */
+.room-card {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+    .room-card .btn {
+        background-color: #1b6ec2;
+        color: white;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 4px;
+        font-weight: 600;
+        transition: background-color 0.3s ease;
+    }
+
+        .room-card .btn:hover {
+            background-color: #155a8a;
+        }
+
+/* Hover Effect for Table Rows */
+.department-table tr:hover {
+    background-color: #f5f5f5;
+}
+
+/* Button Styling for Cards */
+.card .btn-primary {
+    background-color: #1b6ec2;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: background-color 0.3s ease;
+}
+
+    .card .btn-primary:hover {
+        background-color: #155a8a;
+        text-decoration: none;
+    }
+
+/* Header Styling */
+header {
+    background-color: #ffffff;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    padding: 10px 0;
+}
+
+/* Navbar Styling */
+.navbar {
+    font-family: 'Arial', sans-serif;
+    font-weight: 500;
+}
+
+    .navbar .navbar-brand {
+        display: flex;
+        align-items: center;
+        font-size: 1.8rem;
+        color: #2c3e50;
+    }
+
+        .navbar .navbar-brand img {
+            width: 40px; /* Logo size */
+            margin-right: 10px;
+        }
+
+/* Navbar Links */
+.navbar-nav {
+    display: flex;
+    justify-content: flex-end;
+    width: 100%;
+}
+
+.nav-item {
+    margin-left: 20px;
+}
+
+.nav-link {
+    font-size: 1.1rem;
+    color: #34495e;
+    padding: 8px 15px;
+    transition: all 0.3s ease;
+}
+
+    .nav-link:hover,
+    .nav-link:focus {
+        color: #1b6ec2;
+        text-decoration: underline;
+        background-color: #f7f7f7;
+    }
+
+/* Navbar Toggler */
+.navbar-toggler {
+    border: none;
+    background-color: #1b6ec2;
+}
+
+.navbar-toggler-icon {
+    background-color: white;
+}
+
+/* Responsive Design for Navbar */
+@media (max-width: 991px) {
+    .navbar-nav {
+        margin-top: 20px;
+        text-align: center;
+    }
+
+        .navbar-nav .nav-item {
+            margin-left: 0;
+            margin-bottom: 10px;
+        }
+}
+
+/* Table Styling */
+.patient-table {
+    width: 100%;
+    margin-top: 20px;
+    border-collapse: collapse;
+    border: 1px solid #ddd;
+}
+
+/* Table Header Styling */
+.table-header th {
+    background-color: #1b6ec2;
+    color: white;
+    text-align: center;
+    padding: 10px;
+}
+
+/* Table Row Styling */
+.patient-table td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+/* Hover Effect for Table Rows */
+.patient-table tr:hover {
+    background-color: #f5f5f5;
+}
+
+/* Action Links Styling */
+.action-links {
+    text-align: center;
+}
+
+    .action-links a {
+        color: #0077cc;
+        font-weight: 600;
+        text-decoration: none;
+        padding: 5px 10px;
+    }
+
+        .action-links a:hover {
+            color: #1b6ec2;
+            text-decoration: underline;
+        }
+
+/* Button Styling */
+.btn-primary {
+    color: #fff;
+    background-color: #1b6ec2;
+    border-color: #1861ac;
+}
+
+    .btn-primary:hover {
+        background-color: #1861ac;
+        border-color: #154d91;
+    }
+
+/* General page styling */
+.page-title {
+    font-size: 2rem;
+    font-weight: bold;
+    margin-bottom: 20px;
+    color: #0077cc;
+}
+
+/* Table Styling */
+.room-table {
+    width: 100%;
+    margin-top: 20px;
+    border-collapse: collapse;
+    border: 1px solid #ddd;
+}
+
+/* Table Header Styling */
+.table-header th {
+    background-color: #1b6ec2;
+    color: white;
+    text-align: center;
+    padding: 10px;
+}
+
+/* Table Row Styling */
+.room-table td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+/* Hover Effect for Table Rows */
+.room-table tr:hover {
+    background-color: #f5f5f5;
+}
+
+/* Action Links Styling */
+.action-links {
+    text-align: center;
+}
+
+    .action-links a {
+        color: #0077cc;
+        font-weight: 600;
+        text-decoration: none;
+        padding: 5px 10px;
+    }
+
+        .action-links a:hover {
+            color: #1b6ec2;
+            text-decoration: underline;
+        }
+
+/* Button Styling */
+.btn-primary {
+    color: #fff;
+    background-color: #1b6ec2;
+    border-color: #1861ac;
+}
+
+    .btn-primary:hover {
+        background-color: #1861ac;
+        border-color: #154d91;
+    }
+
+/* General page styling */
+.page-title {
+    font-size: 2rem;
+    font-weight: bold;
+    margin-bottom: 20px;
+    color: #0077cc;
+}
+
+/* General table styling */
+.department-table {
+    width: 100%;
+    margin-top: 20px;
+    border-collapse: collapse;
+}
+
+.department-table th, .department-table td {
+    padding: 12px;
+    text-align: left;
+}
+
+/* Header styling */
+.department-table thead {
+    background-color: #f8f9fa;
+    font-weight: bold;
+    border-bottom: 2px solid #dee2e6;
+}
+
+.department-table th {
+    font-size: 1.1rem;
+    color: papayawhip;
+}
+
+/* Row styling */
+.department-table tbody tr:nth-child(even) {
+    background-color: #f2f2f2;
+}
+
+.department-table tbody tr:hover {
+    background-color: #f1f1f1;
+}
+
+.department-table td {
+    font-size: 1rem;
+    color: #495057;
+}
+
+/* Action links styling */
+.action-links a {
+    color: #007bff;
+    text-decoration: none;
+    padding: 2px 8px;
+}
+
+    .action-links a:hover {
+        text-decoration: underline;
+    }
+
+/* Button for creating new department */
+.btn.btn-primary {
+    background-color: #007bff;
+    border-color: #007bff;
+}
+
+    .btn.btn-primary:hover {
+        background-color: #0056b3;
+        border-color: #004085;
+    }
+
+/* Title Styling to Match Table Header */
+/* Page title styling */
+.page-title {
+    font-size: 2rem; /* Increase font size */
+    font-weight: bold; /* Make the font bold */
+    color: #343a40; /* Match color with the header text */
+    margin-bottom: 20px; /* Add space below the title */
+}
+
+/* Container for the form */
+.form-container {
+    display: flex;
+    justify-content: center;
+    padding: 20px;
+}
+
+/* Form column styling */
+.form-column {
+    width: 100%;
+    max-width: 600px;
+}
+
+/* General form group styling */
+.form-group {
+    margin-bottom: 20px;
+}
+
+/* Label styling */
+.control-label {
+    font-size: 1.1rem;
+    margin-bottom: 5px;
+    color: #333;
+}
+
+/* Form input and select styling */
+.form-control {
+    width: 100%;
+    padding: 10px;
+    margin: 5px 0 15px 0;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 1rem;
+}
+
+/* Error message styling */
+.text-danger {
+    font-size: 0.9rem;
+    color: red;
+}
+
+/* Button styling */
+.btn-primary {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    font-size: 1rem;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+    .btn-primary:hover {
+        background-color: #0056b3;
+    }
+
+.btn-secondary {
+    background-color: #6c757d;
+    color: white;
+    padding: 10px 20px;
+    font-size: 1rem;
+    border-radius: 4px;
+    text-decoration: none;
+}
+
+    .btn-secondary:hover {
+        background-color: #5a6268;
+    }
+
+/* Margin top for submit buttons */
+.mt-3 {
+    margin-top: 15px;
+}
+
+/* Styling for the title */
+h1 {
+    text-align: left; /* Align to the left */
+    color: #007bff; /* Match color theme */
+    font-size: 2.5rem; /* Larger font size for main title */
+    margin-bottom: 20px; /* Add spacing below the h1 */
+}
+
+h4 {
+    text-align: left; /* Align the subheading to the left */
+    color: #007bff; /* Match color theme */
+    font-size: 1.5rem; /* Slightly smaller font size for subheading */
+    margin-bottom: 15px; /* Add spacing below the h4 */
+}
+
+/* Table layout */
+.table {
+    width: 100%;
+    margin-top: 20px; /* Add spacing from above content */
+    border-collapse: collapse; /* Collapses borders between rows */
+}
+
+    .table th, .table td {
+        padding: 10px;
+        text-align: left; /* Align text to the left in both th and td */
+        border-bottom: 1px solid #dee2e6; /* Border between rows */
+    }
+
+    .table th {
+        background-color: #f8f9fa; /* Light gray background for table headers */
+        color: #495057; /* Dark color for headers */
+        font-weight: bold;
+    }
+
+    .table td {
+        color: #343a40; /* Dark color for data cells */
+    }
+
+/* Action links styling */
+a {
+    color: #007bff; /* Link color matching the theme */
+    text-decoration: none;
+}
+
+    a:hover {
+        text-decoration: underline; /* Underline on hover */
+    }
+
+div {
+    margin-top: 20px; /* Add space above the action links */
+    text-align: left; /* Align the action links to the left */
+}
+
+    div a {
+        margin: 0 10px; /* Space between the links */
+    }
+
+.card-body {
+    background-color: #f8f9fa; /* Light background for the card */
+    border-radius: 10px;
+}
+
+.card-title {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #333;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+dl.row dt, dl.row dd {
+    padding: 10px 15px;
+}
+
+dl.row dt {
+    background-color: #f0f8ff;
+    font-weight: 600;
+}
+/* Style specific to Delete Room View */
+
+/* Targeting the body or main container of the Delete Room View */
+.delete-room-view {
+    background-color: #f8f9fa; /* Light background for the delete page */
+    font-family: Arial, sans-serif;
+    padding: 30px 0;
+}
+
+    /* Header Styles */
+    .delete-room-view h1 {
+        font-size: 2.5rem;
+        color: #dc3545; /* Red for delete action */
+        text-align: center;
+        margin-bottom: 20px;
+    }
+
+    .delete-room-view h3 {
+        font-size: 1.6rem;
+        color: #6c757d;
+        text-align: center;
+        margin-bottom: 30px;
+    }
+
+    /* Card Layout */
+    .delete-room-view .card {
+        background-color: #ffffff;
+        border-radius: 8px;
+        padding: 20px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        margin: 0 auto;
+        max-width: 800px;
+        border: none;
+    }
+
+    /* Description List (dl) Styling */
+    .delete-room-view dl.row {
+        margin: 20px 0;
+        font-size: 1.1rem;
+    }
+
+    .delete-room-view dt {
+        font-weight: bold;
+        color: #495057; /* Dark grey for labels */
+        padding-bottom: 10px;
+    }
+
+    .delete-room-view dd {
+        color: #6c757d;
+        padding-bottom: 15px;
+    }
+
+    /* Badge Styles for Availability */
+    .delete-room-view .badge {
+        font-size: 1rem;
+        padding: 8px 16px;
+        border-radius: 12px;
+        margin-top: 10px;
+        text-align: center;
+    }
+
+        .delete-room-view .badge.bg-success {
+            background-color: #28a745;
+            color: white;
+        }
+
+        .delete-room-view .badge.bg-danger {
+            background-color: #dc3545;
+            color: white;
+        }
+
+    /* Buttons Styling */
+    .delete-room-view button.btn-danger {
+        background-color: #dc3545;
+        border: none;
+        padding: 12px 30px;
+        font-size: 1.1rem;
+        color: white;
+        border-radius: 5px;
+        cursor: pointer;
+        width: 100%;
+        margin-top: 30px;
+        transition: background-color 0.3s ease;
+    }
+
+        .delete-room-view button.btn-danger:hover {
+            background-color: #c82333;
+        }
+
+    .delete-room-view a.btn-secondary {
+        background-color: #6c757d;
+        color: white;
+        padding: 12px 30px;
+        font-size: 1.1rem;
+        border-radius: 5px;
+        text-decoration: none;
+        width: 100%;
+        margin-top: 10px;
+        text-align: center;
+        transition: background-color 0.3s ease;
+    }
+
+        .delete-room-view a.btn-secondary:hover {
+            background-color: #5a6268;
+        }
+
+    /* Form Styling */
+    .delete-room-view form {
+        margin-top: 20px;
+    }
+
+    .delete-room-view .d-flex {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 30px;
+    }
+
+    .delete-room-view .d-inline {
+        display: inline-block;
+    }
+
+    .delete-room-view .mt-4 {
+        margin-top: 1.5rem;
+    }
+
+    .delete-room-view .mt-5 {
+        margin-top: 3rem;
+    }
+
+/* Responsive Design for Mobile Devices */
+@media (max-width: 768px) {
+    .delete-room-view .card {
+        padding: 15px;
+    }
+
+    .delete-room-view h1 {
+        font-size: 2rem;
+    }
+
+    .delete-room-view h3 {
+        font-size: 1.2rem;
+    }
+
+    .delete-room-view dt, .delete-room-view dd {
+        font-size: 1rem;
+    }
+
+    .delete-room-view button.btn-danger, .delete-room-view a.btn-secondary {
+        width: 100%;
+        font-size: 1rem;
+    }
+
+    .delete-room-view .d-flex {
+        flex-direction: column;
+        align-items: stretch;
+    }
+}
+
+/* Custom Style for btn-danger */
+/* Custom Style for btn-danger (matching btn-secondary size) */
+.btn-danger {
+    background-color: #dc3545; /* Red color for the delete button */
+    color: white; /* Text color */
+    padding: 10px 20px; /* Match the padding size to btn-secondary */
+    font-size: 1rem; /* Font size same as btn-secondary */
+    border-radius: 4px; /* Match the rounded corners */
+    text-decoration: none; /* Remove underline for links */
+    display: inline-block; /* Make it act like a button */
+    text-align: center; /* Align text to center */
+    cursor: pointer; /* Pointer cursor to show it's clickable */
+    transition: background-color 0.3s ease; /* Smooth background color transition */
+}
+
+    /* Hover effect for btn-danger (matching btn-secondary hover) */
+    .btn-danger:hover {
+        background-color: #c82333; /* Darker red when hovered */
+    }

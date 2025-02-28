@@ -4,45 +4,35 @@
     ViewData["Title"] = "Details";
 }
 
-<h1>Details</h1>
+<h1>Details Appointment</h1>
 
 <div>
-    <h4>Appointment</h4>
     <hr />
-    <dl class="row">
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Date)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Date)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Time)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Time)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Reason)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Reason)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.DoctorNavigation)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.DoctorNavigation.Contact)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.PatientNavigation)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.PatientNavigation.Contacts)
-        </dd>
-    </dl>
+    <table class="table">
+        <tr>
+            <th>@Html.DisplayNameFor(model => model.Date)</th>
+            <td>@Html.DisplayFor(model => model.Date)</td>
+        </tr>
+        <tr>
+            <th>@Html.DisplayNameFor(model => model.Time)</th>
+            <td>@Html.DisplayFor(model => model.Time)</td>
+        </tr>
+        <tr>
+            <th>@Html.DisplayNameFor(model => model.Reason)</th>
+            <td>@Html.DisplayFor(model => model.Reason)</td>
+        </tr>
+        <tr>
+            <th>@Html.DisplayNameFor(model => model.DoctorNavigation)</th>
+            <td>@Html.DisplayFor(model => model.DoctorNavigation.Name)</td>
+        </tr>
+        <tr>
+            <th>@Html.DisplayNameFor(model => model.PatientNavigation)</th>
+            <td>@Html.DisplayFor(model => model.PatientNavigation.Name)</td>
+        </tr>
+    </table>
 </div>
+
 <div>
-    <a asp-action="Edit" asp-route-id="@Model?.Id">Edit</a> |
-    <a asp-action="Index">Back to List</a>
+    <a asp-action="Edit" class="btn btn-primary"  asp-route-id="@Model?.Id">Edit</a> |
+    <a asp-action="Index" class="btn btn-secondary">Back to List</a>
 </div>

@@ -1,0 +1,28 @@
+﻿@model SelectNewDepartmentViewModel
+
+<h2>Select New Department for Doctors</h2>
+
+<form method="post">
+    <div>
+        <h4>Select Doctors to Update</h4>
+        @foreach (var doctor in Model.DoctorSelections)
+        {
+            <div>
+                <input type="checkbox"
+                       name="DoctorSelections[@doctor.Id].IsSelected"
+                       value="true"
+                       checked="@doctor.IsSelected" />
+                @doctor.Name
+            </div>
+        }
+    </div>
+
+    <div>
+        <label for="NewDepartmentId">Зміна департаменту</label>
+        <select id="NewDepartmentId" name="NewDepartmentId" asp-items="@(new SelectList(Model.Departments, "Id", "Name"))">
+            <option value="">-- Оберіть департамент --</option>
+        </select>
+    </div>
+
+    <button type="submit">Update Department</button>
+</form>

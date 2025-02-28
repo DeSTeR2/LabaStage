@@ -6,23 +6,23 @@ namespace HospitalDomain.Model;
 
 public partial class Patient
 {
-    [Required(ErrorMessage = "Поле є обов'язковим")]
-    [Display(Name = "Ідентифікатор")]
+    [Required(ErrorMessage = "This field is required")]
+    [Display(Name = "Patient ID")]
     public int Id { get; set; }
 
-    [Required(ErrorMessage = "Ім'я пацієнта є обов'язковим")]
-    [Display(Name = "Ім'я пацієнта")]
+    [Required(ErrorMessage = "Patient's name is required")]
+    [Display(Name = "Patient Name")]
     public string Name { get; set; } = null!;
 
-    [Required(ErrorMessage = "Дата народження є обов'язковою")]
-    [Display(Name = "Дата народження")]
+    [Required(ErrorMessage = "Date of birth is required")]
+    [Display(Name = "Date of Birth")]
     [DataType(DataType.Date)]
     public DateTime DateOfBirth { get; set; }
 
-    [Required(ErrorMessage = "Контактна інформація є обов'язковою")]
-    [Display(Name = "Контактна інформація")]
+    [Required(ErrorMessage = "Contact information is required")]
+    [Display(Name = "Contact Information")]
     public string Contacts { get; set; } = null!;
 
-    [Display(Name = "Записи прийомів")]
+    [Display(Name = "Appointments")]
     public virtual ICollection<Appointment> Appointments { get; set; } = new List<Appointment>();
 }

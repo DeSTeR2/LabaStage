@@ -6,29 +6,29 @@ namespace HospitalDomain.Model;
 
 public partial class Doctor
 {
-    [Required(ErrorMessage = "Поле є обов'язковим")]
-    [Display(Name = "Ідентифікатор")]
+    [Required(ErrorMessage = "This field is required")]
+    [Display(Name = "Doctor ID")]
     public int Id { get; set; }
 
-    [Required(ErrorMessage = "Ім'я лікаря є обов'язковим")]
-    [Display(Name = "Ім'я лікаря")]
+    [Required(ErrorMessage = "Doctor's name is required")]
+    [Display(Name = "Doctor Name")]
     public string Name { get; set; } = null!;
 
-    [Required(ErrorMessage = "Спеціальність є обов'язковою")]
-    [Display(Name = "Спеціальність")]
+    [Required(ErrorMessage = "Specialty is required")]
+    [Display(Name = "Specialty")]
     public string Speciality { get; set; } = null!;
 
-    [Required(ErrorMessage = "Контактна інформація є обов'язковою")]
-    [Display(Name = "Контактна інформація")]
+    [Required(ErrorMessage = "Contact information is required")]
+    [Display(Name = "Contact Information")]
     public string Contact { get; set; } = null!;
 
-    [Required(ErrorMessage = "Оберіть департамент")]
-    [Display(Name = "Департамент")]
+    [Required(ErrorMessage = "Please select a department")]
+    [Display(Name = "Department")]
     public int Department { get; set; }
 
-    [Display(Name = "Записи прийомів")]
+    [Display(Name = "Appointments")]
     public virtual ICollection<Appointment> Appointments { get; set; } = new List<Appointment>();
 
-    [Display(Name = "Департамент лікаря")]
+    [Display(Name = "Doctor's Department")]
     public virtual Department DepartmentNavigation { get; set; } = null!;
 }

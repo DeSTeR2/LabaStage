@@ -2,13 +2,49 @@
     ViewData["Title"] = "Hospital Database";
 }
 
-<h1>Hospital Database</h1>
-<p>Select one of the options below to view details for each table:</p>
+<div class="container">
+    <h1 class="page-title">Hospital Database</h1>
+    <p class="description-text">Select one of the options below to view details for each table:</p>
 
-<ul>
-    <li>@Html.ActionLink("View Departments", "Index", "Departments")</li>
-    <li>@Html.ActionLink("View Doctors", "Index", "Doctors")</li>
-    <li>@Html.ActionLink("View Patients", "Index", "Patients")</li>
-    <li>@Html.ActionLink("View Appointments", "Index", "Appointments")</li>
-    <li>@Html.ActionLink("View Rooms", "Index", "Rooms")</li>
-</ul>
+    <div class="options-list">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Departments</h5>
+                <p class="card-text">View the list of departments in the hospital.</p>
+                @Html.ActionLink("View Departments", "Index", "Departments", new { @class = "btn btn-link" })
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Doctors</h5>
+                <p class="card-text">View the list of doctors working in the hospital.</p>
+                @Html.ActionLink("View Doctors", "Index", "Doctors", new { @class = "btn btn-link" })
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Patients</h5>
+                <p class="card-text">View the list of patients currently admitted to the hospital.</p>
+                @Html.ActionLink("View Patients", "Index", "Patients", new { @class = "btn btn-link" })
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Appointments</h5>
+                <p class="card-text">View all upcoming and past appointments in the hospital.</p>
+                @Html.ActionLink("View Appointments", "Index", "Appointments", new { @class = "btn btn-link" })
+            </div>
+        </div>
+
+        <div class="card room-card">
+            <div class="card-body">
+                <h5 class="card-title">Rooms</h5>
+                <p class="card-text">View the list of rooms in the hospital.</p>
+                @Html.ActionLink("View Rooms", "Index", "Rooms", new { @class = "btn btn-primary" })
+            </div>
+        </div>
+    </div>
+</div>
