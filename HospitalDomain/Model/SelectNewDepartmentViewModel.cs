@@ -32,5 +32,6 @@ public class DoctorSelectionViewModel
     public int Id { get; set; }
     public string Name { get; set; }
     public bool IsSelected { get; set; } // Property to mark if the doctor is selected for department update
+    public int Department { get; set; }
 }
 

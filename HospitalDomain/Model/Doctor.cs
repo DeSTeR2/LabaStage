@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 
 namespace HospitalDomain.Model;
 
@@ -17,5 +18,6 @@ public partial class Doctor
 
     public virtual ICollection<Appointment> Appointments { get; set; } = new List<Appointment>();
 
+    [Display(Name = "Department")]
     public virtual Department DepartmentNavigation { get; set; } = null!;
 }

@@ -158,7 +158,7 @@ namespace HospitalMVC.HospitalInfrastructure.Controllers
 
             // Retrieve the doctors from the database by their IDs
             var doctors = _context.Doctors.Where(d => doctorIds.Contains(d.Id)).ToList();
-            var departments = _context.Departments.ToList(); // Get all departments for selection
+            var departments = _context.Departments.Where(d => d.Id != departmentIdToDelete).ToList(); // Get all departments for selection
 
             var model = new SelectNewDepartmentViewModel
             {
@@ -175,33 +175,51 @@ namespace HospitalMVC.HospitalInfrastructure.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> SelectNewDepartment(SelectNewDepartmentViewModel model)
         {
+
+            ModelState.Remove("Departments");
+            int number = (ModelState.Count - 1) / 3;
+
+            for (int i = 0; i < number; i++)
+            {
+                ModelState.Remove($"DoctorSelections[{i}].Name");
+            }
+
+            TryValidateModel(ModelState);
+
             if (!ModelState.IsValid)
             {
-                // If the model state is invalid, return the model to the view to show validation errors
+                model.Departments = await _context.Departments.ToListAsync();
+
+                var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage);
+                return View(model); // Return the view with errors
+            }
+
+            int departmentIdToDelete = 0;
+
+            var selectedDoctors = model.DoctorSelections.ToList() ?? new List<DoctorSelectionViewModel>();
+            if (!selectedDoctors.Any())
+            {
+                model.Departments = await _context.Departments.ToListAsync();
+                ModelState.AddModelError("", "Error: No doctors were selected.");
                 return View(model);
             }
-
-            var departmentIdToDelete = TempData["DepartmentIdToDelete"] as int?;
-
-            if (departmentIdToDelete == null)
+            else
             {
-                return RedirectToAction(nameof(Index));
+                int docId = selectedDoctors[0].Id;
+                departmentIdToDelete = (await _context.Doctors.FindAsync(docId)).Department;
             }
 
-            // Update the selected doctors' department
-            foreach (var doctorSelection in model.DoctorSelections.Where(d => d.IsSelected))
+            foreach (var doctorSelection in selectedDoctors)
             {
                 var doctor = await _context.Doctors.FindAsync(doctorSelection.Id);
                 if (doctor != null)
                 {
-                    doctor.Department = model.NewDepartmentId; // Update the doctor to the new department
+                    doctor.Department = model.NewDepartmentId;
                 }
             }
 
-            // Save the changes
             await _context.SaveChangesAsync();
 
-            // Now delete the department
             var department = await _context.Departments.FindAsync(departmentIdToDelete);
             if (department != null)
             {
@@ -209,10 +227,8 @@ namespace HospitalMVC.HospitalInfrastructure.Controllers
                 await _context.SaveChangesAsync();
             }
 
-            return RedirectToAction(nameof(Index)); // Redirect back to the departments list
+            return RedirectToAction(nameof(Index));
         }
-
-
 
 
         // GET: Departments/Details/5

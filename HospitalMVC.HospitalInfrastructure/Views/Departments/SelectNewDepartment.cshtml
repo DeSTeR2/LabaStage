@@ -1,28 +1,29 @@
 ﻿@model SelectNewDepartmentViewModel
 
-<h2>Select New Department for Doctors</h2>
+<div class="form-container">
+    <form method="post" action="@Url.Action("SelectNewDepartment", "Departments")">
+        @Html.AntiForgeryToken()
 
-<form method="post">
-    <div>
-        <h4>Select Doctors to Update</h4>
-        @foreach (var doctor in Model.DoctorSelections)
-        {
-            <div>
-                <input type="checkbox"
-                       name="DoctorSelections[@doctor.Id].IsSelected"
-                       value="true"
-                       checked="@doctor.IsSelected" />
-                @doctor.Name
-            </div>
-        }
-    </div>
+        <div>
+            <h4>Select Doctors to Update</h4>
+            @for (int i = 0; i < Model.DoctorSelections.Count; i++)
+            {
+                <div class="doctor-selection">
+                    <input type="hidden" asp-for="DoctorSelections[i].Id" />
+                    <input type="hidden" asp-for="DoctorSelections[i].IsSelected" value="false" />
+                    <input type="checkbox" asp-for="DoctorSelections[i].IsSelected" value="true" />
+                    <label>@Model.DoctorSelections[i].Name</label>
+                </div>
+            }
+        </div>
 
-    <div>
-        <label for="NewDepartmentId">Зміна департаменту</label>
-        <select id="NewDepartmentId" name="NewDepartmentId" asp-items="@(new SelectList(Model.Departments, "Id", "Name"))">
-            <option value="">-- Оберіть департамент --</option>
-        </select>
-    </div>
+        <div>
+            <label for="NewDepartmentId">Department change</label>
+            <select id="NewDepartmentId" class="select-department" asp-for="NewDepartmentId" asp-items="@(new SelectList(Model.Departments, "Id", "Name"))">
+                <option value="">-- Choose department --</option>
+            </select>
+        </div>
 
-    <button type="submit">Update Department</button>
-</form>
+        <button type="submit" class="submit-button">Update Department</button>
+    </form>
+</div>
