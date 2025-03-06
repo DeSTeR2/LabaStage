@@ -362,6 +362,23 @@ input.is-invalid, select.is-invalid, textarea.is-invalid {
     border-color: #dc3545;
 }
 
+/* Responsive Design for Small Devices */
+@media (max-width: 768px) {
+    .department-table td,
+    .department-table th {
+        padding: 8px;
+        font-size: 0.9rem;
+    }
+
+    .btn-primary {
+        padding: 8px 16px; /* Reduce button size for mobile */
+    }
+
+    .footer {
+        font-size: 0.9rem;
+    }
+}
+
 /* Hover Effects for Cards */
 .card:hover {
     box-shadow: 0 .5rem 1rem rgba(0, 0, 0, 0.1);
@@ -529,7 +546,21 @@ a {
         border-radius: 4px;
     }
 
+/* Navbar Collapse (Responsive View) */
+@media (max-width: 768px) {
+    .navbar-collapse {
+        display: block;
+        text-align: center;
+    }
 
+    .nav-item {
+        margin: 10px 0;
+    }
+
+    .navbar-toggler-icon {
+        background-color: #0077cc;
+    }
+}
 
 /* Additional Navbar Styling */
 .navbar-light .navbar-nav .nav-link {
@@ -595,6 +626,8 @@ body {
 
 .container {
     width: 80%;
+    margin: 20px auto;
+    padding: 20px;
 }
 
 /* Page Title */
@@ -717,15 +750,13 @@ body {
 header {
     background-color: #ffffff;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    padding: 10px 0;
 }
 
 /* Navbar Styling */
 .navbar {
     font-family: 'Arial', sans-serif;
-    font-weight: 250;
-    height: 40px;
-    align-content: space-evenly;
-    padding: 10px;
+    font-weight: 500;
 }
 
     .navbar .navbar-brand {
@@ -774,7 +805,6 @@ header {
 .navbar-toggler-icon {
     background-color: white;
 }
-
 
 
 /* Table Styling */
@@ -1099,6 +1129,7 @@ a {
     }
 
 div {
+    margin-top: 20px; /* Add space above the action links */
     text-align: left; /* Align the action links to the left */
 }
 
@@ -1259,6 +1290,35 @@ dl.row dt {
         margin-top: 3rem;
     }
 
+/* Responsive Design for Mobile Devices */
+@media (max-width: 768px) {
+    .delete-room-view .card {
+        padding: 15px;
+    }
+
+    .delete-room-view h1 {
+        font-size: 2rem;
+    }
+
+    .delete-room-view h3 {
+        font-size: 1.2rem;
+    }
+
+    .delete-room-view dt, .delete-room-view dd {
+        font-size: 1rem;
+    }
+
+    .delete-room-view button.btn-danger, .delete-room-view a.btn-secondary {
+        width: 100%;
+        font-size: 1rem;
+    }
+
+    .delete-room-view .d-flex {
+        flex-direction: column;
+        align-items: stretch;
+    }
+}
+
 /* Custom Style for btn-danger */
 /* Custom Style for btn-danger (matching btn-secondary size) */
 .btn-danger {
@@ -1353,37 +1413,3 @@ dl.row dt {
     opacity: 0.8; /* Make it slightly faded */
     cursor: not-allowed;
 }
-
-/* Form Group Enhancements */
-.form-group {
-    margin-bottom: 25px; /* Increased spacing */
-    position: relative; /* For absolute positioning of labels */
-}
-
-    .form-group label {
-        position: absolute;
-        top: 12px; /* Adjusted label position */
-        left: 10px;
-        pointer-events: none;
-        transition: 0.2s ease all;
-        background-color: white; /* Ensure label background matches form */
-        padding: 0 5px;
-        color: #aaa;
-    }
-
-    .form-group input:focus + label,
-    .form-group input:not(:placeholder-shown) + label {
-        top: -8px; /* Move label up on focus or if input is not empty */
-        font-size: 0.8em;
-        color: #258cfb;
-    }
-
-    .form-group input {
-        padding: 20px 10px 5px 10px; /* Adjusted padding to accommodate floating label */
-    }
-
-    /* Required Field Indicator */
-    .form-group label.required::after {
-        content: " *"; /* Add asterisk for required fields */
-        color: red;
-    }

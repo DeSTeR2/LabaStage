@@ -10,6 +10,6 @@ public partial class Room
     public string Type { get; set; } = null!;
 
     public int Capacity { get; set; }
-
     public virtual ICollection<Appointment> Appointments { get; set; } = new List<Appointment>();
+
 }

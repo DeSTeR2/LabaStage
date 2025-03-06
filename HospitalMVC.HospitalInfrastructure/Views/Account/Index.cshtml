@@ -1,0 +1,61 @@
+﻿@model HospitalDomain.Model.RegisterViewModel
+<title>New User Registration</title>
+
+<body>
+    <div class="form-container">
+        <form method="post" asp-controller="Account" asp-action="Register">
+            <h1>Register</h1>
+            <div asp-validation-summary="ModelOnly" class="validation-summary-errors"></div>
+
+            <div class="form-group">
+                <input type="text" id="fullName" name="fullName" placeholder=" " />
+                <label for="fullName" class="required">Full Name</label>
+            </div>
+
+            <div class="form-group">
+                <input asp-for="PhoneNumber" placeholder=" " />
+                <label asp-for="PhoneNumber" class="required"></label>
+                <span asp-validation-for="PhoneNumber" class="field-validation-error"></span>
+            </div>
+
+            <div class="form-group">
+                <input asp-for="Email" type="email" placeholder=" " />
+                <label asp-for="Email" class="required"></label>
+                <span asp-validation-for="Email" class="field-validation-error"></span>
+            </div>
+
+            <div class="form-group">
+                <input asp-for="Passworld" type="password" placeholder=" " />
+                <label asp-for="Passworld" class="required"></label>
+                <span asp-validation-for="Passworld" class="field-validation-error"></span>
+            </div>
+
+            <div class="form-group">
+                <input asp-for="ConfirmationPassworld" type="password" placeholder=" " />
+                <label asp-for="ConfirmationPassworld" class="required"></label>
+                <span asp-validation-for="ConfirmationPassworld" class="field-validation-error"></span>
+            </div>
+
+            <button type="submit" class="submit-button">Register</button>
+        </form>
+    </div>
+</body>
+<style>
+    .submit-button {
+        width: 100%;
+        padding: 12px;
+        background-color: #1b6ec2;
+        color: white;
+        font-size: 1.1rem;
+        font-weight: bold;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        margin-top: 15px;
+        transition: background-color 0.3s ease;
+    }
+
+        .submit-button:hover {
+            background-color: #1861ac;
+        }
+</style>

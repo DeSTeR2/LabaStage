@@ -1,52 +1,360 @@
-﻿<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Hospital</title>
-    <script type="importmap"></script>
-    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-</head>
-<body>
-    <header>
-        <nav class="navbar navbar-expand-lg navbar-light bg-light shadow-sm">
-            <div class="container">
-                <a class="navbar-brand" href="@Url.Action("Index", "Home")">
-                    <img src="~/css/images/hospital-logo.webp" alt="Hospital Logo" class="logo" />
-                    <span>Hospital</span>
-                </a>
-                <div class="collapse navbar-collapse" id="navbarNav">
-                    <ul class="navbar-nav ms-auto">
-                        <li class="nav-item">
-                            <a class="nav-link" href="@Url.Action("Index", "Departments")">Departments</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="@Url.Action("Index", "Doctors")">Doctors</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="@Url.Action("Index", "Patients")">Patients</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="@Url.Action("Index", "Appointments")">Appointments</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="@Url.Action("Index", "Rooms")">Rooms</a>
-                        </li>
-                    </ul>
+﻿    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Hospital</title>
+        <script type="importmap"></script>
+        <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <style>
+        /* General Styles */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Header Styles */
+        header {
+            width: 100%;
+            background-color: #fff;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .header-top {
+            background-color: #f0f0f0;
+
+        }
+
+            .header-top .navbar-content {
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                width: fit-content; /* Adjust width to content */
+                margin: 0 auto; /* Center the element */
+            }
+
+            .header-top .navbar-nav {
+                display: flex;
+                list-style: none;
+                padding: 0 5px;
+                margin: 0;
+            }
+
+            .header-top .nav-link {
+                padding: 3px 8px;
+                text-decoration: none;
+                color: #333;
+            }
+
+                .header-top .nav-link:hover {
+                    color: #258cfb;
+                }
+
+            .header-top .header {
+                display: inline-grid;
+            }
+
+        .header-bottom {
+            background-color: #fff;
+            margin: 10px 0;
+        }
+
+            .header-bottom .header-bottom-content {
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                flex-wrap: wrap;
+                width: fit-content; /* Adjust width to content */
+                margin: 0 auto; /* Center the element */
+            }
+
+            .header-bottom .navbar-brand {
+                display: flex;
+                align-items: center;
+                font-weight: bold;
+                color: #1b6ec2;
+                text-decoration: none;
+                margin: 0 5px;
+            }
+
+                .header-bottom .navbar-brand img.logo {
+                    height: 25px;
+                    margin-right: 3px;
+                }
+
+            .header-bottom .contact-info {
+                display: flex;
+                gap: 5px;
+                align-items: center;
+                margin: 0 5px;
+            }
+
+            .header-bottom .contact-item {
+                display: flex;
+                align-items: center;
+                gap: 3px;
+                font-size: 0.7rem;
+                color: #555;
+            }
+
+                .header-bottom .contact-item i {
+                    color: #258cfb;
+                    font-size: 0.9rem;
+                }
+
+        /* Main Content Styles */
+        main {
+            padding: 15px;
+            margin-top: 15px;
+        }
+
+        /* Footer Styles */
+        footer {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            text-align: center;
+            padding: 5px 0;
+            background-color: #f0f0f0;
+            border-top: 1px solid #ddd;
+            font-size: 0.7rem;
+        }
+
+        .header .btn.btn-primary {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px; /* Adjust gap as needed */
+            padding: 8px 15px; /* Adjust padding as needed */
+            background-color: #258cfb;
+            border: none;
+            border-radius: 5px;
+            color: white; /* Or your preferred text color */
+            font-size: 0.9rem; /* Or your preferred font size */
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+            .header .btn.btn-primary:hover {
+                background-color: #1e70c9;
+            }
+
+            .header .btn.btn-primary img.user-image {
+                height: 20px; /* Adjust image size as needed */
+                width: 20px; /* Adjust image size as needed */
+            }
+
+        .combined-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            background-color: #fff;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            padding: 15px 10px;
+            gap: 10px;
+        }
+
+        .left-section {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start; /* Align items to the start of the column */
+        }
+
+        .right-section {
+            display: flex;
+            align-items: center;
+        }
+
+        .combined-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            background-color: #fff;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            padding: 5px 10px;
+            gap: 10px;
+        }
+
+        .left-section {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            width: 30%; /* Adjust width as needed */
+        }
+
+        .right-section {
+            display: flex;
+            align-items: center;
+            width: 70%; /* Adjust width as needed */
+            justify-content: flex-end; /* Align buttons to the right */
+        }
+
+        .combined-header .header-bottom-content {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .combined-header .navbar-nav {
+            display: flex;
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+            .combined-header .navbar-nav .nav-item {
+                margin: 0 5px;
+            }
+
+            .combined-header .navbar-nav .nav-link {
+                text-decoration: none;
+                color: #333;
+                padding: 5px 10px;
+            }
+
+        .combined-header .login-button {
+            margin-top: 10px;
+        }
+
+            .combined-header .login-button .btn.btn-primary {
+                display: inline-flex;
+                align-items: center;
+                gap: 5px;
+                padding: 8px 15px;
+                background-color: #258cfb;
+                border: none;
+                border-radius: 5px;
+                color: white;
+                font-size: 0.9rem;
+                cursor: pointer;
+                transition: background-color 0.3s ease;
+            }
+
+                .combined-header .login-button .btn.btn-primary:hover {
+                    background-color: #1e70c9;
+                }
+
+                .combined-header .login-button .btn.btn-primary img.user-image {
+                    height: 20px;
+                    width: 20px;
+                }
+
+        .combined-header .contact-info {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .combined-header .contact-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 0.8rem;
+            color: #555;
+        }
+
+            .combined-header .contact-item i {
+                color: #258cfb;
+                font-size: 1rem;
+            }
+
+        .combined-header .navbar-brand {
+            display: flex;
+            align-items: center;
+            font-weight: bold;
+            color: #1b6ec2;
+            text-decoration: none;
+        }
+
+            .combined-header .navbar-brand img.logo {
+                height: 30px;
+                margin-right: 5px;
+            }
+
+        .header-left {
+            display: flex;
+            padding-bottom: 15px;
+        }
+
+    </style>
+    </head>
+    <body>
+    <div class="combined-header">
+        <div class="left-section">
+        <div class="header-left">
+            <a class="navbar-brand" href="@Url.Action("Index", "Home")">
+                <img src="~/css/images/hospital-logo.webp" alt="Hospital Logo" class="logo" />
+                <span>Hospital</span>
+            </a>
+            <div class="contact-info">
+                <div class="contact-item">
+                    <i class="fas fa-phone"></i>
+                    <span>+1 (555) 123-4567</span>
+                </div>
+                <div class="contact-item">
+                    <i class="fas fa-envelope"></i>
+                    <span>info@hospital.com</span>
+                </div>
+                <div class="contact-item">
+                    <i class="fas fa-map-marker-alt"></i>
+                    <span>123 Hospital St, City</span>
                 </div>
             </div>
-        </nav>
-    </header>
-
-    <div class="container">
-        <main role="main" class="pb-3">
-            @RenderBody()
-        </main>
+            
+        </div>
+        <div>
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" href="@Url.Action("Index", "Departments")">Departments</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="@Url.Action("Index", "Doctors")">Doctors</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="@Url.Action("Index", "Patients")">Patients</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="@Url.Action("Index", "Appointments")">Appointments</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="@Url.Action("Index", "Rooms")">Rooms</a>
+                </li>
+            </ul>
+            </div>
+        </div>
+        <div class="login-button header-right">
+                <a href="@Url.Action("Index", "Account")" class="btn btn-primary">
+                    <img src="~/css/images/user.png" alt="user image" class="user-image" />
+                    Login
+                </a>
+            </div>
     </div>
 
-    <script src="~/lib/jquery/dist/jquery.min.js"></script>
-    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="~/js/site.js" asp-append-version="true"></script>
-    @await RenderSectionAsync("Scripts", required: false)
-</body>
-</html>
+        <div class="container">
+            <main role="main" class="pb-3">
+                @RenderBody()
+            </main>
+        </div>
+
+        <footer>
+            <div>
+                &copy; @DateTime.Now.Year - Hospital Database
+            </div>
+        </footer>
+
+        <script src="~/lib/jquery/dist/jquery.min.js"></script>
+        <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+        <script src="~/js/site.js" asp-append-version="true"></script>
+        <script src="https://kit.fontawesome.com/your-font-awesome-kit.js" crossorigin="anonymous"></script>
+        @await RenderSectionAsync("Scripts", required: false)
+    </body>
+    </html>

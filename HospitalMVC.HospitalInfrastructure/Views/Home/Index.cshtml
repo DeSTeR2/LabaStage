@@ -2,10 +2,99 @@
     ViewData["Title"] = "Hospital Database";
 }
 
-<div class="container">
-    <h1 class="page-title">Hospital Database</h1>
-    <p class="description-text">Select one of the options below to view details for each table:</p>
+<style>
+    .container {
+        max-width: 1200px;
+        margin: 20px auto;
+        padding: 0 20px;
+    }
 
+    .page-title {
+        font-size: 2.5rem;
+        font-weight: bold;
+        color: #0077cc;
+        text-align: center;
+        margin-bottom: 30px;
+    }
+
+    .description-text {
+        font-size: 1.1rem;
+        color: #555;
+        text-align: center;
+        margin-bottom: 40px;
+    }
+
+    .options-list {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 20px;
+    }
+
+    .card {
+        width: 280px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s ease;
+    }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+    .card-body {
+        padding: 20px;
+    }
+
+    .card-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 10px;
+    }
+
+    .card-text {
+        font-size: 1rem;
+        color: #666;
+        margin-bottom: 20px;
+    }
+
+    .btn-link {
+        color: #0077cc;
+        text-decoration: none;
+        font-weight: 600;
+        transition: color 0.3s ease;
+    }
+
+        .btn-link:hover {
+            color: #0056b3;
+        }
+
+    .btn-primary {
+        background-color: #258cfb;
+        color: white;
+        padding: 10px 15px;
+        border: none;
+        border-radius: 5px;
+        text-decoration: none;
+        transition: background-color 0.3s ease;
+    }
+
+        .btn-primary:hover {
+            background-color: #1e70c9;
+        }
+
+    .room-card .btn-primary {
+        background-color: #1b6ec2;
+    }
+
+        .room-card .btn-primary:hover {
+            background-color: #1861ac;
+        }
+</style>
+
+<div class="container">
     <div class="options-list">
         <div class="card">
             <div class="card-body">

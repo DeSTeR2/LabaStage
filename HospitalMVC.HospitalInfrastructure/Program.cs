@@ -1,5 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using HospitalDomain.Model;
+using LibraryWebApplication;
+using Microsoft.AspNetCore.Identity;
+using HospitalMVC;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,9 +23,17 @@ builder.Services.Configure<CookiePolicyOptions>(options =>
 // ✅ Add services
 builder.Services.AddControllersWithViews();
 
-builder.Services.AddDbContext<HospitalContext>(option => option.UseSqlServer(
+builder.Services.AddDbContext<HospitalContext>(options => options.UseSqlServer(
     builder.Configuration.GetConnectionString("DefaultConnection")
 ));
+
+builder.Services.AddDbContext<IdentityContext>(options => options.UseSqlServer(
+    builder.Configuration.GetConnectionString("DefaultConnection")
+));
+
+builder.Services.AddIdentity<User, IdentityRole>()
+    .AddEntityFrameworkStores<IdentityContext>()
+    .AddDefaultTokenProviders(); // Add this if you need token generation (for password reset, etc.)
 
 var app = builder.Build();
 
@@ -41,16 +52,16 @@ if (app.Environment.IsProduction())
 
 app.UseRouting();
 
-app.UseAuthorization();
-
 // ✅ Ensure cookie policies are applied
 app.UseCookiePolicy();
 
-app.MapStaticAssets();
+app.UseAuthentication();
+app.UseAuthorization();
 
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}")
-    .WithStaticAssets();
+    pattern: "{controller=Home}/{action=Index}/{id?}");
+
+app.UseStaticFiles(); // Maps static assets (css, js, images, etc.)
 
 app.Run();
