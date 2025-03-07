@@ -8,5 +8,6 @@ namespace HospitalMVC
     {
         public IdentityContext(DbContextOptions<IdentityContext> options) : base(options) { }
 
+        public virtual DbSet<User> Users { get; set; }
     }
 }

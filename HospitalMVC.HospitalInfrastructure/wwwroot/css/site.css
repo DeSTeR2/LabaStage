@@ -1371,6 +1371,7 @@ dl.row dt {
         color: #aaa;
     }
 
+
     .form-group input:focus + label,
     .form-group input:not(:placeholder-shown) + label {
         top: -8px; /* Move label up on focus or if input is not empty */
