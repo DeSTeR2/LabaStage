@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using HospitalDomain.ViewModel;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using System.Security.Claims;
 
 namespace LibraryWebApplication.Controllers
 {
@@ -200,13 +201,24 @@ namespace LibraryWebApplication.Controllers
         [HttpPost]
         public async Task<IActionResult> UpdateProfile(AccountViewModel model)
         {
-            User user = await _context.Users.FindAsync(model.UserId);
-            user?.UpdateUser(model);
-            await _context.SaveChangesAsync();
+            // Assuming the user's ID is stored as a claim in the Identity
+            string userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (userId == null)
+            {
+                // Handle the case where user is not authenticated or ID is missing
+                return RedirectToAction("Login", "Account");
+            }
+
+            User user = await _context.Users.FindAsync(userId);
+            if (user != null)
+            {
+                user.UpdateUser(model);
+                await _context.SaveChangesAsync();
+            }
 
             return RedirectToAction("Index", "Home");
         }
-
 
 
     }
