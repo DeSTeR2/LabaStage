@@ -1,4 +1,8 @@
-﻿<!DOCTYPE html>
+﻿@using Microsoft.AspNetCore.Identity
+@inject SignInManager<HospitalMVC.User> SignInManager
+@inject UserManager<HospitalMVC.User> UserManager
+
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
@@ -340,10 +344,21 @@
             </div>
         </div>
         <div class="login-button header-right">
-            <a href="@Url.Action("Login", "Account")" class="btn btn-primary">
-                <img src="~/css/images/user.png" alt="user image" class="user-image" />
-                Login
-            </a>
+            @if (SignInManager.IsSignedIn(User))
+            {
+                var currentUser = await UserManager.GetUserAsync(User);
+                <span>@currentUser.UserName</span>
+                <form method="post" asp-controller="Account" asp-action="AccountDisplay" style="display:inline;">
+                    <button type="submit" class="btn btn-primary">Accout</button>
+                </form>
+            }
+            else
+            {
+                <a href="@Url.Action("Login", "Account")" class="btn btn-primary">
+                    <img src="~/css/images/user.png" alt="user image" class="user-image" />
+                    Login
+                </a>
+            }
         </div>
     </div>
 

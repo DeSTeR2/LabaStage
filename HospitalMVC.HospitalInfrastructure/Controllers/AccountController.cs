@@ -4,6 +4,8 @@ using HospitalDomain.Model;
 using HospitalMVC;
 using System.Threading.Tasks;
 using HospitalDomain.ViewModel;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 
 namespace LibraryWebApplication.Controllers
 {
@@ -11,11 +13,13 @@ namespace LibraryWebApplication.Controllers
     {
         private readonly UserManager<User> _userManager;
         private readonly SignInManager<User> _signInManager;
+        private readonly IdentityContext _context;
 
-        public AccountController(UserManager<User> userManager, SignInManager<User> signInManager)
+        public AccountController(UserManager<User> userManager, SignInManager<User> signInManager, IdentityContext context)
         {
             _userManager = userManager;
             _signInManager = signInManager;
+            _context = context;
         }
 
         /// <summary>
@@ -167,6 +171,42 @@ namespace LibraryWebApplication.Controllers
 
             return View(model);
         }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AccountDisplay()
+        {
+            var user = await _userManager.GetUserAsync(User); // Get the current logged-in user
+
+            if (user == null)
+            {
+                return RedirectToAction("Login");
+            }
+
+            var model = new AccountViewModel
+            {
+                FullName = user.FullName,
+                Email = user.Email,
+                PhoneNumber = user.PhoneNumber,
+                DateOfBirth = user.DateOfBirth,
+                Address = user.Address,
+                ProfilePictureUrl = user.ProfilePictureUrl,
+                UserId = user.Id
+            };
+
+            return View(model);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> UpdateProfile(AccountViewModel model)
+        {
+            User user = await _context.Users.FindAsync(model.UserId);
+            user?.UpdateUser(model);
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction("Index", "Home");
+        }
+
 
 
     }
