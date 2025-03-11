@@ -7,16 +7,20 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using HospitalDomain.Model;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.AspNetCore.Authorization;
+using LibraryWebApplication.Controllers;
 
 namespace HospitalMVC.HospitalInfrastructure.Controllers
 {
     public class AppointmentsController : Controller
     {
-        private readonly HospitalContext _context;
+        private readonly HospitalContext _hospitalContext;
+        private readonly IdentityContext _identityContext;
 
-        public AppointmentsController(HospitalContext context)
+        public AppointmentsController(HospitalContext context, IdentityContext identityContext)
         {
-            _context = context;
+            _hospitalContext = context;
+            _identityContext = identityContext;
         }
 
         // GET: Appointments
@@ -24,11 +28,31 @@ namespace HospitalMVC.HospitalInfrastructure.Controllers
         {
             try
             {
-                var hospitalContext = _context.Appointments
-                    .Include(a => a.PatientNavigation)
-                    .Include(a => a.DoctorNavigation)
-                    .Include(a => a.RoomNavigation);
-                return View(await hospitalContext.ToListAsync());
+                AccountController accountController = AccountController.GetInstance();
+
+                User user = await accountController.GetAuthorizedUser();
+                if (await accountController.IsUserInRole(user, "admin")) {
+                    var hospitalContext = _hospitalContext.Appointments
+                        .Include(a => a.PatientNavigation)
+                        .Include(a => a.DoctorNavigation)
+                        .Include(a => a.RoomNavigation);
+                        return View(await hospitalContext.ToListAsync());
+                } else
+                {
+                    string email = user.Email;
+
+                    var patient = await _hospitalContext.Patients
+                        .FirstOrDefaultAsync(p => p.Email == email);
+
+                    var hospitalContext = _hospitalContext.Appointments
+                        .Include(a => a.PatientNavigation)
+                        .Include(a => a.DoctorNavigation)
+                        .Include(a => a.RoomNavigation)
+                        .Where(a => a.PatientNavigation.Email == email);  
+
+                    return View(await hospitalContext.ToListAsync());
+
+                }
             }
             catch
             {
@@ -44,7 +68,7 @@ namespace HospitalMVC.HospitalInfrastructure.Controllers
                 return NotFound();
             }
 
-            var appointment = await _context.Appointments
+            var appointment = await _hospitalContext.Appointments
                 .Include(a => a.DoctorNavigation)
                 .Include(a => a.PatientNavigation)
                 .Include(a => a.RoomNavigation)
@@ -65,8 +89,8 @@ namespace HospitalMVC.HospitalInfrastructure.Controllers
             var appointment = new Appointment();  // Still passing an empty Appointment model if needed
 
             // Filter available doctors (those who are not booked for the selected date and time, for the full 1-hour appointment)
-            var availableDoctors = _context.Doctors
-                .Where(d => !_context.Appointments
+            var availableDoctors = _hospitalContext.Doctors
+                .Where(d => !_hospitalContext.Appointments
                     .Any(a => a.Doctor == d.Id && a.Date == appointment.Date &&
                               a.Time < appointment.Time.AddHours(1) && a.Time.AddHours(1) > appointment.Time))
                 .ToList();
@@ -74,8 +98,8 @@ namespace HospitalMVC.HospitalInfrastructure.Controllers
             ViewData["Doctor"] = new SelectList(availableDoctors, "Id", "Name");
 
             // Filter available rooms (those which are not booked for the selected date and time, for the full 1-hour appointment)
-            var availableRooms = _context.Rooms
-                .Where(r => !_context.Appointments
+            var availableRooms = _hospitalContext.Rooms
+                .Where(r => !_hospitalContext.Appointments
                     .Any(a => a.Room == r.Id && a.Date == appointment.Date &&
                               a.Time < appointment.Time.AddHours(1) && a.Time.AddHours(1) > appointment.Time))
                 .ToList();
@@ -84,7 +108,7 @@ namespace HospitalMVC.HospitalInfrastructure.Controllers
 
             // Filter patients (no changes to this part)
             ViewData["Patient"] = new SelectList(
-                _context.Patients.Select(p => new { p.Id, Name = p.Name + " (" + p.Contacts + ")" }),
+                _hospitalContext.Patients.Select(p => new { p.Id, Name = p.Name + " (" + p.Contacts + ")" }),
                 "Id", "Name");
 
             return View(appointment);  // Pass the empty appointment model to the view
@@ -99,11 +123,11 @@ namespace HospitalMVC.HospitalInfrastructure.Controllers
         public async Task<IActionResult> Create([Bind("Id,Date,Time,Reason,Doctor,Patient,Room")] Appointment appointment)
         {
             // Check if the selected doctor and room are available at the selected date and time
-            var doctorAvailable = !_context.Appointments
+            var doctorAvailable = !_hospitalContext.Appointments
                 .Any(a => a.Doctor == appointment.Doctor && a.Date == appointment.Date &&
                           a.Time < appointment.Time.AddHours(1) && a.Time.AddHours(1) > appointment.Time);
 
-            var roomAvailable = !_context.Appointments
+            var roomAvailable = !_hospitalContext.Appointments
                 .Any(a => a.Room == appointment.Room && a.Date == appointment.Date &&
                           a.Time < appointment.Time.AddHours(1) && a.Time.AddHours(1) > appointment.Time);
 
@@ -112,27 +136,27 @@ namespace HospitalMVC.HospitalInfrastructure.Controllers
                 ModelState.AddModelError("", "The selected doctor or room is not available at the specified time.");
                 // Re-fetch available doctors and rooms if the selected ones are unavailable
                 ViewData["Doctor"] = new SelectList(
-                    _context.Doctors.Where(d => !_context.Appointments
+                    _hospitalContext.Doctors.Where(d => !_hospitalContext.Appointments
                         .Any(a => a.Doctor == d.Id && a.Date == appointment.Date &&
                                   a.Time < appointment.Time.AddHours(1) && a.Time.AddHours(1) > appointment.Time))
                     .ToList(), "Id", "Name");
 
                 ViewData["Room"] = new SelectList(
-                    _context.Rooms.Where(r => !_context.Appointments
+                    _hospitalContext.Rooms.Where(r => !_hospitalContext.Appointments
                         .Any(a => a.Room == r.Id && a.Date == appointment.Date &&
                                   a.Time < appointment.Time.AddHours(1) && a.Time.AddHours(1) > appointment.Time))
                     .ToList(), "Id", "Type");
 
                 ViewData["Patient"] = new SelectList(
-                    _context.Patients.Select(p => new { p.Id, Name = p.Name + " (" + p.Contacts + ")" }),
+                    _hospitalContext.Patients.Select(p => new { p.Id, Name = p.Name + " (" + p.Contacts + ")" }),
                     "Id", "Name");
 
                 return View(appointment); // Return the view with error and keep the selected data
             }
 
             // If doctor and room are available, proceed with appointment creation
-            _context.Add(appointment);
-            await _context.SaveChangesAsync();
+            _hospitalContext.Add(appointment);
+            await _hospitalContext.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
 
@@ -145,7 +169,7 @@ namespace HospitalMVC.HospitalInfrastructure.Controllers
                 return NotFound();
             }
 
-            var appointment = await _context.Appointments
+            var appointment = await _hospitalContext.Appointments
                 .Include(a => a.DoctorNavigation)
                 .Include(a => a.PatientNavigation)
                 .Include(a => a.RoomNavigation)
@@ -158,21 +182,21 @@ namespace HospitalMVC.HospitalInfrastructure.Controllers
 
             // Filter available doctors (those who are not booked for the selected date and time, for the full 1-hour appointment, excluding the current doctor's appointment)
             ViewData["Doctor"] = new SelectList(
-                _context.Doctors.Where(d => !_context.Appointments
+                _hospitalContext.Doctors.Where(d => !_hospitalContext.Appointments
                     .Any(a => a.Doctor == d.Id && a.Date == appointment.Date &&
                               a.Time < appointment.Time.AddHours(1) && a.Time.AddHours(1) > appointment.Time) || d.Id == appointment.Doctor),
                 "Id", "Name");
 
             // Filter available rooms (those which are not booked for the selected date and time, for the full 1-hour appointment, excluding the current room)
             ViewData["Room"] = new SelectList(
-                _context.Rooms.Where(r => !_context.Appointments
+                _hospitalContext.Rooms.Where(r => !_hospitalContext.Appointments
                     .Any(a => a.Room == r.Id && a.Date == appointment.Date &&
                               a.Time < appointment.Time.AddHours(1) && a.Time.AddHours(1) > appointment.Time) || r.Id == appointment.Room),
                 "Id", "Type");
 
             // Filter patients
             ViewData["Patient"] = new SelectList(
-                _context.Patients.Select(p => new { p.Id, Name = p.Name + " (" + p.Contacts + ")" }),
+                _hospitalContext.Patients.Select(p => new { p.Id, Name = p.Name + " (" + p.Contacts + ")" }),
                 "Id", "Name");
 
             return View(appointment);
@@ -192,9 +216,9 @@ namespace HospitalMVC.HospitalInfrastructure.Controllers
                 return NotFound();
             }
 
-            appointment.PatientNavigation = await _context.Patients.FindAsync(appointment.Patient);
-            appointment.DoctorNavigation = await _context.Doctors.FindAsync(appointment.Doctor);
-            appointment.RoomNavigation = await _context.Rooms.FindAsync(appointment.Room);
+            appointment.PatientNavigation = await _hospitalContext.Patients.FindAsync(appointment.Patient);
+            appointment.DoctorNavigation = await _hospitalContext.Doctors.FindAsync(appointment.Doctor);
+            appointment.RoomNavigation = await _hospitalContext.Rooms.FindAsync(appointment.Room);
 
             ModelState.Remove("DoctorNavigation");
             ModelState.Remove("PatientNavigation");
@@ -206,8 +230,8 @@ namespace HospitalMVC.HospitalInfrastructure.Controllers
             {
                 try
                 {
-                    _context.Update(appointment);
-                    await _context.SaveChangesAsync();
+                    _hospitalContext.Update(appointment);
+                    await _hospitalContext.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)
                 {
@@ -230,8 +254,8 @@ namespace HospitalMVC.HospitalInfrastructure.Controllers
                 }
 
             }
-            ViewData["Doctor"] = new SelectList(_context.Doctors, "Id", "Contact", appointment.DoctorNavigation.Name);
-            ViewData["Patient"] = new SelectList(_context.Patients, "Id", "Contacts", appointment.PatientNavigation.Name);
+            ViewData["Doctor"] = new SelectList(_hospitalContext.Doctors, "Id", "Contact", appointment.DoctorNavigation.Name);
+            ViewData["Patient"] = new SelectList(_hospitalContext.Patients, "Id", "Contacts", appointment.PatientNavigation.Name);
             return View(appointment);
         }
 
@@ -243,7 +267,7 @@ namespace HospitalMVC.HospitalInfrastructure.Controllers
                 return NotFound();
             }
 
-            var appointment = await _context.Appointments
+            var appointment = await _hospitalContext.Appointments
                 .Include(a => a.DoctorNavigation)
                 .Include(a => a.PatientNavigation)
                 .FirstOrDefaultAsync(m => m.Id == id);
@@ -260,19 +284,19 @@ namespace HospitalMVC.HospitalInfrastructure.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var appointment = await _context.Appointments.FindAsync(id);
+            var appointment = await _hospitalContext.Appointments.FindAsync(id);
             if (appointment != null)
             {
-                _context.Appointments.Remove(appointment);
+                _hospitalContext.Appointments.Remove(appointment);
             }
 
-            await _context.SaveChangesAsync();
+            await _hospitalContext.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
 
         private bool AppointmentExists(int id)
         {
-            return _context.Appointments.Any(e => e.Id == id);
+            return _hospitalContext.Appointments.Any(e => e.Id == id);
         }
     }
 }

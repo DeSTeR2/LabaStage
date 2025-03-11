@@ -69,6 +69,17 @@
     .hidden-file-input {
         display: none;
     }
+
+    .form-group label {
+        position: absolute;
+        top: 12px; /* Adjusted label position */
+        left: 10px;
+        pointer-events: none;
+        transition: 0.2s ease all;
+        background-color: white; /* Ensure label background matches form */
+        padding: 0 5px;
+        color: #aaa;
+    }
 </style>
 
 <div class="container mt-4">
@@ -114,8 +125,8 @@
             </div>
 
             <div class="d-flex justify-content-between mt-3">
-                <button type="submit" class="btn btn-primary">Save Changes</button>
-                <a href="@Url.Action("Logout", "Account")" class="btn btn-danger">Logout</a>
+                <button asp-action="UpdateProfile" class="btn btn-primary">Save Changes</button>
+                <button asp-action="Logout" class="btn btn-danger">Logout</button>
             </div>
         </form>
     </div>

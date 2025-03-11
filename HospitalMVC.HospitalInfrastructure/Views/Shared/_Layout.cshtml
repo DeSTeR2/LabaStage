@@ -322,24 +322,27 @@
                     <li class="nav-item">
                         <a class="nav-link" href="@Url.Action("Index", "Doctors")">Doctors</a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="@Url.Action("Index", "Patients")">Patients</a>
-                    </li>
+                    @if (User.IsInRole("admin"))
+                    {
+                        <li class="nav-item">
+                            <a class="nav-link" href="@Url.Action("Index", "Patients")">Patients</a>
+                        </li>
+                    }
                     <li class="nav-item">
                         <a class="nav-link" href="@Url.Action("Index", "Appointments")">Appointments</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="@Url.Action("Index", "Rooms")">Rooms</a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="@Url.Action("Edit", "Roles")">EditRoles</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="@Url.Action("Index", "Roles")">IndexRoles</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="@Url.Action("UserList", "Roles")">UserList</a>
-                    </li>
+                    @if (User.IsInRole("admin"))  // Replace "Admin" with the role you want to check
+                    {
+                        <li class="nav-item">
+                            <a class="nav-link" href="@Url.Action("Index", "Roles")">IndexRoles</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="@Url.Action("UserList", "Roles")">UserList</a>
+                        </li>
+                    }
                 </ul>
             </div>
         </div>

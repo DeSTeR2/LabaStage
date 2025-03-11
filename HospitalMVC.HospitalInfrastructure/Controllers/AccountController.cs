@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using HospitalDomain.ViewModel;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace LibraryWebApplication.Controllers
 {
@@ -13,14 +14,29 @@ namespace LibraryWebApplication.Controllers
     {
         private readonly UserManager<User> _userManager;
         private readonly SignInManager<User> _signInManager;
-        private readonly IdentityContext _context;
+        private readonly IdentityContext _identityContext;
+        private readonly HospitalContext _hospitalContext;
 
-        public AccountController(UserManager<User> userManager, SignInManager<User> signInManager, IdentityContext context)
+        private static AccountController instance;
+
+        public AccountController(UserManager<User> userManager, SignInManager<User> signInManager, IdentityContext context, HospitalContext hospitalContext)
         {
             _userManager = userManager;
             _signInManager = signInManager;
-            _context = context;
+            _identityContext = context;
+            _hospitalContext = hospitalContext;
+
+
+            instance = this;
         }
+
+        public static AccountController GetInstance()
+        {
+            return instance;
+        }
+
+        public async Task<User> GetAuthorizedUser() => await _userManager.GetUserAsync(User);
+        public async Task<bool> IsUserInRole(User user, string role) => await _userManager.IsInRoleAsync(user, role);
 
         /// <summary>
         /// Displays the registration form.
@@ -89,7 +105,7 @@ namespace LibraryWebApplication.Controllers
                     }
                     else
                     {
-                        return RedirectToAction("Login", "Account");
+                        return RedirectToAction("Index", "Home");
                     }
                 }
                 else
@@ -102,7 +118,7 @@ namespace LibraryWebApplication.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Logout()
+        public async Task<IActionResult> Logout(AccountViewModel model)
         {
             // видаляємо автентифікаційні куки
             await _signInManager.SignOutAsync();
@@ -156,10 +172,26 @@ namespace LibraryWebApplication.Controllers
                 UserName = model.Email,
             };
 
+            List<int> ids = _hospitalContext.Patients.Select(a => a.Id).ToList();
+            int patientId = Utils.Util.GetId(ids);
+
+            var patient = new Patient()
+            {
+                Id = patientId,
+                Name = model.FullName,
+                DateOfBirth = model.DateOfBirth,
+                Contacts = model.PhoneNumber,
+                Email = model.Email
+            };
+            //user.PatientNavigation = patient;
             var result = await _userManager.CreateAsync(user, model.Passworld);
+
 
             if (result.Succeeded)
             {
+                _hospitalContext.Patients.Add(patient);
+
+                await _hospitalContext.SaveChangesAsync();
                 await _signInManager.SignInAsync(user, isPersistent: false);
                 return RedirectToAction("Index", "Home");
             }
@@ -200,14 +232,45 @@ namespace LibraryWebApplication.Controllers
         [HttpPost]
         public async Task<IActionResult> UpdateProfile(AccountViewModel model)
         {
-            User user = await _context.Users.FindAsync(model.UserId);
+            User user = await _identityContext.Users.FindAsync(model.UserId);
             user?.UpdateUser(model);
-            await _context.SaveChangesAsync();
+            await _identityContext.SaveChangesAsync();
 
             return RedirectToAction("Index", "Home");
         }
 
+        [HttpPost]
+        public async Task<IActionResult> ProcessButtonClicks(AccountViewModel model, string action)
+        {
+            if (action == "save")
+            {
+                return await UpdateProfile(model);
+            } 
 
+            if (action == "logout")
+            {
+                return await Logout(model);
+            }
 
+            return RedirectToAction("Index", "Home");
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> DeleteAccount(AccountViewModel model)
+        {
+            var user = await _userManager.GetUserAsync(User);
+
+            if (user == null)
+            {
+                return RedirectToAction("Index", "Home");
+            }
+
+            //Patient patient = user.PatientNavigation;
+            //_hospitalContext.Appointments.RemoveRange(patient.Appointments);
+            //_hospitalContext.Patients.Remove(patient);
+            _identityContext.Users.Remove(user);
+
+            return RedirectToAction("Index", "Home");
+        }
     }
 }

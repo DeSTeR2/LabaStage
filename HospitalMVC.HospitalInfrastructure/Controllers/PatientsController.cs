@@ -4,9 +4,11 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using HospitalDomain.Model;
+using Microsoft.AspNetCore.Authorization;
 
 namespace HospitalMVC.HospitalInfrastructure.Controllers
 {
+    [Authorize(Roles = "admin")]
     public class PatientsController : Controller
     {
         private readonly HospitalContext _context;

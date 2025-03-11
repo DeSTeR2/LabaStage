@@ -9,6 +9,11 @@ namespace HospitalDomain.Model
         public string FullName { get; set; } = null!;
 
         [Required]
+        [Display(Name = "Date of birth")]
+        [DataType(DataType.DateTime)]
+        public DateTime DateOfBirth;
+
+        [Required]
         [Display(Name = "Phone number")]
         [DataType(DataType.PhoneNumber)]
         public string PhoneNumber { get; set; } = null!;

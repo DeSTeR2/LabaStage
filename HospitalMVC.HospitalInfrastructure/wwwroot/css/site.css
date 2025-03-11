@@ -1361,12 +1361,11 @@ dl.row dt {
 }
 
     .form-group label {
-        position: absolute;
-        top: 12px; /* Adjusted label position */
+        /* position: absolute; */
+        /* top: 12px; */ /* Adjusted label position */
         left: 10px;
         pointer-events: none;
-        transition: 0.2s ease all;
-        background-color: white; /* Ensure label background matches form */
+        /* background-color: white; */ /* Ensure label background matches form */
         padding: 0 5px;
         color: #aaa;
     }

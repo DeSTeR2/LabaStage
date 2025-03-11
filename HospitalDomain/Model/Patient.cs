@@ -11,9 +11,11 @@ public partial class Patient
     public string Name { get; set; } = null!;
 
     [DisplayName("Date of birth")]
-    public DateTime DateOfBirth { get; set; }
+    public DateTime? DateOfBirth { get; set; }
 
     public string Contacts { get; set; } = null!;
+
+    public string? Email { get; set; } = null!;
 
     public virtual ICollection<Appointment> Appointments { get; set; } = new List<Appointment>();
 }

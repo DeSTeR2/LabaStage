@@ -15,7 +15,10 @@
             <th>Doctor Name</th>
             <th>Patient Name</th>
             <th>Room Type</th>
-            <th>Actions</th>
+            @if (User.IsInRole("admin"))
+            {
+                <th>Actions</th>
+            }
         </tr>
     </thead>
     <tbody>
@@ -28,16 +31,19 @@
                 <td>@Html.DisplayFor(modelItem => item.DoctorNavigation.Name)</td>
                 <td>@Html.DisplayFor(modelItem => item.PatientNavigation.Name)</td>
                 <th>@Html.DisplayFor(modelItem => item.RoomNavigation.Type)</th>
-                <td class="action-links">
-                    @Html.ActionLink("Edit", "Edit", new { id = item.Id }) |
-                    @Html.ActionLink("View Details", "Details", new { id = item.Id }) |
-                    @Html.ActionLink("Delete", "Delete", new { id = item.Id })
-                </td>
+                @if (User.IsInRole("admin"))
+                {
+                    <td class="action-links">
+                        @Html.ActionLink("Edit", "Edit", new { id = item.Id }) |
+                        @Html.ActionLink("View Details", "Details", new { id = item.Id }) |
+                        @Html.ActionLink("Delete", "Delete", new { id = item.Id })
+                    </td>
+                }
             </tr>
         }
     </tbody>
 </table>
 
-<p>
-    <a class="btn btn-primary" asp-action="Create">Create New Appointment</a>
-</p>
+    <p>
+        <a class="btn btn-primary" asp-action="Create">Create New Appointment</a>
+    </p>

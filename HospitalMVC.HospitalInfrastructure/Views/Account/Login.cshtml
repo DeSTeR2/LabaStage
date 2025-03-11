@@ -21,7 +21,7 @@
                 <span asp-validation-for="Password" class="field-validation-error"></span>
             </div>
 
-            <div class="form-group checkbox-group">
+            <div class="checkbox-group">
                 <input asp-for="RememberMe" type="checkbox" id="rememberMe" />
                 <label for="rememberMe">Remember me</label>
             </div>
@@ -88,16 +88,16 @@
         gap: 8px; /* Adds spacing between checkbox and label */
         margin-bottom: 15px;
         width: fit-content; /* Makes it only as wide as needed */
+        top: -10px;
+        font-size: 0.75rem;
+        color: #1b6ec2;
+        font-weight: 700;
     }
 
         .checkbox-group label {
             background-color: unset;
         }
 
-
-        .checkbox-group input {
-            margin-right: 10px;
-        }
 
     .submit-button {
         width: 100%;
@@ -129,6 +129,17 @@
             text-decoration: none;
             font-size: 0.9rem;
         }
+
+    .form-group label {
+        position: absolute;
+        top: 12px; /* Adjusted label position */
+        left: 10px;
+        pointer-events: none;
+        transition: 0.2s ease all;
+        background-color: white; /* Ensure label background matches form */
+        padding: 0 5px;
+        color: #aaa;
+    }
 
             .form-links a:hover {
                 text-decoration: underline;

@@ -19,6 +19,12 @@
             </div>
 
             <div class="form-group">
+                <input asp-for="DateOfBirth" type="date" placeholder=" " />
+                <label asp-for="DateOfBirth" class="required"></label>
+                <span asp-validation-for="DateOfBirth" class="field-validation-error"></span>
+            </div>
+
+            <div class="form-group">
                 <input asp-for="Email" type="email" placeholder=" " />
                 <label asp-for="Email" class="required"></label>
                 <span asp-validation-for="Email" class="field-validation-error"></span>
@@ -55,6 +61,16 @@
         transition: background-color 0.3s ease;
     }
 
+    .form-group label {
+        position: absolute;
+        top: 12px; /* Adjusted label position */
+        left: 10px;
+        pointer-events: none;
+        transition: 0.2s ease all;
+        background-color: white; /* Ensure label background matches form */
+        padding: 0 5px;
+        color: #aaa;
+    }
         .submit-button:hover {
             background-color: #1861ac;
         }
