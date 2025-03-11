@@ -10,8 +10,9 @@ namespace HospitalMVC.Controllers
             return View();
         }
 
-        public IActionResult Privacy()
+        public IActionResult Statistics()
         {
+            // Your logic for statistics goes here
             return View();
         }
 

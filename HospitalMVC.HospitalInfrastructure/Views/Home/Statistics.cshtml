@@ -1,0 +1,214 @@
+﻿<div class="container my-4">
+    <h2 class="text-center mb-4">Hospital Statistics Overview</h2>
+    <p class="text-center mb-5">This page provides key insights into the hospital's performance, including department doctor numbers and appointments per doctor.</p>
+
+    <div class="row">
+        <!-- Chart 1: Departments by Doctor Number -->
+        <div class="col-12 col-md-6 chart-container">
+            <h3 class="chart-title">Departments by Doctor Number</h3>
+            <p class="chart-description">
+                This chart displays the number of doctors per department. The departments with higher numbers of doctors are visualized to help understand the allocation of resources.
+            </p>
+            <div id="countByYearChart" class="chart-box"></div>
+        </div>
+
+        <!-- Chart 2: Appointments by Doctor -->
+        <div class="col-12 col-md-6 chart-container">
+            <h3 class="chart-title">Appointments per Doctor</h3>
+            <p class="chart-description">
+                This chart shows the number of appointments handled by each doctor. It helps to identify doctors who are handling more or fewer appointments than others.
+            </p>
+            <div id="appointmentsByDoctorChart" class="chart-box"></div>
+        </div>
+    </div>
+</div>
+
+
+<style>
+    .row {
+        display: flex;
+        justify-content: space-between;
+    }
+
+    /* Overall container for the page */
+    .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 20px;
+    }
+
+    /* Styling for chart containers */
+    .chart-container {
+        margin-bottom: 30px;
+        padding: 20px;
+        background-color: #ffffff;
+        border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        transition: box-shadow 0.3s ease;
+    }
+
+        .chart-container:hover {
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+
+    /* Title for each chart */
+    .chart-title {
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: #333;
+        margin-bottom: 10px;
+    }
+
+    /* Description text for charts */
+    .chart-description {
+        font-size: 1rem;
+        color: #777;
+        margin-bottom: 15px;
+    }
+
+    /* Styling for the charts */
+    .chart-box {
+        height: 400px; /* Ensure the chart has a consistent height */
+        background-color: #f4f4f4;
+        border-radius: 8px;
+        padding: 10px;
+    }
+
+    /* Add some margin to the top of the page */
+    .my-4 {
+        margin-top: 2rem;
+        margin-bottom: 2rem;
+    }
+
+    /* Spacing between the charts */
+    .row {
+        gap: 30px;
+    }
+
+    /* Text alignment for titles */
+    .text-center {
+        text-align: center;
+    }
+</style>
+
+@section Scripts {
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <script type="text/javascript">
+        google.charts.load('current', {'packages':['corechart']});
+        google.charts.setOnLoadCallback(drawCharts);
+
+        function drawCharts() {
+            // Fetching the first chart data: Count by Year (Departments)
+            fetch('/api/charts/countDepartment')
+                .then(response => response.json())
+                .then(data => {
+                    const dataTable = new google.visualization.DataTable();
+                    dataTable.addColumn('string', 'Department name');
+                    dataTable.addColumn('number', 'Doctors number');
+
+                    data.forEach(item => {
+                        dataTable.addRow([item.departmentName, item.count]);
+                    });
+
+                    const countByYearOptions = {
+                        title: 'Departments by Doctor Number',
+                        titleTextStyle: {
+                            fontSize: 20,
+                            fontName: 'Arial',
+                            bold: true,
+                            italic: true,
+                            color: '#333'
+                        },
+                        width: '100%',  // Full width of container
+                        height: 400,
+                        legend: { position: 'none' },
+                        bar: { groupWidth: '75%' },
+                        vAxis: {
+                            format: '0',
+                            textStyle: {
+                                fontSize: 14,
+                                fontName: 'Arial',
+                                color: '#5d5d5d'
+                            },
+                            gridlines: { color: '#eee' }
+                        },
+                        hAxis: {
+                            textStyle: {
+                                fontSize: 14,
+                                fontName: 'Arial',
+                                color: '#5d5d5d'
+                            },
+                            gridlines: { color: '#eee' }
+                        },
+                        backgroundColor: '#f4f4f4',
+                        chartArea: {
+                            width: '80%',
+                            height: '70%'
+                        },
+                        colors: ['#1b9e77'],
+                        animation: {
+                            startup: true,
+                            duration: 1000,
+                            easing: 'out'
+                        }
+                    };
+
+                    const countByYearChart = new google.visualization.ColumnChart(document.getElementById('countByYearChart'));
+                    countByYearChart.draw(dataTable, countByYearOptions);
+                });
+
+            // Fetching the second chart data: Appointments by Doctor
+            fetch('/api/charts/appointmentsByDoctor')
+                .then(response => response.json())
+                .then(data => {
+                    const appointmentsByDoctorData = new google.visualization.DataTable();
+                    appointmentsByDoctorData.addColumn('string', 'Doctor');
+                    appointmentsByDoctorData.addColumn('number', 'Appointments');
+
+                    data.forEach(item => {
+                        appointmentsByDoctorData.addRow([item.doctorName, item.appointmentCount]);
+                    });
+
+                    const appointmentsByDoctorOptions = {
+                        title: 'Doctor Appointment Counts',
+                        titleTextStyle: {
+                            fontSize: 20,
+                            fontName: 'Arial',
+                            bold: true,
+                            italic: true,
+                            color: '#333'
+                        },
+                        is3D: true,  // 3D pie chart
+                        pieSliceText: 'percentage',
+                        height: 400,
+                        width: '100%',  // Full width of container
+                        backgroundColor: '#f4f4f4',
+                        legend: {
+                            position: 'bottom',
+                            textStyle: { color: '#4c4c4c', fontSize: 12 }
+                        },
+                        chartArea: {
+                            width: '90%',
+                            height: '75%'
+                        },
+                        slices: {
+                            0: { offset: 0.1, textStyle: { color: '#fff' } },
+                            1: { offset: 0.1, textStyle: { color: '#fff' } }
+                        },
+                        pieSliceTextStyle: {
+                            color: '#fff',
+                            fontSize: 14
+                        },
+                        animation: {
+                            startup: true,
+                            duration: 1000,
+                            easing: 'out'
+                        }
+                    };
+
+                    const appointmentsByDoctorChart = new google.visualization.PieChart(document.getElementById('appointmentsByDoctorChart'));
+                    appointmentsByDoctorChart.draw(appointmentsByDoctorData, appointmentsByDoctorOptions);
+                });
+        }
+    </script>
+}

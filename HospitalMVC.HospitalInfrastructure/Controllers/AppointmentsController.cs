@@ -9,6 +9,8 @@ using HospitalDomain.Model;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Authorization;
 using LibraryWebApplication.Controllers;
+using Microsoft.AspNetCore.Identity;
+using HospitalDomain.Migrations.Identity;
 
 namespace HospitalMVC.HospitalInfrastructure.Controllers
 {
@@ -16,47 +18,52 @@ namespace HospitalMVC.HospitalInfrastructure.Controllers
     {
         private readonly HospitalContext _hospitalContext;
         private readonly IdentityContext _identityContext;
+        private readonly UserManager<User> _userManager;
+        private readonly SignInManager<User> _signInManager;
 
-        public AppointmentsController(HospitalContext context, IdentityContext identityContext)
+        public AppointmentsController(
+            HospitalContext context,
+            IdentityContext identityContext,
+            UserManager<User> userManager,
+            SignInManager<User> signInManager)
         {
             _hospitalContext = context;
             _identityContext = identityContext;
+            _userManager = userManager;
+            _signInManager = signInManager;
         }
 
         // GET: Appointments
         public async Task<IActionResult> Index()
         {
-            try
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
             {
-                AccountController accountController = AccountController.GetInstance();
-
-                User user = await accountController.GetAuthorizedUser();
-                if (await accountController.IsUserInRole(user, "admin")) {
-                    var hospitalContext = _hospitalContext.Appointments
-                        .Include(a => a.PatientNavigation)
-                        .Include(a => a.DoctorNavigation)
-                        .Include(a => a.RoomNavigation);
-                        return View(await hospitalContext.ToListAsync());
-                } else
-                {
-                    string email = user.Email;
-
-                    var patient = await _hospitalContext.Patients
-                        .FirstOrDefaultAsync(p => p.Email == email);
-
-                    var hospitalContext = _hospitalContext.Appointments
-                        .Include(a => a.PatientNavigation)
-                        .Include(a => a.DoctorNavigation)
-                        .Include(a => a.RoomNavigation)
-                        .Where(a => a.PatientNavigation.Email == email);  
-
-                    return View(await hospitalContext.ToListAsync());
-
-                }
+                return RedirectToAction("Login", "Account");
             }
-            catch
+
+            if (await _userManager.IsInRoleAsync(user, "admin"))
             {
-                return default;
+                var hospitalContext = _hospitalContext.Appointments
+                    .Include(a => a.PatientNavigation)
+                    .Include(a => a.DoctorNavigation)
+                    .Include(a => a.RoomNavigation);
+                return View(await hospitalContext.ToListAsync());
+            }
+            else 
+            {
+                string email = user.Email;
+
+                var patient = await _hospitalContext.Patients
+                    .FirstOrDefaultAsync(p => p.Email == email);
+
+                var hospitalContext = _hospitalContext.Appointments
+                    .Include(a => a.PatientNavigation)
+                    .Include(a => a.DoctorNavigation)
+                    .Include(a => a.RoomNavigation)
+                    .Where(a => a.PatientNavigation.Email == email);
+
+                return View(await hospitalContext.ToListAsync());
             }
         }
 
@@ -82,39 +89,71 @@ namespace HospitalMVC.HospitalInfrastructure.Controllers
         }
 
         // GET: Appointments/Create
-        public IActionResult Create()
+        public async Task<IActionResult> Create()
         {
-            // You don't need to create a new Appointment instance here
-            // Instead, you just want to pass an empty Appointment model if needed
             var appointment = new Appointment();  // Still passing an empty Appointment model if needed
+            
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
 
-            // Filter available doctors (those who are not booked for the selected date and time, for the full 1-hour appointment)
-            var availableDoctors = _hospitalContext.Doctors
-                .Where(d => !_hospitalContext.Appointments
-                    .Any(a => a.Doctor == d.Id && a.Date == appointment.Date &&
-                              a.Time < appointment.Time.AddHours(1) && a.Time.AddHours(1) > appointment.Time))
-                .ToList();
+            if (await _userManager.IsInRoleAsync(user, "admin"))
+            {
+                var availableDoctors = _hospitalContext.Doctors
+                    .Where(d => !_hospitalContext.Appointments
+                        .Any(a => a.Doctor == d.Id && a.Date == appointment.Date &&
+                                  a.Time < appointment.Time.AddHours(1) && a.Time.AddHours(1) > appointment.Time))
+                    .ToList();
 
-            ViewData["Doctor"] = new SelectList(availableDoctors, "Id", "Name");
+                ViewData["Doctor"] = new SelectList(availableDoctors.Select(p => new { p.Id, Name = p.Name + " (" + _hospitalContext.Departments.First(dep => dep.Id == p.Department).Name + ")" }), "Id", "Name");
 
-            // Filter available rooms (those which are not booked for the selected date and time, for the full 1-hour appointment)
-            var availableRooms = _hospitalContext.Rooms
-                .Where(r => !_hospitalContext.Appointments
-                    .Any(a => a.Room == r.Id && a.Date == appointment.Date &&
-                              a.Time < appointment.Time.AddHours(1) && a.Time.AddHours(1) > appointment.Time))
-                .ToList();
+                var availableRooms = _hospitalContext.Rooms
+                    .Where(r => !_hospitalContext.Appointments
+                        .Any(a => a.Room == r.Id && a.Date == appointment.Date &&
+                                  a.Time < appointment.Time.AddHours(1) && a.Time.AddHours(1) > appointment.Time))
+                    .ToList();
 
-            ViewData["Room"] = new SelectList(availableRooms, "Id", "Type");
+                ViewData["Room"] = new SelectList(availableRooms, "Id", "Type");
 
-            // Filter patients (no changes to this part)
-            ViewData["Patient"] = new SelectList(
-                _hospitalContext.Patients.Select(p => new { p.Id, Name = p.Name + " (" + p.Contacts + ")" }),
-                "Id", "Name");
+                ViewData["Patient"] = new SelectList(
+                    _hospitalContext.Patients.Select(p => new { p.Id, Name = p.Name + " (" + p.Contacts + ")" }),
+                    "Id", "Name");
 
-            return View(appointment);  // Pass the empty appointment model to the view
+
+                return View(appointment);
+            }
+            else
+            {
+                var availableDoctors = await _hospitalContext.Doctors
+                    .Where(d => !_hospitalContext.Appointments
+                        .Any(a => a.Doctor == d.Id && a.Date == appointment.Date &&
+                                  a.Time < appointment.Time.AddHours(1) && a.Time.AddHours(1) > appointment.Time))
+                    .Select(d => new
+                    {
+                        d.Id,
+                        Name = d.Name + " (" + _hospitalContext.Departments
+                                    .Where(dep => dep.Id == d.Department)
+                                    .Select(dep => dep.Name)
+                                    .FirstOrDefault() + ")"
+                    })
+                    .ToListAsync();
+
+                ViewData["Doctor"] = new SelectList(availableDoctors, "Id", "Name");
+
+                var availableRooms = await _hospitalContext.Rooms
+                    .Where(r => !_hospitalContext.Appointments
+                        .Any(a => a.Room == r.Id && a.Date == appointment.Date &&
+                                  a.Time < appointment.Time.AddHours(1) && a.Time.AddHours(1) > appointment.Time))
+                    .ToListAsync();
+
+                ViewData["Room"] = new SelectList(availableRooms, "Id", "Type");
+
+                return View(appointment);
+
+            }
         }
-
-
 
 
         // POST: Appointments/Create
@@ -153,9 +192,31 @@ namespace HospitalMVC.HospitalInfrastructure.Controllers
 
                 return View(appointment); // Return the view with error and keep the selected data
             }
+            var indexes = _hospitalContext.Appointments.Select(a => a.Id).OrderBy(id => id).ToList();
+            appointment.Id = Utils.Util.GetId(indexes);
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+            string email = user.Email;
+
+            if (!User.IsInRole("admin"))
+            {
+                var patient = await _hospitalContext.Patients
+                    .FirstOrDefaultAsync(p => p.Email == email);
+
+                if (patient == null)
+                {
+                    ModelState.AddModelError("", "Patient not found.");
+                    return View(appointment); // Handle the case where the patient is not found
+                }
+
+                appointment.Patient = patient.Id;
+            }
 
             // If doctor and room are available, proceed with appointment creation
-            _hospitalContext.Add(appointment);
+            _hospitalContext.Appointments.Add(appointment);
             await _hospitalContext.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }

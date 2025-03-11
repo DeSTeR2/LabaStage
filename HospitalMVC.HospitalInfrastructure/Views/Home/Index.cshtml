@@ -1,139 +1,142 @@
 ﻿@{
-    ViewData["Title"] = "Hospital Database";
+	ViewData["Title"] = "Hospital Database";
 }
 
 <style>
-    .container {
-        max-width: 1200px;
-        margin: 20px auto;
-        padding: 0 20px;
-    }
+	.container {
+		max-width: 1200px;
+		margin: 20px auto;
+		padding: 0 20px;
+	}
 
-    .page-title {
-        font-size: 2.5rem;
-        font-weight: bold;
-        color: #0077cc;
-        text-align: center;
-        margin-bottom: 30px;
-    }
+	.page-title {
+		font-size: 2.5rem;
+		font-weight: bold;
+		color: #0077cc;
+		text-align: center;
+		margin-bottom: 30px;
+	}
 
-    .description-text {
-        font-size: 1.1rem;
-        color: #555;
-        text-align: center;
-        margin-bottom: 40px;
-    }
+	.description-text {
+		font-size: 1.1rem;
+		color: #555;
+		text-align: center;
+		margin-bottom: 40px;
+	}
 
-    .options-list {
-        display: flex;
-        flex-wrap: wrap;
-        justify-content: center;
-        gap: 20px;
-    }
+	.options-list {
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: center;
+		gap: 20px;
+	}
 
-    .card {
-        width: 280px;
-        border: 1px solid #ddd;
-        border-radius: 8px;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        transition: transform 0.3s ease;
-    }
+	.card {
+		width: 280px;
+		border: 1px solid #ddd;
+		border-radius: 8px;
+		box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+		transition: transform 0.3s ease;
+	}
 
-        .card:hover {
-            transform: translateY(-5px);
-        }
+		.card:hover {
+			transform: translateY(-5px);
+		}
 
-    .card-body {
-        padding: 20px;
-    }
+	.card-body {
+		padding: 20px;
+	}
 
-    .card-title {
-        font-size: 1.5rem;
-        font-weight: 600;
-        color: #333;
-        margin-bottom: 10px;
-    }
+	.card-title {
+		font-size: 1.5rem;
+		font-weight: 600;
+		color: #333;
+		margin-bottom: 10px;
+	}
 
-    .card-text {
-        font-size: 1rem;
-        color: #666;
-        margin-bottom: 20px;
-    }
+	.card-text {
+		font-size: 1rem;
+		color: #666;
+		margin-bottom: 20px;
+	}
 
-    .btn-link {
-        color: #0077cc;
-        text-decoration: none;
-        font-weight: 600;
-        transition: color 0.3s ease;
-    }
+	.btn-link {
+		color: #0077cc;
+		text-decoration: none;
+		font-weight: 600;
+		transition: color 0.3s ease;
+	}
 
-        .btn-link:hover {
-            color: #0056b3;
-        }
+		.btn-link:hover {
+			color: #0056b3;
+		}
 
-    .btn-primary {
-        background-color: #258cfb;
-        color: white;
-        padding: 10px 15px;
-        border: none;
-        border-radius: 5px;
-        text-decoration: none;
-        transition: background-color 0.3s ease;
-    }
+	.btn-primary {
+		background-color: #258cfb;
+		color: white;
+		padding: 10px 15px;
+		border: none;
+		border-radius: 5px;
+		text-decoration: none;
+		transition: background-color 0.3s ease;
+	}
 
-        .btn-primary:hover {
-            background-color: #1e70c9;
-        }
+		.btn-primary:hover {
+			background-color: #1e70c9;
+		}
 
-    .room-card .btn-primary {
-        background-color: #1b6ec2;
-    }
+	.room-card .btn-primary {
+		background-color: #1b6ec2;
+	}
 
-        .room-card .btn-primary:hover {
-            background-color: #1861ac;
-        }
+		.room-card .btn-primary:hover {
+			background-color: #1861ac;
+		}
 </style>
 
 <div class="container">
-    <div class="options-list">
-        <div class="card">
-            <div class="card-body">
-                <h5 class="card-title">Departments</h5>
-                <p class="card-text">View the list of departments in the hospital.</p>
-                @Html.ActionLink("View Departments", "Index", "Departments", new { @class = "btn btn-link" })
-            </div>
-        </div>
+	<div class="options-list">
+		<div class="card">
+			<div class="card-body">
+				<h5 class="card-title">Departments</h5>
+				<p class="card-text">View the list of departments in the hospital.</p>
+				@Html.ActionLink("View Departments", "Index", "Departments", new { @class = "btn btn-link" })
+			</div>
+		</div>
 
-        <div class="card">
-            <div class="card-body">
-                <h5 class="card-title">Doctors</h5>
-                <p class="card-text">View the list of doctors working in the hospital.</p>
-                @Html.ActionLink("View Doctors", "Index", "Doctors", new { @class = "btn btn-link" })
-            </div>
-        </div>
+		<div class="card">
+			<div class="card-body">
+				<h5 class="card-title">Doctors</h5>
+				<p class="card-text">View the list of doctors working in the hospital.</p>
+				@Html.ActionLink("View Doctors", "Index", "Doctors", new { @class = "btn btn-link" })
+			</div>
+		</div>
 
-        <div class="card">
-            <div class="card-body">
-                <h5 class="card-title">Patients</h5>
-                <p class="card-text">View the list of patients currently admitted to the hospital.</p>
-                @Html.ActionLink("View Patients", "Index", "Patients", new { @class = "btn btn-link" })
-            </div>
-        </div>
+		@if (User.IsInRole("admin"))
+		{
+			<div class="card">
+				<div class="card-body">
+					<h5 class="card-title">Patients</h5>
+					<p class="card-text">View the list of patients currently admitted to the hospital.</p>
+					@Html.ActionLink("View Patients", "Index", "Patients", new { @class = "btn btn-link" })
+				</div>
+			</div>
+		}
 
-        <div class="card">
-            <div class="card-body">
-                <h5 class="card-title">Appointments</h5>
-                <p class="card-text">View all upcoming and past appointments in the hospital.</p>
-                @Html.ActionLink("View Appointments", "Index", "Appointments", new { @class = "btn btn-link" })
-            </div>
-        </div>
+		<div class="card">
+			<div class="card-body">
+				<h5 class="card-title">Appointments</h5>
+				<p class="card-text">View all upcoming and past appointments in the hospital.</p>
+				@Html.ActionLink("View Appointments", "Index", "Appointments", new { @class = "btn btn-link" })
+			</div>
+		</div>
 
-        <div class="card room-card">
-            <div class="card-body">
-                <h5 class="card-title">Rooms</h5>
-                <p class="card-text">View the list of rooms in the hospital.</p>
-                @Html.ActionLink("View Rooms", "Index", "Rooms", new { @class = "btn btn-primary" })
-            </div>
-        </div>
-    </div>
+		<div class="card room-card">
+			<div class="card-body">
+				<h5 class="card-title">Rooms</h5>
+				<p class="card-text">View the list of rooms in the hospital.</p>
+				@Html.ActionLink("View Rooms", "Index", "Rooms", new { @class = "btn btn-primary" })
+			</div>
+		</div>
+	</div>
 </div>

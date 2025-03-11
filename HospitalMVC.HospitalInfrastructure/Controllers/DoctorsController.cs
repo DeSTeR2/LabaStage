@@ -60,6 +60,34 @@ namespace HospitalMVC.HospitalInfrastructure.Controllers
             return View(doctor);
         }
 
+/*        [HttpPost("Doctors/Edit/{id}")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Speciality,Contact,Department")] Doctor doctor)
+        {
+            if (id != doctor.Id)
+                return NotFound();
+
+            if (!ModelState.IsValid)
+            {
+                ViewData["Department"] = new SelectList(_context.Departments, "Id", "Name", doctor.Department);
+                return View(doctor);
+            }
+
+            try
+            {
+                _context.Doctors.Update(doctor);
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!_context.Doctors.Any(d => d.Id == id))
+                    return NotFound();
+                throw;
+            }
+
+            return RedirectToAction(nameof(Index));
+        }*/
+
         // POST: Departments/UpdateDoctorsDepartment
         [HttpPost]
         [ValidateAntiForgeryToken]

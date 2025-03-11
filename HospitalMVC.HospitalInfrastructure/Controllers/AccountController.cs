@@ -278,10 +278,24 @@ namespace LibraryWebApplication.Controllers
                 return RedirectToAction("Index", "Home");
             }
 
-            //Patient patient = user.PatientNavigation;
-            //_hospitalContext.Appointments.RemoveRange(patient.Appointments);
-            //_hospitalContext.Patients.Remove(patient);
+            var account = await _userManager.GetUserAsync(User);
+
+            Patient patient = _hospitalContext.Patients.First(p => p.Email == account.Email);
+
+            var appointments = _hospitalContext.Appointments
+                .Where(a => a.Patient == patient.Id)
+                .ToList();
+
+            if ((appointments == null || appointments.Count == 0) == false)
+            {
+                _hospitalContext.Appointments.RemoveRange(appointments);
+            }
+            _hospitalContext.Patients.Remove(patient);
             _identityContext.Users.Remove(user);
+
+            await _hospitalContext.SaveChangesAsync();
+            await _identityContext.SaveChangesAsync();
+            await _signInManager.SignOutAsync();
 
             return RedirectToAction("Index", "Home");
         }

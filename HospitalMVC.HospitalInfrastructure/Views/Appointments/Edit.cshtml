@@ -36,12 +36,14 @@
                 <select asp-for="Doctor" class="form-control" asp-items="ViewBag.Doctor"></select>
                 <span asp-validation-for="Doctor" class="text-danger"></span>
             </div>
-
-            <div class="form-group">
-                <label asp-for="Patient" class="control-label">Patient</label>
+            @if (User.IsInRole("admin"))
+            {
+                <div class="form-group">
+                    <label asp-for="Patient" class="control-label">Patient</label>
                 <select asp-for="Patient" class="form-control" asp-items="ViewBag.Patient"></select>
                 <span asp-validation-for="Patient" class="text-danger"></span>
             </div>
+            }
             <div class="form-group">
                 <label asp-for="Room" class="control-label">Room</label>
                 <select asp-for="Room" class="form-control" asp-items="ViewBag.Room"></select>
