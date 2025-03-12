@@ -1,142 +1,176 @@
 ﻿@{
-	ViewData["Title"] = "Hospital Database";
+    ViewData["Title"] = "Hospital";
 }
-
 <style>
-	.container {
-		max-width: 1200px;
-		margin: 20px auto;
-		padding: 0 20px;
-	}
+    body {
+        font-family: Arial, sans-serif;
+        background-color: #f4f8fb;
+        margin: 0;
+        padding: 0;
+    }
 
-	.page-title {
-		font-size: 2.5rem;
-		font-weight: bold;
-		color: #0077cc;
-		text-align: center;
-		margin-bottom: 30px;
-	}
+    .container {
+        max-width: 1200px;
+        margin: 20px auto;
+        padding: 0 20px;
+    }
 
-	.description-text {
-		font-size: 1.1rem;
-		color: #555;
-		text-align: center;
-		margin-bottom: 40px;
-	}
+    .page-title {
+        font-size: 2.8rem;
+        font-weight: bold;
+        color: #0077cc;
+        text-align: center;
+        margin-bottom: 30px;
+    }
 
-	.options-list {
-		display: flex;
-		flex-wrap: wrap;
-		justify-content: center;
-		gap: 20px;
-	}
+    .description-text {
+        font-size: 1.2rem;
+        color: #555;
+        text-align: center;
+        margin-bottom: 50px;
+    }
 
-	.card {
-		width: 280px;
-		border: 1px solid #ddd;
-		border-radius: 8px;
-		box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-		transition: transform 0.3s ease;
-	}
+    .content-section {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 30px;
+        background: #fff;
+        padding: 30px;
+        border-radius: 10px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    }
 
-		.card:hover {
-			transform: translateY(-5px);
-		}
+    .content-image {
+        flex: 2; /* Takes up more space */
+        text-align: center;
+    }
 
-	.card-body {
-		padding: 20px;
-	}
+        .content-image img {
+            width: 100%;
+            max-width: 450px;
+            height: auto;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
 
-	.card-title {
-		font-size: 1.5rem;
-		font-weight: 600;
-		color: #333;
-		margin-bottom: 10px;
-	}
+    .content-text {
+        flex: 3; /* Takes up more space */
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start; /* Start the content at the top */
+        height: 100%; /* Allow content to take up full space */
+        position: relative;
+    }
 
-	.card-text {
-		font-size: 1rem;
-		color: #666;
-		margin-bottom: 20px;
-	}
+    .text-content {
+        font-size: 1.2rem;
+        color: #444;
+        text-align: justify;
+        line-height: 1.6;
+        margin-bottom: 20px; /* Adds space between content and button */
+    }
 
-	.btn-link {
-		color: #0077cc;
-		text-decoration: none;
-		font-weight: 600;
-		transition: color 0.3s ease;
-	}
+    .button-spacer {
+        flex-grow: 1; /* Pushes the button to the bottom */
+    }
 
-		.btn-link:hover {
-			color: #0056b3;
-		}
+    .btn-hospital {
+        font-size: 1rem; /* Smaller font size */
+        font-weight: 600;
+        border-radius: 8px;
+        transition: background-color 0.3s ease, transform 0.2s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        text-decoration: none;
+        color: white;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        padding: 10px 20px; /* Consistent padding */
+    }
 
-	.btn-primary {
-		background-color: #258cfb;
-		color: white;
-		padding: 10px 15px;
-		border: none;
-		border-radius: 5px;
-		text-decoration: none;
-		transition: background-color 0.3s ease;
-	}
+        .btn-hospital i {
+            font-size: 1.4rem;
+        }
 
-		.btn-primary:hover {
-			background-color: #1e70c9;
-		}
+    .btn-primary {
+        background-color: #0077cc;
+    }
 
-	.room-card .btn-primary {
-		background-color: #1b6ec2;
-	}
+    .btn-success {
+        background-color: #28a745;
+    }
 
-		.room-card .btn-primary:hover {
-			background-color: #1861ac;
-		}
+    .btn-info {
+        background-color: #17a2b8;
+    }
+
+    .btn-warning {
+        background-color: #ffc107;
+    }
+
+    .btn-secondary {
+        background-color: #6c757d;
+    }
+
+    .btn-danger {
+        background-color: #dc3545;
+    }
+
+    .btn-hospital:hover {
+        transform: scale(1.05);
+        filter: brightness(1.1);
+    }
+
+    /* Updated options-list to align right */
+    .options-container {
+        position: absolute; /* Position the container absolutely */
+        right: 20px; /* Align to the right with some margin */
+        top: 50%; /* Vertically center */
+        transform: translateY(-50%); /* Adjust to be exactly centered */
+    }
+
+    .options-list {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+        align-items: flex-start;
+    }
+
 </style>
 
+
+
 <div class="container">
-	<div class="options-list">
-		<div class="card">
-			<div class="card-body">
-				<h5 class="card-title">Departments</h5>
-				<p class="card-text">View the list of departments in the hospital.</p>
-				@Html.ActionLink("View Departments", "Index", "Departments", new { @class = "btn btn-link" })
-			</div>
-		</div>
+    <div class="text-center">
+        <h1 class="page-title">Welcome to Mini Hospital</h1>
+        <p class="description-text">Caring for your health with expertise and compassion.</p>
+    </div>
 
-		<div class="card">
-			<div class="card-body">
-				<h5 class="card-title">Doctors</h5>
-				<p class="card-text">View the list of doctors working in the hospital.</p>
-				@Html.ActionLink("View Doctors", "Index", "Doctors", new { @class = "btn btn-link" })
-			</div>
-		</div>
+    <div class="content-section">
+        <div class="content-image">
+            <img src="~/css/images/hospital.png" alt="Hospital Image">
+        </div>
+        <div class="content-text">
+            <div class="text-content">
+                Mini Hospital is dedicated to providing high-quality medical care to all our patients.
+                Our team of experienced doctors, nurses, and healthcare professionals ensures
+                that every patient receives the best treatment possible. Whether you need an appointment,
+                specialist consultation, or emergency care, we are here for you 24/7.
+            </div>
+            <div class="options-list">
+                <a class="btn btn-primary btn-hospital">
+                    <i class="fas fa-calendar-check"></i> Make an Appointment
+                </a>
+                <a class="btn btn-success btn-hospital">
+                    <i class="fas fa-user-md"></i> See All Doctors
+                </a>
+                <a class="btn btn-info btn-hospital">
+                    <i class="fas fa-file-medical"></i> View Patient Records
+                </a>
+            </div>
+        </div>
+    </div>
 
-		@if (User.IsInRole("admin"))
-		{
-			<div class="card">
-				<div class="card-body">
-					<h5 class="card-title">Patients</h5>
-					<p class="card-text">View the list of patients currently admitted to the hospital.</p>
-					@Html.ActionLink("View Patients", "Index", "Patients", new { @class = "btn btn-link" })
-				</div>
-			</div>
-		}
-
-		<div class="card">
-			<div class="card-body">
-				<h5 class="card-title">Appointments</h5>
-				<p class="card-text">View all upcoming and past appointments in the hospital.</p>
-				@Html.ActionLink("View Appointments", "Index", "Appointments", new { @class = "btn btn-link" })
-			</div>
-		</div>
-
-		<div class="card room-card">
-			<div class="card-body">
-				<h5 class="card-title">Rooms</h5>
-				<p class="card-text">View the list of rooms in the hospital.</p>
-				@Html.ActionLink("View Rooms", "Index", "Rooms", new { @class = "btn btn-primary" })
-			</div>
-		</div>
-	</div>
 </div>

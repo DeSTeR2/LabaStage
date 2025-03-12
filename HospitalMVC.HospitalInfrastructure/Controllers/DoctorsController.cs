@@ -139,6 +139,9 @@ namespace HospitalMVC.HospitalInfrastructure.Controllers
         {
             Console.WriteLine($"Edit Called - ID: {id}, Name: {doctor.Name}, Speciality: {doctor.Speciality}");
 
+            ModelState.Remove("DepartmentNavigation");
+            TryValidateModel(ModelState);
+
             if (id != doctor.Id)
             {
                 Console.WriteLine("Error: Doctor ID mismatch!");
