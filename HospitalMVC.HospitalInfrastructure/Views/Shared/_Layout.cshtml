@@ -1,4 +1,5 @@
 ﻿@using Microsoft.AspNetCore.Identity
+@using Utils
 @inject SignInManager<HospitalMVC.User> SignInManager
 @inject UserManager<HospitalMVC.User> UserManager
 
@@ -13,279 +14,279 @@
     <style>
         /* General Styles */
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            margin: 0;
-            padding: 0;
-            color: #333;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        margin: 0;
+        padding: 0;
+        color: #333;
         }
 
         .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 20px;
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 20px;
         }
 
         /* Header Styles */
         header {
-            width: 100%;
-            background-color: #fff;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        width: 100%;
+        background-color: #fff;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
 
         .header-top {
-            background-color: #f0f0f0;
+        background-color: #f0f0f0;
         }
 
-            .header-top .navbar-content {
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                width: fit-content; /* Adjust width to content */
-                margin: 0 auto; /* Center the element */
-            }
+        .header-top .navbar-content {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: fit-content; /* Adjust width to content */
+        margin: 0 auto; /* Center the element */
+        }
 
-            .header-top .navbar-nav {
-                display: flex;
-                list-style: none;
-                padding: 0 5px;
-                margin: 0;
-            }
+        .header-top .navbar-nav {
+        display: flex;
+        list-style: none;
+        padding: 0 5px;
+        margin: 0;
+        }
 
-            .header-top .nav-link {
-                padding: 3px 8px;
-                text-decoration: none;
-                color: #333;
-            }
+        .header-top .nav-link {
+        padding: 3px 8px;
+        text-decoration: none;
+        color: #333;
+        }
 
-                .header-top .nav-link:hover {
-                    color: #258cfb;
-                }
+        .header-top .nav-link:hover {
+        color: #258cfb;
+        }
 
-            .header-top .header {
-                display: inline-grid;
-            }
+        .header-top .header {
+        display: inline-grid;
+        }
 
         .header-bottom {
-            background-color: #fff;
-            margin: 10px 0;
+        background-color: #fff;
+        margin: 10px 0;
         }
 
-            .header-bottom .header-bottom-content {
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                flex-wrap: wrap;
-                width: fit-content; /* Adjust width to content */
-                margin: 0 auto; /* Center the element */
-            }
+        .header-bottom .header-bottom-content {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-wrap: wrap;
+        width: fit-content; /* Adjust width to content */
+        margin: 0 auto; /* Center the element */
+        }
 
-            .header-bottom .navbar-brand {
-                display: flex;
-                align-items: center;
-                font-weight: bold;
-                color: #1b6ec2;
-                text-decoration: none;
-                margin: 0 5px;
-            }
+        .header-bottom .navbar-brand {
+        display: flex;
+        align-items: center;
+        font-weight: bold;
+        color: #1b6ec2;
+        text-decoration: none;
+        margin: 0 5px;
+        }
 
-                .header-bottom .navbar-brand img.logo {
-                    height: 25px;
-                    margin-right: 3px;
-                }
+        .header-bottom .navbar-brand img.logo {
+        height: 25px;
+        margin-right: 3px;
+        }
 
-            .header-bottom .contact-info {
-                display: flex;
-                gap: 5px;
-                align-items: center;
-                margin: 0 5px;
-            }
+        .header-bottom .contact-info {
+        display: flex;
+        gap: 5px;
+        align-items: center;
+        margin: 0 5px;
+        }
 
-            .header-bottom .contact-item {
-                display: flex;
-                align-items: center;
-                gap: 3px;
-                font-size: 0.7rem;
-                color: #555;
-            }
+        .header-bottom .contact-item {
+        display: flex;
+        align-items: center;
+        gap: 3px;
+        font-size: 0.7rem;
+        color: #555;
+        }
 
-                .header-bottom .contact-item i {
-                    color: #258cfb;
-                    font-size: 0.9rem;
-                }
+        .header-bottom .contact-item i {
+        color: #258cfb;
+        font-size: 0.9rem;
+        }
 
         /* Main Content Styles */
         main {
-            padding: 15px;
-            margin-top: 15px;
+        padding: 15px;
+        margin-top: 15px;
         }
 
         /* Footer Styles */
         footer {
-            position: absolute;
-            bottom: 0;
-            width: 100%;
-            text-align: center;
-            padding: 5px 0;
-            background-color: #f0f0f0;
-            border-top: 1px solid #ddd;
-            font-size: 0.7rem;
+        position: absolute;
+        bottom: 0;
+        width: 100%;
+        text-align: center;
+        padding: 5px 0;
+        background-color: #f0f0f0;
+        border-top: 1px solid #ddd;
+        font-size: 0.7rem;
         }
 
         .header .btn.btn-primary {
-            display: inline-flex;
-            align-items: center;
-            gap: 5px; /* Adjust gap as needed */
-            padding: 8px 15px; /* Adjust padding as needed */
-            background-color: #258cfb;
-            border: none;
-            border-radius: 5px;
-            color: white; /* Or your preferred text color */
-            font-size: 0.9rem; /* Or your preferred font size */
-            cursor: pointer;
-            transition: background-color 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px; /* Adjust gap as needed */
+        padding: 8px 15px; /* Adjust padding as needed */
+        background-color: #258cfb;
+        border: none;
+        border-radius: 5px;
+        color: white; /* Or your preferred text color */
+        font-size: 0.9rem; /* Or your preferred font size */
+        cursor: pointer;
+        transition: background-color 0.3s ease;
         }
 
-            .header .btn.btn-primary:hover {
-                background-color: #1e70c9;
-            }
-
-            .header .btn.btn-primary img.user-image {
-                height: 20px; /* Adjust image size as needed */
-                width: 20px; /* Adjust image size as needed */
-            }
-
-        .combined-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            background-color: #fff;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            padding: 15px 10px;
-            gap: 10px;
+        .header .btn.btn-primary:hover {
+        background-color: #1e70c9;
         }
 
-        .left-section {
-            display: flex;
-            flex-direction: column;
-            align-items: flex-start; /* Align items to the start of the column */
-        }
-
-        .right-section {
-            display: flex;
-            align-items: center;
+        .header .btn.btn-primary img.user-image {
+        height: 20px; /* Adjust image size as needed */
+        width: 20px; /* Adjust image size as needed */
         }
 
         .combined-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            background-color: #fff;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            padding: 5px 10px;
-            gap: 10px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        background-color: #fff;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        padding: 15px 10px;
+        gap: 10px;
         }
 
         .left-section {
-            display: flex;
-            flex-direction: column;
-            align-items: flex-start;
-            width: 30%; /* Adjust width as needed */
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start; /* Align items to the start of the column */
         }
 
         .right-section {
-            display: flex;
-            align-items: center;
-            width: 70%; /* Adjust width as needed */
-            justify-content: flex-end; /* Align buttons to the right */
+        display: flex;
+        align-items: center;
+        }
+
+        .combined-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        background-color: #fff;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        padding: 5px 10px;
+        gap: 10px;
+        }
+
+        .left-section {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        width: 30%; /* Adjust width as needed */
+        }
+
+        .right-section {
+        display: flex;
+        align-items: center;
+        width: 70%; /* Adjust width as needed */
+        justify-content: flex-end; /* Align buttons to the right */
         }
 
         .combined-header .header-bottom-content {
-            display: flex;
-            align-items: center;
-            gap: 10px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
         }
 
         .combined-header .navbar-nav {
-            display: ruby-text;
-            list-style: none;
-            margin: 0;
-            padding: 0;
+        display: ruby-text;
+        list-style: none;
+        margin: 0;
+        padding: 0;
         }
 
-            .combined-header .navbar-nav .nav-item {
-                margin: 0 5px;
-            }
+        .combined-header .navbar-nav .nav-item {
+        margin: 0 5px;
+        }
 
-            .combined-header .navbar-nav .nav-link {
-                text-decoration: none;
-                color: #333;
-                padding: 5px 10px;
-            }
+        .combined-header .navbar-nav .nav-link {
+        text-decoration: none;
+        color: #333;
+        padding: 5px 10px;
+        }
 
         .combined-header .login-button {
-            margin-top: 10px;
+        margin-top: 10px;
         }
 
-            .combined-header .login-button .btn.btn-primary {
-                display: inline-flex;
-                align-items: center;
-                gap: 5px;
-                padding: 8px 15px;
-                background-color: #258cfb;
-                border: none;
-                border-radius: 5px;
-                color: white;
-                font-size: 0.9rem;
-                cursor: pointer;
-                transition: background-color 0.3s ease;
-            }
+        .combined-header .login-button .btn.btn-primary {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 8px 15px;
+        background-color: #258cfb;
+        border: none;
+        border-radius: 5px;
+        color: white;
+        font-size: 0.9rem;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+        }
 
-                .combined-header .login-button .btn.btn-primary:hover {
-                    background-color: #1e70c9;
-                }
+        .combined-header .login-button .btn.btn-primary:hover {
+        background-color: #1e70c9;
+        }
 
-                .combined-header .login-button .btn.btn-primary img.user-image {
-                    height: 20px;
-                    width: 20px;
-                }
+        .combined-header .login-button .btn.btn-primary img.user-image {
+        height: 20px;
+        width: 20px;
+        }
 
         .combined-header .contact-info {
-            display: flex;
-            gap: 10px;
-            align-items: center;
+        display: flex;
+        gap: 10px;
+        align-items: center;
         }
 
         .combined-header .contact-item {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            font-size: 0.8rem;
-            color: #555;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        font-size: 0.8rem;
+        color: #555;
         }
 
-            .combined-header .contact-item i {
-                color: #258cfb;
-                font-size: 1rem;
-            }
+        .combined-header .contact-item i {
+        color: #258cfb;
+        font-size: 1rem;
+        }
 
         .combined-header .navbar-brand {
-            display: flex;
-            align-items: center;
-            font-weight: bold;
-            color: #1b6ec2;
-            text-decoration: none;
+        display: flex;
+        align-items: center;
+        font-weight: bold;
+        color: #1b6ec2;
+        text-decoration: none;
         }
 
-            .combined-header .navbar-brand img.logo {
-                height: 30px;
-                margin-right: 5px;
-            }
+        .combined-header .navbar-brand img.logo {
+        height: 30px;
+        margin-right: 5px;
+        }
 
         .header-left {
-            display: flex;
-            padding-bottom: 15px;
+        display: flex;
+        padding-bottom: 15px;
         }
 
     </style>
@@ -322,7 +323,7 @@
                     <li class="nav-item">
                         <a class="nav-link" href="@Url.Action("Index", "Doctors")">Doctors</a>
                     </li>
-                    @if (User.IsInRole("admin"))
+                    @if (CheckRole.IsInRoles(User, new string[] { RoleList.Admin, RoleList.Manager }))
                     {
                         <li class="nav-item">
                             <a class="nav-link" href="@Url.Action("Index", "Patients")">Patients</a>
@@ -334,7 +335,7 @@
                     <li class="nav-item">
                         <a class="nav-link" href="@Url.Action("Index", "Rooms")">Rooms</a>
                     </li>
-                    @if (User.IsInRole("admin"))  // Replace "Admin" with the role you want to check
+                    @if (User.IsInRole(RoleList.Admin))
                     {
                         <li class="nav-item">
                             <a class="nav-link" href="@Url.Action("Index", "Roles")">User roles</a>
@@ -342,6 +343,10 @@
                         <li class="nav-item">
                             <a class="nav-link" href="@Url.Action("UserList", "Roles")">User list</a>
                         </li>
+                    }
+
+                    @if (CheckRole.IsInRoles(User, new string[] { RoleList.Admin, RoleList.Manager}))
+                    {
                         <li class="nav-item">
                             <a class="nav-link" href="@Url.Action("Statistics", "Home")">Statistics</a>
                         </li>
@@ -353,10 +358,19 @@
             @if (SignInManager.IsSignedIn(User))
             {
                 var currentUser = await UserManager.GetUserAsync(User);
-                <span>@currentUser.UserName</span>
-                <form method="post" asp-controller="Account" asp-action="AccountDisplay" style="display:inline;">
-                    <button type="submit" class="btn btn-primary">Accout</button>
-                </form>
+                if (currentUser != null)
+                {
+                    <span>@currentUser.UserName</span>
+                    <form method="post" asp-controller="Account" asp-action="AccountDisplay" style="display:inline;">
+                        <button type="submit" class="btn btn-primary">Accout</button>
+                    </form>
+                } else
+                {
+                    <a href="@Url.Action("Login", "Account")" class="btn btn-primary">
+                        <img src="~/css/images/user.png" alt="user image" class="user-image" />
+                        Login
+                    </a>
+                }
             }
             else
             {

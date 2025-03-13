@@ -14,7 +14,7 @@ namespace HospitalMVC
 
         public string? Address { get; set; }
 
-        public string? ProfilePictureUrl { get; set; }
+        public string? ProfilePictureUrl { get; set; } = null!;
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 

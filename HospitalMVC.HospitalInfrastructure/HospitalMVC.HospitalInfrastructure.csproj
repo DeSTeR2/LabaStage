@@ -33,4 +33,8 @@
     <ProjectReference Include="..\HospitalDomain\HospitalDomain.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="wwwroot\css\images\profiles\" />
+  </ItemGroup>
+
 </Project>

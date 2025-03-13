@@ -1,4 +1,5 @@
 ﻿@model IEnumerable<HospitalDomain.Model.Department>
+@using Utils
 
 @{
     ViewData["Title"] = "Departments";
@@ -12,7 +13,7 @@
         <tr>
             <th>@Html.DisplayNameFor(model => model.Name)</th>
             <th>@Html.DisplayNameFor(model => model.Location)</th>
-            @if (User.IsInRole("admin"))
+            @if (CheckRole.IsInRoles(User, new string[] { RoleList.Admin, RoleList.Manager }))
             {
                 <th>Actions</th>
             }
@@ -24,7 +25,7 @@
             <tr>
                 <td>@Html.DisplayFor(modelItem => item.Name)</td>
                 <td>@Html.DisplayFor(modelItem => item.Location)</td>
-                @if (User.IsInRole("admin"))
+                @if (CheckRole.IsInRoles(User, new string[] { RoleList.Admin, RoleList.Manager }))
                 {
                     <td class="action-links">
                         @Html.ActionLink("Edit", "Edit", new { id = item.Id }) |
@@ -36,7 +37,7 @@
         }
     </tbody>
 </table>
-@if (User.IsInRole("admin"))
+@if (CheckRole.IsInRoles(User, new string[] { RoleList.Admin, RoleList.Manager }))
 {
     <p>
         <a class="btn btn-primary" asp-action="Create">Create New Department</a>

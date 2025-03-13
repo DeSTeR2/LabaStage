@@ -1,4 +1,5 @@
 ﻿@model HospitalDomain.Model.Appointment
+@using Utils
 
 @{
     ViewData["Title"] = "Edit Appointment";
@@ -36,7 +37,7 @@
                 <select asp-for="Doctor" class="form-control" asp-items="ViewBag.Doctor"></select>
                 <span asp-validation-for="Doctor" class="text-danger"></span>
             </div>
-            @if (User.IsInRole("admin"))
+            @if (CheckRole.IsInRoles(User, new string[] { RoleList.Admin, RoleList.Manager }))
             {
                 <div class="form-group">
                     <label asp-for="Patient" class="control-label">Patient</label>

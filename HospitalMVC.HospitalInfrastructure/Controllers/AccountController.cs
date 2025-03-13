@@ -8,6 +8,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System.Security.Claims;
+using Microsoft.AspNetCore.Http.Extensions;
+using Microsoft.Identity.Client;
 
 namespace LibraryWebApplication.Controllers
 {
@@ -171,6 +173,8 @@ namespace LibraryWebApplication.Controllers
                 FullName = model.FullName,
                 Email = model.Email,
                 UserName = model.Email,
+                PhoneNumber = model.PhoneNumber,
+                DateOfBirth = model.DateOfBirth ?? DateTime.MinValue
             };
 
             List<int> ids = _hospitalContext.Patients.Select(a => a.Id).ToList();
@@ -184,15 +188,17 @@ namespace LibraryWebApplication.Controllers
                 Contacts = model.PhoneNumber,
                 Email = model.Email
             };
-            //user.PatientNavigation = patient;
             var result = await _userManager.CreateAsync(user, model.Passworld);
 
 
             if (result.Succeeded)
             {
                 _hospitalContext.Patients.Add(patient);
+                _identityContext.Users.Add(user);
 
+                await _userManager.AddToRoleAsync(user, "user");
                 await _hospitalContext.SaveChangesAsync();
+                await _identityContext.SaveChangesAsync();
                 await _signInManager.SignInAsync(user, isPersistent: false);
                 return RedirectToAction("Index", "Home");
             }
@@ -231,39 +237,87 @@ namespace LibraryWebApplication.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> UpdateProfile(AccountViewModel model)
+        public async Task<IActionResult> UpdateProfile(AccountViewModel model, IFormFile profilePicture)
         {
-            // Assuming the user's ID is stored as a claim in the Identity
             string userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
             if (userId == null)
             {
-                // Handle the case where user is not authenticated or ID is missing
                 return RedirectToAction("Login", "Account");
             }
 
             User user = await _identityContext.Users.FindAsync(userId);
-            if (user != null)
+            if (user == null)
             {
-                user.UpdateUser(model);
-                await _identityContext.SaveChangesAsync();
+                return NotFound(); // Handle case where user doesn't exist
             }
+
+            // Update scalar properties from the model
+            user.FullName = model.FullName;
+            user.Email = model.Email;
+            user.PhoneNumber = model.PhoneNumber;
+            user.DateOfBirth = model.DateOfBirth;
+            user.Address = model.Address;
+
+            // Handle profile picture upload if a file was provided
+            if (profilePicture != null && profilePicture.Length > 0)
+            {
+                var fileName = Guid.NewGuid().ToString() + Path.GetExtension(profilePicture.FileName);
+                var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/css/images/profiles", fileName);
+
+                // Save the file to the server
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    await profilePicture.CopyToAsync(stream);
+                }
+
+                // Update the ProfilePictureUrl with the new file name
+                user.ProfilePictureUrl = fileName;
+            }
+
+            // Save changes to the database
+            await _identityContext.SaveChangesAsync();
 
             return RedirectToAction("Index", "Home");
         }
 
         [HttpPost]
+        public async Task<IActionResult> RemovePhoto(AccountViewModel model)
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            if (!string.IsNullOrEmpty(user.ProfilePictureUrl))
+            {
+                var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/css/images/profiles", user.ProfilePictureUrl);
+                if (System.IO.File.Exists(filePath))
+                {
+                    System.IO.File.Delete(filePath);
+                }
+            }
+
+            user.ProfilePictureUrl = null;
+            await _identityContext.SaveChangesAsync();
+
+            return View(model);
+        }
+
+        [HttpPost]
         public async Task<IActionResult> ProcessButtonClicks(AccountViewModel model, string action)
         {
-            if (action == "save")
+/*            if (action == "save")
             {
                 return await UpdateProfile(model);
-            } 
+            } */
 
             if (action == "logout")
             {
                 return await Logout(model);
             }
+
 
             return RedirectToAction("Index", "Home");
         }

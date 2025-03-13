@@ -10,8 +10,8 @@ namespace HospitalDomain.Model
 
         [Required]
         [Display(Name = "Date of birth")]
-        [DataType(DataType.DateTime)]
-        public DateTime DateOfBirth;
+        [DataType(DataType.Date)]
+        public DateTime? DateOfBirth { get; set; }
 
         [Required]
         [Display(Name = "Phone number")]
@@ -30,7 +30,7 @@ namespace HospitalDomain.Model
         
         [Required]
         [Display(Name = "Confirm Passworld")]
-        [DataType(DataType.EmailAddress)]
+        [DataType(DataType.Password)]
         public string ConfirmationPassworld { get; set; } = null!; 
     }
 }

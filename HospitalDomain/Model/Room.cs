@@ -11,5 +11,5 @@ public partial class Room
 
     public int Capacity { get; set; }
     public virtual ICollection<Appointment> Appointments { get; set; } = new List<Appointment>();
-
+    public string AppointmentId;
 }

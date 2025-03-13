@@ -64,7 +64,7 @@ namespace HospitalDomain.Migrations
                 columns: table => new
                 {
                     id = table.Column<int>(type: "int", nullable: false),
-                    date = table.Column<DateOnly>(type: "date", nullable: false),
+                    date = table.Column<DateTime>(type: "date", nullable: false),
                     time = table.Column<TimeOnly>(type: "time", nullable: false),
                     reason = table.Column<string>(type: "varchar(max)", unicode: false, nullable: true),
                     doctor = table.Column<int>(type: "int", nullable: false),
@@ -99,8 +99,7 @@ namespace HospitalDomain.Migrations
                 {
                     id = table.Column<int>(type: "int", nullable: false),
                     type = table.Column<string>(type: "varchar(45)", unicode: false, maxLength: 45, nullable: false),
-                    capacity = table.Column<int>(type: "int", nullable: false),
-                    AppointmentId = table.Column<int>(type: "int", nullable: true)
+                    capacity = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -133,10 +132,6 @@ namespace HospitalDomain.Migrations
                 table: "doctor",
                 column: "Department");
 
-            migrationBuilder.CreateIndex(
-                name: "IX_room_AppointmentId",
-                table: "room",
-                column: "AppointmentId");
         }
 
         /// <inheritdoc />

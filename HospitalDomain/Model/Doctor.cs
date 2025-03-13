@@ -13,6 +13,7 @@ public partial class Doctor
     public string Speciality { get; set; } = null!;
 
     public string Contact { get; set; } = null!;
+    public string Email { get; set; } = null!;
 
     public int Department { get; set; }
 

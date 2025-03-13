@@ -1,0 +1,17 @@
+Admin
+admin@gmail.com Qwerty_1
+
+Manager 
+defens213@knu.ua Qwerty_1
+Name: Oleksandr Hrytsenko
+Phone: +380 67 245 7893
+
+Patient 
+defesn213@gmail.com Qwerty_1
+Name: Mykola Shevchenko
+Phone: +380 50 319 6547
+
+Doctor
+proger2131@gmail.com Qwerty_1
+Name: Viktoria Melnyk
+Phone: +380 93 482 1125

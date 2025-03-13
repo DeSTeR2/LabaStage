@@ -12,10 +12,23 @@ namespace HospitalMVC
             {
                 await roleManager.CreateAsync(new IdentityRole("admin"));
             }
+
             if (await roleManager.FindByNameAsync("user") == null)
             {
                 await roleManager.CreateAsync(new IdentityRole("user"));
             }
+
+            if (await roleManager.FindByNameAsync("doctor") == null)
+            {
+                await roleManager.CreateAsync(new IdentityRole("doctor"));
+            }
+            
+            if (await roleManager.FindByNameAsync("manager") == null)
+            {
+                await roleManager.CreateAsync(new IdentityRole("manager"));
+            }
+
+
             if (await userManager.FindByNameAsync(adminEmail) == null)
             {
                 User admin = new User { Email = adminEmail, UserName = adminEmail };

@@ -111,6 +111,10 @@ public partial class HospitalContext : DbContext
                 .HasMaxLength(45)
                 .IsUnicode(false)
                 .IsFixedLength();
+            entity.Property(e => e.Email)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .IsFixedLength();
 
             entity.HasOne(d => d.DepartmentNavigation).WithMany(p => p.Doctors)
                 .HasForeignKey(d => d.Department)

@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Authorization;
 using LibraryWebApplication.Controllers;
 using Microsoft.AspNetCore.Identity;
 using HospitalDomain.Migrations.Identity;
+using Utils;
 
 namespace HospitalMVC.HospitalInfrastructure.Controllers
 {
@@ -42,29 +43,49 @@ namespace HospitalMVC.HospitalInfrastructure.Controllers
                 return RedirectToAction("Login", "Account");
             }
 
-            if (await _userManager.IsInRoleAsync(user, "admin"))
+            IQueryable<Appointment> hospitalContext = null!;
+
+            if (CheckRole.IsInRoles(User, new string[] {RoleList.Admin, RoleList.Manager}))
             {
-                var hospitalContext = _hospitalContext.Appointments
+                hospitalContext = _hospitalContext.Appointments
                     .Include(a => a.PatientNavigation)
                     .Include(a => a.DoctorNavigation)
                     .Include(a => a.RoomNavigation);
-                return View(await hospitalContext.ToListAsync());
             }
-            else 
+            else if (await _userManager.IsInRoleAsync(user, RoleList.Doctor))
+            {
+                string email = user.Email;
+
+                var patient = await _hospitalContext.Doctors
+                    .FirstOrDefaultAsync(p => p.Email == email);
+
+                hospitalContext = _hospitalContext.Appointments
+                    .Include(a => a.PatientNavigation)
+                    .Include(a => a.DoctorNavigation)
+                    .Include(a => a.RoomNavigation)
+                    .Where(a => a.PatientNavigation.Email == email);
+            }
+            else if (await _userManager.IsInRoleAsync(user, RoleList.User))
             {
                 string email = user.Email;
 
                 var patient = await _hospitalContext.Patients
                     .FirstOrDefaultAsync(p => p.Email == email);
 
-                var hospitalContext = _hospitalContext.Appointments
+                hospitalContext = _hospitalContext.Appointments
                     .Include(a => a.PatientNavigation)
                     .Include(a => a.DoctorNavigation)
                     .Include(a => a.RoomNavigation)
                     .Where(a => a.PatientNavigation.Email == email);
 
-                return View(await hospitalContext.ToListAsync());
             }
+
+            if (hospitalContext == null)
+            {
+                RedirectToAction("Login", "Account");
+            }
+
+            return View(await hospitalContext.ToListAsync());
         }
 
         // GET: Appointments/Details/5
