@@ -16,6 +16,7 @@ public partial class Doctor
     public string Email { get; set; } = null!;
 
     public int Department { get; set; }
+    public string? ProfilePictureUrl { get; set; }
 
     public virtual ICollection<Appointment> Appointments { get; set; } = new List<Appointment>();
 

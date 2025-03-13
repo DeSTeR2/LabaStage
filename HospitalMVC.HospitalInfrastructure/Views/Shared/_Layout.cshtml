@@ -323,7 +323,7 @@
                     <li class="nav-item">
                         <a class="nav-link" href="@Url.Action("Index", "Doctors")">Doctors</a>
                     </li>
-                    @if (CheckRole.IsInRoles(User, new string[] { RoleList.Admin, RoleList.Manager }))
+                    @if (CheckRole.IsInRoles(User, new string[] { Constants.Admin, Constants.Manager }))
                     {
                         <li class="nav-item">
                             <a class="nav-link" href="@Url.Action("Index", "Patients")">Patients</a>
@@ -335,7 +335,7 @@
                     <li class="nav-item">
                         <a class="nav-link" href="@Url.Action("Index", "Rooms")">Rooms</a>
                     </li>
-                    @if (User.IsInRole(RoleList.Admin))
+                    @if (User.IsInRole(Constants.Admin))
                     {
                         <li class="nav-item">
                             <a class="nav-link" href="@Url.Action("Index", "Roles")">User roles</a>
@@ -345,7 +345,7 @@
                         </li>
                     }
 
-                    @if (CheckRole.IsInRoles(User, new string[] { RoleList.Admin, RoleList.Manager}))
+                    @if (CheckRole.IsInRoles(User, new string[] { Constants.Admin, Constants.Manager}))
                     {
                         <li class="nav-item">
                             <a class="nav-link" href="@Url.Action("Statistics", "Home")">Statistics</a>

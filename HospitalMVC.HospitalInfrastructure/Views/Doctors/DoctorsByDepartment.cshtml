@@ -59,7 +59,7 @@
         }
 
     .doctor-card img {
-        width: 120px;
+        width: 120px; 
         height: 120px;
         object-fit: cover; /* Ensures the image is cropped properly */
         border-radius: 50%; /* Makes it circular */
@@ -72,6 +72,21 @@
 
 <h1 class="page-title">Doctors by Department</h1>
 
+<!-- Department Filter -->
+<form method="get" class="filter-form">
+    <label for="departmentFilter">Filter by Department:</label>
+    <select id="departmentFilter" name="departmentId" class="form-control" onchange="this.form.submit()">
+        <option value="">All Departments</option>
+        @foreach (var dept in ViewBag.Departments)
+        {
+            <option value="@dept.Id" selected="@(ViewBag.SelectedDepartmentId == dept.Id ? "selected" : null)">
+                @dept.Name
+            </option>
+        }
+    </select>
+</form>
+
+<!-- Display Doctors Grouped by Department -->
 @foreach (var department in Model.GroupBy(d => d.DepartmentNavigation))
 {
     <div class="department-section">
@@ -85,12 +100,8 @@
                         <img src=@doctor.ProfilePictureUrl />
                         <p class="doctor-contact"><strong>Contact:</strong> @doctor.Contact</p>
                         <div class="doctor-actions">
-                            @if (Utils.CheckRole.IsInRoles(User, new string[] { "admin", "manager" }))
-                            {
-                                @Html.ActionLink("View", "Details", new { id = doctor.Id }, new { @class = "btn btn-info" })
-                                @Html.ActionLink("Edit", "Edit", new { id = doctor.Id }, new { @class = "btn btn-warning" })
-                                @Html.ActionLink("Delete", "Delete", new { id = doctor.Id }, new { @class = "btn btn-danger" })
-                            }
+                            <a class="btn btn-info" asp-action="Create" asp-controller="Appointments" asp-route-doctroId = "@doctor.Id">Select doctor</a>
+                            <!--@Html.ActionLink("Select doctor", "Details", new { id = doctor.Id }, new { @class = "btn btn-info" })-->
                         </div>
                     </div>
 

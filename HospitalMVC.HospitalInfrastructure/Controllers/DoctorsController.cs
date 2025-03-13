@@ -4,29 +4,34 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using HospitalDomain.Model;
+using Utils;
+using Microsoft.Build.Logging;
 
 namespace HospitalMVC.HospitalInfrastructure.Controllers
 {
     public class DoctorsController : Controller
     {
-        private readonly HospitalContext _context;
+        private readonly HospitalContext _hospitalContext;
+        private readonly IdentityContext _identityContext;
 
-        public DoctorsController(HospitalContext context)
+        public DoctorsController(HospitalContext context, IdentityContext identityContext)
         {
-            _context = context;
+            _hospitalContext = context;
+            _identityContext = identityContext;
         }
 
         // GET: Doctors
         public async Task<IActionResult> Index()
         {
-            var doctors = _context.Doctors.Include(d => d.DepartmentNavigation);
+            var doctors = _hospitalContext.Doctors.Include(d => d.DepartmentNavigation);
+            FillDoctorPhotos(doctors);
             return View(await doctors.ToListAsync());
         }
 
         // GET: Doctors/Create
         public IActionResult Create()
         {
-            ViewData["Department"] = new SelectList(_context.Departments, "Id", "Name");
+            ViewData["Department"] = new SelectList(_hospitalContext.Departments, "Id", "Name");
             return View();
         }
 
@@ -37,12 +42,12 @@ namespace HospitalMVC.HospitalInfrastructure.Controllers
         {
             if (!ModelState.IsValid)
             {
-                ViewData["Department"] = new SelectList(_context.Departments, "Id", "Name", doctor.Department);
+                ViewData["Department"] = new SelectList(_hospitalContext.Departments, "Id", "Name", doctor.Department);
                 return View(doctor);
             }
 
-            _context.Add(doctor);
-            await _context.SaveChangesAsync();
+            _hospitalContext.Add(doctor);
+            await _hospitalContext.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
 
@@ -52,11 +57,11 @@ namespace HospitalMVC.HospitalInfrastructure.Controllers
             if (id == null)
                 return NotFound();
 
-            var doctor = await _context.Doctors.FindAsync(id);
+            var doctor = await _hospitalContext.Doctors.FindAsync(id);
             if (doctor == null)
                 return NotFound();
 
-            ViewData["Department"] = new SelectList(_context.Departments, "Id", "Name", doctor.Department);
+            ViewData["Department"] = new SelectList(_hospitalContext.Departments, "Id", "Name", doctor.Department);
             return View(doctor);
         }
 
@@ -108,7 +113,7 @@ namespace HospitalMVC.HospitalInfrastructure.Controllers
                 return View("SelectNewDepartment", new SelectNewDepartmentViewModel
                 {
                     DoctorSelections = SelectNewDepartmentViewModel.Convert(doctors),
-                    Departments = _context.Departments.ToList()
+                    Departments = _hospitalContext.Departments.ToList()
                 });
             }
 
@@ -116,17 +121,17 @@ namespace HospitalMVC.HospitalInfrastructure.Controllers
             foreach (var doctor in doctors)
             {
                 doctor.Department = newDepartmentId;
-                _context.Doctors.Update(doctor);
+                _hospitalContext.Doctors.Update(doctor);
             }
 
             // Delete the old department
-            var departmentToDelete = await _context.Departments.FindAsync(departmentIdToDelete);
+            var departmentToDelete = await _hospitalContext.Departments.FindAsync(departmentIdToDelete);
             if (departmentToDelete != null)
             {
-                _context.Departments.Remove(departmentToDelete);
+                _hospitalContext.Departments.Remove(departmentToDelete);
             }
 
-            await _context.SaveChangesAsync();
+            await _hospitalContext.SaveChangesAsync();
 
             return RedirectToAction(nameof(Index));
         }
@@ -155,21 +160,21 @@ namespace HospitalMVC.HospitalInfrastructure.Controllers
                 {
                     Console.WriteLine($"Validation Error: {error.ErrorMessage}");
                 }
-                ViewData["Department"] = new SelectList(_context.Departments, "Id", "Name", doctor.Department);
+                ViewData["Department"] = new SelectList(_hospitalContext.Departments, "Id", "Name", doctor.Department);
                 return View(doctor);
             }
 
             try
             {
-                var existingDoctor = await _context.Doctors.AsNoTracking().FirstOrDefaultAsync(d => d.Id == id);
+                var existingDoctor = await _hospitalContext.Doctors.AsNoTracking().FirstOrDefaultAsync(d => d.Id == id);
                 if (existingDoctor == null)
                 {
                     Console.WriteLine("Error: Doctor not found!");
                     return NotFound();
                 }
 
-                _context.Doctors.Update(doctor);
-                await _context.SaveChangesAsync();
+                _hospitalContext.Doctors.Update(doctor);
+                await _hospitalContext.SaveChangesAsync();
                 Console.WriteLine("✅ Doctor updated successfully!");
             }
             catch (DbUpdateConcurrencyException)
@@ -193,7 +198,7 @@ namespace HospitalMVC.HospitalInfrastructure.Controllers
             if (id == null)
                 return NotFound();
 
-            var doctor = await _context.Doctors.Include(d => d.DepartmentNavigation)
+            var doctor = await _hospitalContext.Doctors.Include(d => d.DepartmentNavigation)
                                                .FirstOrDefaultAsync(m => m.Id == id);
             if (doctor == null)
                 return NotFound();
@@ -206,11 +211,11 @@ namespace HospitalMVC.HospitalInfrastructure.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var doctor = await _context.Doctors.FindAsync(id);
+            var doctor = await _hospitalContext.Doctors.FindAsync(id);
             if (doctor != null)
             {
-                _context.Doctors.Remove(doctor);
-                await _context.SaveChangesAsync();
+                _hospitalContext.Doctors.Remove(doctor);
+                await _hospitalContext.SaveChangesAsync();
             }
 
             return RedirectToAction(nameof(Index));
@@ -222,7 +227,7 @@ namespace HospitalMVC.HospitalInfrastructure.Controllers
             if (id == null)
                 return NotFound();
 
-            var doctors = await _context.Doctors.Include(d => d.DepartmentNavigation)
+            var doctors = await _hospitalContext.Doctors.Include(d => d.DepartmentNavigation)
                                                .FirstOrDefaultAsync(m => m.Id == id);
             if (doctors == null)
                 return NotFound();
@@ -230,9 +235,42 @@ namespace HospitalMVC.HospitalInfrastructure.Controllers
             return View(doctors);
         }
 
+        public IActionResult SelectDoctor(int? id)
+        {
+            return RedirectToAction("Create", "Appontemtns");
+        }
+
+        public IActionResult DoctorsByDepartment(int? departmentId)
+        {
+            var doctors = _hospitalContext.Doctors.Include(d => d.DepartmentNavigation);
+
+            FillDoctorPhotos(doctors);
+
+            ViewBag.Departments = _hospitalContext.Departments.ToList();
+            ViewBag.SelectedDepartmentId = departmentId;
+
+            return View(doctors.ToList());
+        }
+
+        private void FillDoctorPhotos(Microsoft.EntityFrameworkCore.Query.IIncludableQueryable<Doctor, Department> doctors)
+        {
+            foreach (var doctor in doctors)
+            {
+                var user = _identityContext.Users.FirstOrDefault(u => u.Email == doctor.Email);
+                if (user == default)
+                {
+                    doctor.ProfilePictureUrl = Constants.DefaultProfileImage;
+                }
+                else
+                {
+                    doctor.ProfilePictureUrl = user.ProfilePictureUrl ?? Constants.DefaultProfileImage;
+                }
+            }
+        }
+
         private bool DoctorExists(int id)
         {
-            return _context.Doctors.Any(e => e.Id == id);
+            return _hospitalContext.Doctors.Any(e => e.Id == id);
         }
     }
 }

@@ -6,41 +6,71 @@
 
 <h1 class="page-title">Appointments</h1>
 
-<table class="table department-table">
-    <thead class="table-header">
-        <tr>
-            <th>@Html.DisplayNameFor(model => model.Date)</th>
-            <th>@Html.DisplayNameFor(model => model.Time)</th>
-            <th>@Html.DisplayNameFor(model => model.Reason)</th>
-            <th>Doctor Name</th>
-            <th>Patient Name</th>
-            <th>Room Type</th>
-                <th>Actions</th>
-            
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var item in Model)
-        {
+<style>
+    .no-appointments {
+        text-align: center;
+        padding: 20px;
+        background-color: #f8f9fa; /* Light gray background */
+        border: 1px solid #ddd; /* Light border */
+        border-radius: 8px;
+        margin: 20px auto;
+        max-width: 500px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Soft shadow for depth */
+    }
+
+        .no-appointments p {
+            font-size: 18px;
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .no-appointments .btn {
+            font-size: 16px;
+            padding: 10px 20px;
+        }
+</style>
+
+@if (Model.Any())
+{
+    <table class="table department-table">
+        <thead class="table-header">
             <tr>
-                <td>@Html.DisplayFor(modelItem => item.Date)</td>
-                <td>@Html.DisplayFor(modelItem => item.Time)</td>
-                <td>@Html.DisplayFor(modelItem => item.Reason)</td>
-                <td>@Html.DisplayFor(modelItem => item.DoctorNavigation.Name)</td>
-                <td>@Html.DisplayFor(modelItem => item.PatientNavigation.Name)</td>
-                <th>@Html.DisplayFor(modelItem => item.RoomNavigation.Type)</th>
-                
+                <th>@Html.DisplayNameFor(model => model.Date)</th>
+                <th>@Html.DisplayNameFor(model => model.Time)</th>
+                <th>@Html.DisplayNameFor(model => model.Reason)</th>
+                <th>Doctor Name</th>
+                <th>Patient Name</th>
+                <th>Room Type</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>@Html.DisplayFor(modelItem => item.Date)</td>
+                    <td>@Html.DisplayFor(modelItem => item.Time)</td>
+                    <td>@Html.DisplayFor(modelItem => item.Reason)</td>
+                    <td>@Html.DisplayFor(modelItem => item.DoctorNavigation.Name)</td>
+                    <td>@Html.DisplayFor(modelItem => item.PatientNavigation.Name)</td>
+                    <td>@Html.DisplayFor(modelItem => item.RoomNavigation.Type)</td>
                     <td class="action-links">
                         @Html.ActionLink("Edit", "Edit", new { id = item.Id }) |
                         @Html.ActionLink("View Details", "Details", new { id = item.Id }) |
                         @Html.ActionLink("Delete", "Delete", new { id = item.Id })
                     </td>
-                
-            </tr>
-        }
-    </tbody>
-</table>
-
+                </tr>
+            }
+        </tbody>
+    </table>
     <p>
-        <a class="btn btn-primary" asp-action="Create">Create New Appointment</a>
+        <a class="btn btn-primary" asp-action="SelectDoctor">Create New Appointment</a>
     </p>
+}
+else
+{
+    <div class="no-appointments">
+        <p>There is no appointments. Whant to create one?</p>
+        <a class="btn btn-primary" asp-action="SelectDoctor">Create New Appointment</a>
+    </div>
+}

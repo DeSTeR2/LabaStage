@@ -15,7 +15,7 @@
             <th>@Html.DisplayNameFor(model => model.DateOfBirth)</th>
             <th>@Html.DisplayNameFor(model => model.Contacts)</th>
             <td>@Html.DisplayNameFor(model => model.Email)</td>
-            @if (CheckRole.IsInRoles(User, new string[] { RoleList.Admin, RoleList.Manager }))
+            @if (CheckRole.IsInRoles(User, new string[] { Constants.Admin, Constants.Manager }))
             {
                 <th>Actions</th>
             }
@@ -29,7 +29,7 @@
                 <td>@Html.DisplayFor(modelItem => item.DateOfBirth)</td>
                 <td>@Html.DisplayFor(modelItem => item.Contacts)</td>
                 <td>@Html.DisplayFor(modelItem => item.Email)</td>
-                @if (CheckRole.IsInRoles(User, new string[] { RoleList.Admin, RoleList.Manager }))
+                @if (CheckRole.IsInRoles(User, new string[] { Constants.Admin, Constants.Manager }))
                 {
                     <td class="action-links">
                         @Html.ActionLink("Edit", "Edit", new { id = item.Id }) |
@@ -41,7 +41,7 @@
         }
     </tbody>
 </table>
-@if (CheckRole.IsInRoles(User, new string[] { RoleList.Admin, RoleList.Manager }))
+@if (CheckRole.IsInRoles(User, new string[] { Constants.Admin, Constants.Manager }))
 {
     <p>
         <a class="btn btn-primary" asp-action="Create">Create New Patient</a>

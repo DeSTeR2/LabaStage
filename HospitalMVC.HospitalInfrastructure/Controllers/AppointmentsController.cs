@@ -1,17 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using HospitalDomain.Model;
-using Microsoft.AspNetCore.Mvc.ModelBinding;
-using Microsoft.AspNetCore.Authorization;
-using LibraryWebApplication.Controllers;
 using Microsoft.AspNetCore.Identity;
-using HospitalDomain.Migrations.Identity;
 using Utils;
+using Newtonsoft.Json;
+using System.Text.Json;
 
 namespace HospitalMVC.HospitalInfrastructure.Controllers
 {
@@ -45,14 +39,14 @@ namespace HospitalMVC.HospitalInfrastructure.Controllers
 
             IQueryable<Appointment> hospitalContext = null!;
 
-            if (CheckRole.IsInRoles(User, new string[] {RoleList.Admin, RoleList.Manager}))
+            if (CheckRole.IsInRoles(User, new string[] { Constants.Admin, Constants.Manager }))
             {
                 hospitalContext = _hospitalContext.Appointments
                     .Include(a => a.PatientNavigation)
                     .Include(a => a.DoctorNavigation)
                     .Include(a => a.RoomNavigation);
             }
-            else if (await _userManager.IsInRoleAsync(user, RoleList.Doctor))
+            else if (await _userManager.IsInRoleAsync(user, Constants.Doctor))
             {
                 string email = user.Email;
 
@@ -65,7 +59,7 @@ namespace HospitalMVC.HospitalInfrastructure.Controllers
                     .Include(a => a.RoomNavigation)
                     .Where(a => a.PatientNavigation.Email == email);
             }
-            else if (await _userManager.IsInRoleAsync(user, RoleList.User))
+            else if (await _userManager.IsInRoleAsync(user, Constants.User))
             {
                 string email = user.Email;
 
@@ -109,73 +103,106 @@ namespace HospitalMVC.HospitalInfrastructure.Controllers
             return View(appointment);
         }
 
-        // GET: Appointments/Create
-        public async Task<IActionResult> Create()
+        public async Task<IActionResult> SelectDoctor()
         {
-            var appointment = new Appointment();  // Still passing an empty Appointment model if needed
-            
+            return RedirectToAction("DoctorsByDepartment", "Doctors");
+        }
+        public async Task<IActionResult> Create(int? doctroId) // Typo: "doctroId" should be "doctorId"
+        {
+            var appointment = new Appointment();
             var user = await _userManager.GetUserAsync(User);
             if (user == null)
             {
                 return RedirectToAction("Login", "Account");
             }
 
-            if (await _userManager.IsInRoleAsync(user, "admin"))
+            // Fix typo in parameter name (optional, for consistency)
+            if (!doctroId.HasValue)
             {
-                var availableDoctors = _hospitalContext.Doctors
-                    .Where(d => !_hospitalContext.Appointments
-                        .Any(a => a.Doctor == d.Id && a.Date == appointment.Date &&
-                                  a.Time < appointment.Time.AddHours(1) && a.Time.AddHours(1) > appointment.Time))
-                    .ToList();
+                return BadRequest("Doctor ID is required.");
+            }
 
-                ViewData["Doctor"] = new SelectList(availableDoctors.Select(p => new { p.Id, Name = p.Name + " (" + _hospitalContext.Departments.First(dep => dep.Id == p.Department).Name + ")" }), "Id", "Name");
+            var doctor = _hospitalContext.Doctors.FirstOrDefault(d => d.Id == doctroId);
+            if (doctor == null)
+            {
+                return NotFound("Doctor not found.");
+            }
 
-                var availableRooms = _hospitalContext.Rooms
-                    .Where(r => !_hospitalContext.Appointments
-                        .Any(a => a.Room == r.Id && a.Date == appointment.Date &&
-                                  a.Time < appointment.Time.AddHours(1) && a.Time.AddHours(1) > appointment.Time))
-                    .ToList();
+            ViewBag.DoctorId = doctor.Id;
+            if (Utils.CheckRole.IsInRoles(User, new string[] { Constants.Admin, Constants.Manager }))
+            {
+                var possibleDates = GetPossibleDatesForDoctor(doctor.Id);
+                string json = JsonConvert.SerializeObject(possibleDates.Select(d => d.ToString("yyyy-MM-dd")).ToArray());
 
-                ViewData["Room"] = new SelectList(availableRooms, "Id", "Type");
+                ViewBag.PossibleDatesJson = json;
 
-                ViewData["Patient"] = new SelectList(
+                DateTime dateTime = DateTime.Today;
+                DateOnly currentDay = new DateOnly(dateTime.Year, dateTime.Month, dateTime.Day);
+                ViewBag.SelectedDate = currentDay;
+
+
+                ViewBag.Patient = new SelectList(
                     _hospitalContext.Patients.Select(p => new { p.Id, Name = p.Name + " (" + p.Contacts + ")" }),
                     "Id", "Name");
 
+                ViewBag.Room = new SelectList(_hospitalContext.Rooms, "Id", "Type");
 
                 return View(appointment);
             }
-            else
+            else if (Utils.CheckRole.IsInRoles(User, new string[] { Constants.User }))
             {
-                var availableDoctors = await _hospitalContext.Doctors
-                    .Where(d => !_hospitalContext.Appointments
-                        .Any(a => a.Doctor == d.Id && a.Date == appointment.Date &&
-                                  a.Time < appointment.Time.AddHours(1) && a.Time.AddHours(1) > appointment.Time))
-                    .Select(d => new
-                    {
-                        d.Id,
-                        Name = d.Name + " (" + _hospitalContext.Departments
-                                    .Where(dep => dep.Id == d.Department)
-                                    .Select(dep => dep.Name)
-                                    .FirstOrDefault() + ")"
-                    })
-                    .ToListAsync();
-
-                ViewData["Doctor"] = new SelectList(availableDoctors, "Id", "Name");
+                var availableDoctors = _hospitalContext.Doctors.Where(d => d.Id == doctroId).ToList();
+                ViewBag.Doctor = new SelectList(availableDoctors, "Id", "Name");
 
                 var availableRooms = await _hospitalContext.Rooms
                     .Where(r => !_hospitalContext.Appointments
                         .Any(a => a.Room == r.Id && a.Date == appointment.Date &&
-                                  a.Time < appointment.Time.AddHours(1) && a.Time.AddHours(1) > appointment.Time))
+                                  a.Time < appointment.Time.Add(TimeSpan.FromHours(1)) &&
+                                  a.Time.Add(TimeSpan.FromHours(1)) > appointment.Time))
                     .ToListAsync();
+                ViewBag.Room = new SelectList(availableRooms, "Id", "Type");
 
-                ViewData["Room"] = new SelectList(availableRooms, "Id", "Type");
+                ViewBag.PossibleDates = new List<SelectListItem>
+        {
+            new SelectListItem { Value = "2025-04-01", Text = "April 01, 2025" },
+            new SelectListItem { Value = "2025-04-02", Text = "April 02, 2025" }
+        };
+                ViewBag.PossibleTimes = new List<SelectListItem>
+        {
+            new SelectListItem { Value = "10:04", Text = "10:04 AM" },
+            new SelectListItem { Value = "11:04", Text = "11:04 AM" }
+        };
 
                 return View(appointment);
-
             }
+
+            return RedirectToAction("Index", "Home");
         }
 
+        public List<DateOnly> GetPossibleDatesForDoctor(int doctorId)
+        {
+            return new List<DateOnly>
+                {
+                    new DateOnly(2025, 03,13),
+                    new DateOnly(2025, 03,13),
+                    new DateOnly(1999, 01,04),
+                    new DateOnly(1999, 01,05),
+                    new DateOnly(1999, 01,06)
+                }; 
+        }
+
+        [HttpGet]
+        public void GetPossibleTimesForDoctor(int doctroId, DateOnly date)
+        {
+            var possibleTimes = new List<SelectListItem>
+                {
+                    new SelectListItem { Value = "10:04", Text = "10:04 AM" },
+                    new SelectListItem { Value = "11:04", Text = "11:04 AM" },
+                    new SelectListItem { Value = "12:04", Text = "12:04 PM" },
+                    new SelectListItem { Value = "13:04", Text = "01:04 PM" }
+                };
+            ViewBag.PossibleTimes = possibleTimes;
+        }
 
         // POST: Appointments/Create
         [HttpPost]

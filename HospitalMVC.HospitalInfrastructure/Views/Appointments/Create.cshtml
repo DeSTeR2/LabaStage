@@ -2,57 +2,96 @@
 @using Utils
 
 @{
-	ViewData["Title"] = "Create Appointment";
+    ViewData["Title"] = "Create Appointment";
 }
 
 <h1>Create Appointment</h1>
 
 <hr />
 <div class="row">
-	<div class="col-md-4">
-		<form asp-action="Create">
-			<div asp-validation-summary="ModelOnly" class="text-danger"></div>
-			<div class="form-group">
-				<label asp-for="Date" class="control-label"></label>
-				<input asp-for="Date" class="form-control" type="date" />
-				<span asp-validation-for="Date" class="text-danger"></span>
-			</div>
-			<div class="form-group">
-				<label asp-for="Time" class="control-label"></label>
-				<input asp-for="Time" class="form-control" type="time" />
-				<span asp-validation-for="Time" class="text-danger"></span>
-			</div>
-			<div class="form-group">
-				<label asp-for="Reason" class="control-label"></label>
-				<input asp-for="Reason" class="form-control" />
-				<span asp-validation-for="Reason" class="text-danger"></span>
-			</div>
-			<div class="form-group">
-				<label asp-for="Doctor" class="control-label"></label>
-				<select asp-for="Doctor" class="form-control" asp-items="ViewBag.Doctor"></select>
-			</div>
-			@if (CheckRole.IsInRoles(User, new string[] { RoleList.Admin, RoleList.Manager }))
-			{
-				<div class="form-group">
-					<label asp-for="Patient" class="control-label"></label>
-					<select asp-for="Patient" class="form-control" asp-items="ViewBag.Patient"></select>
-				</div>
-			}
-			<div class="form-group">
-				<label asp-for="Room" class="control-label"></label>
-				<select asp-for="Room" class="form-control" asp-items="ViewBag.Room"></select>
-			</div>
-			<div class="form-group">
-				<input type="submit" value="Create" class="btn btn-primary" />
-				<input type="submit" value="Back to List" class="btn btn-secondary" />
-			</div>
-		</form>
-	</div>
+    <div class="col-md-4">
+        <form asp-action="Create" method="post">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="form-group">
+                <label asp-for="Date" class="control-label"></label>
+                <input asp-for="Date" class="form-control" id="datePicker" readonly="readonly" value="@ViewBag.SelectedDate"/>
+                <span asp-validation-for="Date" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Time" class="control-label"></label>
+                <select asp-for="Time" class="form-control" asp-items="@ViewBag.PossibleTimes">
+                    <option value="">-- Select a Time --</option>
+                </select>
+                <span asp-validation-for="Time" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Reason" class="control-label"></label>
+                <input asp-for="Reason" class="form-control" />
+                <span asp-validation-for="Reason" class="text-danger"></span>
+            </div>
+            @if (CheckRole.IsInRoles(User, new string[] { Constants.Admin, Constants.Manager }))
+            {
+                <div class="form-group">
+                    <label asp-for="Patient" class="control-label"></label>
+                    <select asp-for="Patient" class="form-control" asp-items="@ViewBag.Patient"></select>
+                </div>
+                <div class="form-group">
+                    <label asp-for="Room" class="control-label"></label>
+                    <select asp-for="Room" class="form-control" asp-items="@ViewBag.Room"></select>
+                </div>
+            }
+            <div class="form-group">
+                <input type="submit" value="Create" class="btn btn-primary" />
+                <a asp-action="Index" class="btn btn-secondary">Back to List</a>
+            </div>
+        </form>
+    </div>
 </div>
 
-
 @section Scripts {
-	@{
-		await Html.RenderPartialAsync("_ValidationScriptsPartial");
-	}
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            var possibleDates = @Html.Raw(ViewBag.PossibleDatesJson ?? "[]");
+            var doctorId = @ViewBag.DoctorId; // Get doctorId from query string
+
+            $("#datePicker").datepicker({
+                dateFormat: "yy-mm-dd",
+                beforeShowDay: function (date) {
+                    var dateStr = $.datepicker.formatDate("yy-mm-dd", date);
+                    return [possibleDates.indexOf(dateStr) !== -1];
+                },
+                minDate: 0,
+                maxDate: "+6m",
+                onSelect: function (dateText) {
+                    // AJAX call to get possible times
+                    $.ajax({
+                        url: '@Url.Action("GetPossibleTimes", "Appointments")',
+                        type: 'GET',
+                        data: { doctorId: doctorId, date: dateText },
+                        success: function (data) {
+                            var $timeSelect = $('#timeSelect');
+                            $timeSelect.empty(); // Clear existing options
+                            $timeSelect.append('<option value="">-- Select a Time --</option>');
+                            $.each(data, function (index, item) {
+                                $timeSelect.append($('<option>', {
+                                    value: item.value,
+                                    text: item.text
+                                }));
+                            });
+                        },
+                        error: function (xhr, status, error) {
+                            console.error("Error fetching times: " + error);
+                            $('#timeSelect').empty().append('<option value="">Error loading times</option>');
+                        }
+                    });
+                }
+            });
+        });
+    </script>
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
 }
