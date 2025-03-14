@@ -206,7 +206,7 @@ namespace HospitalMVC.HospitalInfrastructure.Controllers
             else
             {
                 int docId = selectedDoctors[0].Id;
-                departmentIdToDelete = (await _context.Doctors.FindAsync(docId)).Department;
+                departmentIdToDelete = (int)(await _context.Doctors.FindAsync(docId)).Department;
             }
 
             foreach (var doctorSelection in selectedDoctors)

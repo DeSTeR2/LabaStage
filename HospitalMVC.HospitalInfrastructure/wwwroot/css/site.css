@@ -1387,3 +1387,39 @@ dl.row dt {
         content: " *"; /* Add asterisk for required fields */
         color: red;
     }
+
+
+.state-pending {
+    color: #fff;
+    background-color: #ffc107; /* Yellow for Pending */
+    padding: 4px 8px;
+    border-radius: 4px;
+}
+
+.state-approved {
+    color: #fff;
+    background-color: #28a745; /* Green for Approved */
+    padding: 4px 8px;
+    border-radius: 4px;
+}
+
+.state-attending {
+    color: #fff;
+    background-color: #007bff; /* Blue for Attending */
+    padding: 4px 8px;
+    border-radius: 4px;
+}
+
+.state-completed {
+    color: #fff;
+    background-color: #6c757d; /* Gray for Completed */
+    padding: 4px 8px;
+    border-radius: 4px;
+}
+
+.state-canceled {
+    color: #fff;
+    background-color: #dc3545; /* Red for Canceled */
+    padding: 4px 8px;
+    border-radius: 4px;
+}

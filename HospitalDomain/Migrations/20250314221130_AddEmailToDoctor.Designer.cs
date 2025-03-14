@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace HospitalDomain.Migrations
 {
     [DbContext(typeof(HospitalContext))]
-    [Migration("20250228141540_Initial")]
-    partial class Initial
+    [Migration("20250314221130_AddEmailToDoctor")]
+    partial class AddEmailToDoctor
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -31,7 +31,10 @@ namespace HospitalDomain.Migrations
                         .HasColumnType("int")
                         .HasColumnName("id");
 
-                    b.Property<DateTime>("Date")
+                    b.Property<int>("AppointmentState")
+                        .HasColumnType("int");
+
+                    b.Property<DateOnly>("Date")
                         .HasColumnType("date")
                         .HasColumnName("date");
 
@@ -48,22 +51,20 @@ namespace HospitalDomain.Migrations
                         .HasColumnType("varchar(max)")
                         .HasColumnName("reason");
 
-                    b.Property<int>("Room")
-                        .HasColumnType("int");
-
-                    b.Property<int>("RoomNavigationId")
-                        .HasColumnType("int");
+                    b.Property<int?>("Room")
+                        .HasColumnType("int")
+                        .HasColumnName("room");
 
                     b.Property<TimeOnly>("Time")
                         .HasColumnType("time")
                         .HasColumnName("time");
 
                     b.HasKey("Id")
-                        .HasName("PK__appointment__3213E83FBAFA03D0");
+                        .HasName("PK__appointm__3213E83FBAFA03D0");
 
                     b.HasIndex("Doctor");
 
-                    b.HasIndex("RoomNavigationId");
+                    b.HasIndex("Room");
 
                     b.HasIndex(new[] { "Patient" }, "IX_appointment_patient");
 
@@ -73,28 +74,24 @@ namespace HospitalDomain.Migrations
             modelBuilder.Entity("HospitalDomain.Model.Department", b =>
                 {
                     b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("int")
                         .HasColumnName("id");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Location")
                         .IsRequired()
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("varchar(255)")
-                        .HasColumnName("location");
+                        .HasColumnType("varchar(255)");
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(20)
                         .IsUnicode(false)
-                        .HasColumnType("varchar(20)")
-                        .HasColumnName("name");
+                        .HasColumnType("char(20)")
+                        .IsFixedLength();
 
                     b.HasKey("Id")
-                        .HasName("PK__department__3213E83FB05AEE6C");
+                        .HasName("PK_department_1");
 
                     b.HasIndex(new[] { "Id" }, "UQ_department_id")
                         .IsUnique();
@@ -114,8 +111,15 @@ namespace HospitalDomain.Migrations
                         .IsUnicode(false)
                         .HasColumnType("varchar(45)");
 
-                    b.Property<int>("Department")
+                    b.Property<int?>("Department")
                         .HasColumnType("int");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .IsUnicode(false)
+                        .HasColumnType("char(50)")
+                        .IsFixedLength();
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -123,6 +127,9 @@ namespace HospitalDomain.Migrations
                         .IsUnicode(false)
                         .HasColumnType("char(20)")
                         .IsFixedLength();
+
+                    b.Property<string>("ProfilePictureUrl")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Speciality")
                         .IsRequired()
@@ -152,10 +159,13 @@ namespace HospitalDomain.Migrations
                         .HasColumnType("varchar(45)")
                         .HasColumnName("contacts");
 
-                    b.Property<DateTime>("DateOfBirth")
+                    b.Property<DateTime?>("DateOfBirth")
                         .HasPrecision(4)
                         .HasColumnType("datetime2(4)")
                         .HasColumnName("date_of_birth");
+
+                    b.Property<string>("Email")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -177,7 +187,6 @@ namespace HospitalDomain.Migrations
                         .HasColumnType("int")
                         .HasColumnName("id");
 
-
                     b.Property<int>("Capacity")
                         .HasColumnType("int")
                         .HasColumnName("capacity");
@@ -191,7 +200,6 @@ namespace HospitalDomain.Migrations
 
                     b.HasKey("Id")
                         .HasName("PK__room__3213E83F9EB6B491");
-
 
                     b.ToTable("room", (string)null);
                 });
@@ -210,11 +218,10 @@ namespace HospitalDomain.Migrations
                         .IsRequired()
                         .HasConstraintName("FK_appointment_patient");
 
-                    b.HasOne("HospitalDomain.Model.Patient", "RoomNavigation")
-                        .WithMany()
-                        .HasForeignKey("RoomNavigationId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                    b.HasOne("HospitalDomain.Model.Room", "RoomNavigation")
+                        .WithMany("Appointments")
+                        .HasForeignKey("Room")
+                        .HasConstraintName("FK_appointment_appointment");
 
                     b.Navigation("DoctorNavigation");
 
@@ -228,21 +235,9 @@ namespace HospitalDomain.Migrations
                     b.HasOne("HospitalDomain.Model.Department", "DepartmentNavigation")
                         .WithMany("Doctors")
                         .HasForeignKey("Department")
-                        .IsRequired()
                         .HasConstraintName("FK_doctor_department");
 
                     b.Navigation("DepartmentNavigation");
-                });
-
-            modelBuilder.Entity("HospitalDomain.Model.Room", b =>
-                {
-                    b.HasOne("HospitalDomain.Model.Appointment", null)
-                        .WithMany("Rooms");
-                });
-
-            modelBuilder.Entity("HospitalDomain.Model.Appointment", b =>
-                {
-                    b.Navigation("Rooms");
                 });
 
             modelBuilder.Entity("HospitalDomain.Model.Department", b =>
@@ -256,6 +251,11 @@ namespace HospitalDomain.Migrations
                 });
 
             modelBuilder.Entity("HospitalDomain.Model.Patient", b =>
+                {
+                    b.Navigation("Appointments");
+                });
+
+            modelBuilder.Entity("HospitalDomain.Model.Room", b =>
                 {
                     b.Navigation("Appointments");
                 });

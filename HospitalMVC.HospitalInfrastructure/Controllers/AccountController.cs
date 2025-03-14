@@ -2,14 +2,8 @@
 using Microsoft.AspNetCore.Mvc;
 using HospitalDomain.Model;
 using HospitalMVC;
-using System.Threading.Tasks;
 using HospitalDomain.ViewModel;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System.Security.Claims;
-using Microsoft.AspNetCore.Http.Extensions;
-using Microsoft.Identity.Client;
 
 namespace LibraryWebApplication.Controllers
 {

@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Identity;
 using Utils;
 using Newtonsoft.Json;
 using System.Text.Json;
+using HospitalDomain.Utils;
 
 namespace HospitalMVC.HospitalInfrastructure.Controllers
 {
@@ -189,7 +190,7 @@ namespace HospitalMVC.HospitalInfrastructure.Controllers
             var possibleTimes = GetAllWorkingHours();
 
             var dateTimes = _hospitalContext.Appointments
-                .Where(a => a.Doctor == doctorId && a.Date == date)
+                .Where(a => a.Doctor == doctorId && a.Date == date && a.AppointmentState != 5)
                 .Select(a => a.Time)
                 .ToList();
             for (int i=0; i<dateTimes.Count; i++)
@@ -407,6 +408,22 @@ namespace HospitalMVC.HospitalInfrastructure.Controllers
         private bool AppointmentExists(int id)
         {
             return _hospitalContext.Appointments.Any(e => e.Id == id);
+        }
+
+        [HttpGet]
+        public void Approve(int id)
+        {
+            var appointment = _hospitalContext.Appointments.First(a => a.Id == id);
+            appointment.AppointmentState++;
+            _hospitalContext.SaveChanges();
+        }
+
+        [HttpGet]
+        public void Cancel(int id)
+        {
+            var appointment = _hospitalContext.Appointments.First(a => a.Id == id);
+            appointment.AppointmentState = AppointmentStates.States.Find(a => a.Item2 == AppointmentStates.Canceled).Item1;
+            _hospitalContext.SaveChanges();
         }
     }
 }

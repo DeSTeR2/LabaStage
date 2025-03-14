@@ -1,8 +1,11 @@
-﻿using HospitalDomain.ViewModel;
+﻿using HospitalDomain.Model;
+using HospitalDomain.ViewModel;
 using HospitalMVC;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Cryptography;
+using Utils;
 
 namespace HospitalDomain.Controllers
 {
@@ -11,10 +14,13 @@ namespace HospitalDomain.Controllers
     {
         RoleManager<IdentityRole> _roleManager;
         UserManager<User> _userManager;
-        public RolesController(RoleManager<IdentityRole> roleManager, UserManager<User> userManager)
+        HospitalContext _hospitalContext;
+
+        public RolesController(RoleManager<IdentityRole> roleManager, UserManager<User> userManager, HospitalContext hospitalContext)
         {
             _roleManager = roleManager;
             _userManager = userManager;
+            _hospitalContext = hospitalContext;
         }
         public IActionResult Index() => View(_roleManager.Roles.ToList());
         public IActionResult UserList() => View(_userManager.Users.ToList());
@@ -43,18 +49,26 @@ namespace HospitalDomain.Controllers
         [HttpPost]
         public async Task<IActionResult> Edit(string userId, List<string> roles)
         {
-            // отримуємо користувача
             User user = await _userManager.FindByIdAsync(userId);
             if (user != null)
             {
-                // список ролей користувача
                 var userRoles = await _userManager.GetRolesAsync(user);
-                // получаем все роли
                 var allRoles = _roleManager.Roles.ToList();
-                // список ролей, які було додано
                 var addedRoles = roles.Except(userRoles);
-                // список ролей, які було видалено
                 var removedRoles = userRoles.Except(roles);
+
+                var role = roles[0];
+                if (role == Constants.Doctor && _hospitalContext.Doctors.FirstOrDefault(d => d.Email == user.Email) == default)
+                {
+                    List<int> ids = _hospitalContext.Doctors
+                    .Select(d => d.Id)
+                    .OrderBy(id => id) 
+                    .ToList();
+
+                    int id = Util.GetId(ids);
+                    _hospitalContext.Doctors.Add(new Doctor(user, id));
+                    await _hospitalContext.SaveChangesAsync();
+                }
 
                 await _userManager.AddToRolesAsync(user, addedRoles);
 

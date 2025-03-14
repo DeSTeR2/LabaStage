@@ -1,7 +1,13 @@
 ﻿@model IEnumerable<HospitalDomain.Model.Appointment>
-
+@using HospitalDomain.Utils  <!-- Ensure namespace is included -->
 @{
     ViewData["Title"] = "Appointments";
+
+    // Check if any appointments can be approved or canceled
+    var canApproveAny = Utils.CheckRole.IsInRoles(User, new string[] { Utils.Constants.Admin, Utils.Constants.Manager })
+        && Model.Any(a => a.AppointmentState == 1); // Pending only
+    var canCancelAny = Utils.CheckRole.IsInRoles(User, new string[] { Utils.Constants.Admin, Utils.Constants.Manager, Utils.Constants.Doctor })
+        && Model.Any(a => a.AppointmentState <= 3); // Not Completed
 }
 
 <h1 class="page-title">Appointments</h1>
@@ -28,6 +34,43 @@
             font-size: 16px;
             padding: 10px 20px;
         }
+
+    /* Custom Button Styles */
+    .btn-approve {
+        color: #fff;
+        background-color: #28a745; /* Green for Approve */
+        border: 1px solid #218838; /* Darker green border */
+        padding: 4px 10px;
+        border-radius: 4px;
+        text-decoration: none;
+        font-size: 14px;
+        transition: background-color 0.3s ease;
+        cursor: pointer;
+    }
+
+        .btn-approve:hover {
+            background-color: #218838; /* Darker green on hover */
+            text-decoration: none;
+            color: #fff;
+        }
+
+    .btn-cancel {
+        color: #fff;
+        background-color: #dc3545; /* Red for Cancel */
+        border: 1px solid #c82333; /* Darker red border */
+        padding: 4px 10px;
+        border-radius: 4px;
+        text-decoration: none;
+        font-size: 14px;
+        transition: background-color 0.3s ease;
+        cursor: pointer;
+    }
+
+        .btn-cancel:hover {
+            background-color: #c82333; /* Darker red on hover */
+            text-decoration: none;
+            color: #fff;
+        }
 </style>
 
 @if (Model.Any())
@@ -41,12 +84,26 @@
                 <th>Doctor Name</th>
                 <th>Patient Name</th>
                 <th>Room Type</th>
+                <th>Appointment State</th>
                 <th>Actions</th>
+                @if (canApproveAny)
+                {
+                    <th>Approval</th>
+                }
+                @if (canCancelAny)
+                {
+                    <th>Cancellation</th>
+                }
             </tr>
         </thead>
         <tbody>
             @foreach (var item in Model)
             {
+                <!-- Get the state name from AppointmentStates -->
+                var state = HospitalDomain.Utils.AppointmentStates.States
+                .FirstOrDefault(s => s.Item1 == item.AppointmentState)?.Item2 ?? "Unknown";
+                var stateClass = $"state-{state.ToLower()}";
+
                 <tr>
                     <td>@Html.DisplayFor(modelItem => item.Date)</td>
                     <td>@Html.DisplayFor(modelItem => item.Time)</td>
@@ -54,11 +111,37 @@
                     <td>@Html.DisplayFor(modelItem => item.DoctorNavigation.Name)</td>
                     <td>@Html.DisplayFor(modelItem => item.PatientNavigation.Name)</td>
                     <td>@Html.DisplayFor(modelItem => item.RoomNavigation.Type)</td>
+                    <td><span class="@stateClass">@state</span></td>
                     <td class="action-links">
                         @Html.ActionLink("Edit", "Edit", new { id = item.Id }) |
-                        @Html.ActionLink("View Details", "Details", new { id = item.Id }) |
                         @Html.ActionLink("Delete", "Delete", new { id = item.Id })
                     </td>
+                    @if (canApproveAny)
+                    {
+                        <td>
+                            @{
+                                var isAuthorized = Utils.CheckRole.IsInRoles(User, new string[] { Utils.Constants.Admin, Utils.Constants.Manager });
+                                var canApprove = isAuthorized && item.AppointmentState == 1; // Show for Pending only
+                            }
+                            @if (canApprove)
+                            {
+                                <a onclick="approve(@item.Id)" class="btn-approve">Approve</a>
+                            }
+                        </td>
+                    }
+                    @if (canCancelAny)
+                    {
+                        <td>
+                            @{
+                                var isAuthorized = Utils.CheckRole.IsInRoles(User, new string[] { Utils.Constants.Admin, Utils.Constants.Manager, Utils.Constants.Doctor });
+                                var canCancel = isAuthorized && item.AppointmentState <= 3; // Show unless Completed
+                            }
+                            @if (canCancel)
+                            {
+                                <a onclick="cancel(@item.Id)" class="btn-cancel">Cancel</a>
+                            }
+                        </td>
+                    }
                 </tr>
             }
         </tbody>
@@ -70,7 +153,39 @@
 else
 {
     <div class="no-appointments">
-        <p>There is no appointments. Whant to create one?</p>
+        <p>There are no appointments. Want to create one?</p>
         <a class="btn btn-primary" asp-action="SelectDoctor">Create New Appointment</a>
     </div>
+}
+
+@section Scripts {
+    <script>
+        function approve(id) {
+            $.ajax({
+                url: '@Url.Action("Approve", "Appointments")',
+                type: "GET",
+                data: { id: id },
+                success: function (response) {
+                    location.reload(); // Reloads the page to reflect the updated state
+                },
+                error: function (xhr, status, error) {
+                    alert("Error approving appointment: " + error);
+                }
+            });
+        }
+
+        function cancel(id) {
+            $.ajax({
+                url: '@Url.Action("Cancel", "Appointments")',
+                type: "GET",
+                data: { id: id },
+                success: function (response) {
+                    location.reload(); // Reloads the page to reflect the updated state
+                },
+                error: function (xhr, status, error) {
+                    alert("Error canceling appointment: " + error);
+                }
+            });
+        }
+    </script>
 }

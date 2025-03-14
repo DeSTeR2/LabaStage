@@ -21,6 +21,8 @@ public partial class Appointment
 
     public int? Room { get; set; }
 
+    public int AppointmentState { get; set; } = 1;
+
     [DisplayName("Doctor name")]
     public virtual Doctor DoctorNavigation { get; set; } = null!;
 

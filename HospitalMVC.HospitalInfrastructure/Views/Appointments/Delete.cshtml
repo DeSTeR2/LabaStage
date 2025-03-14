@@ -1,5 +1,5 @@
 ﻿@model HospitalDomain.Model.Appointment
-
+@using HospitalDomain.Utils  <!-- Ensure the namespace is correct -->
 @{
     ViewData["Title"] = "Delete";
 }
@@ -48,6 +48,9 @@
             <dd class="col-sm-10">
                 @Html.DisplayFor(model => model.RoomNavigation.Type)
             </dd>
+            <dt class="col-sm-2">
+                @Html.DisplayNameFor(model => model.AppointmentState)
+            </dt>
         </dl>
 
         <form asp-action="Delete">

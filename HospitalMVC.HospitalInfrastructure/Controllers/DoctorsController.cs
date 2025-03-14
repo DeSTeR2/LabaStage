@@ -145,6 +145,7 @@ namespace HospitalMVC.HospitalInfrastructure.Controllers
             Console.WriteLine($"Edit Called - ID: {id}, Name: {doctor.Name}, Speciality: {doctor.Speciality}");
 
             ModelState.Remove("DepartmentNavigation");
+            ModelState.Remove("Email");
             TryValidateModel(ModelState);
 
             if (id != doctor.Id)
@@ -254,6 +255,7 @@ namespace HospitalMVC.HospitalInfrastructure.Controllers
 
         private void FillDoctorPhotos(Microsoft.EntityFrameworkCore.Query.IIncludableQueryable<Doctor, Department> doctors)
         {
+            if (doctors == null) return;
             foreach (var doctor in doctors)
             {
                 var user = _identityContext.Users.FirstOrDefault(u => u.Email == doctor.Email);
@@ -263,7 +265,7 @@ namespace HospitalMVC.HospitalInfrastructure.Controllers
                 }
                 else
                 {
-                    doctor.ProfilePictureUrl = user.ProfilePictureUrl ?? Constants.DefaultProfileImage;
+                    doctor.ProfilePictureUrl = Constants.RootProfileImagesPath + user.ProfilePictureUrl ?? Constants.DefaultProfileImage;
                 }
             }
         }

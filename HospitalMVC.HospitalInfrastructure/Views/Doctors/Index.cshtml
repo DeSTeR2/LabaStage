@@ -1,5 +1,5 @@
 ﻿@model IEnumerable<HospitalDomain.Model.Doctor>
-
+@using HospitalDomain.Utils  <!-- Ensure namespace is included -->
 @{
     ViewData["Title"] = "Doctors by Department";
 }
@@ -67,35 +67,57 @@
         display: block;
         margin: 10px auto; /* Centers the image */
     }
-
 </style>
 
 <h1 class="page-title">Doctors by Department</h1>
 
-@foreach (var department in Model.GroupBy(d => d.DepartmentNavigation))
+@if (Utils.CheckRole.IsInRoles(User, new string[] { "admin", "manager" }))
 {
-    <div class="department-section">
-        <h2 class="department-name">@department.Key.Name</h2>
-        <table class="table doctor-table">
-            <tbody>
-                @foreach (var doctor in department)
+    var unregisteredDoctors = Model.Where(d => d.DepartmentNavigation == null);
+    if (unregisteredDoctors.Any())
+    {
+        <div class="department-section">
+            <h2 class="department-name">Unregistered</h2>
+            <div>
+                @foreach (var doctor in unregisteredDoctors)
                 {
                     <div class="doctor-card">
                         <h3 class="doctor-name">@doctor.Name</h3>
-                        <img src=@doctor.ProfilePictureUrl />
+                        <img src="@(doctor.ProfilePictureUrl ?? "/images/default.jpg")" alt="Profile Picture" />
                         <p class="doctor-contact"><strong>Contact:</strong> @doctor.Contact</p>
                         <div class="doctor-actions">
-                            @if (Utils.CheckRole.IsInRoles(User, new string[] { "admin", "manager" }))
-                            {
-                                @Html.ActionLink("View", "Details", new { id = doctor.Id }, new { @class = "btn btn-info" })
-                                @Html.ActionLink("Edit", "Edit", new { id = doctor.Id }, new { @class = "btn btn-warning" })
-                                @Html.ActionLink("Delete", "Delete", new { id = doctor.Id }, new { @class = "btn btn-danger" })
-                            }
+                            @Html.ActionLink("View", "Details", new { id = doctor.Id }, new { @class = "btn btn-info" })
+                            @Html.ActionLink("Edit", "Edit", new { id = doctor.Id }, new { @class = "btn btn-warning" })
+                            @Html.ActionLink("Delete", "Delete", new { id = doctor.Id }, new { @class = "btn btn-danger" })
                         </div>
                     </div>
-
                 }
-            </tbody>
-        </table>
+            </div>
+        </div>
+    }
+}
+
+@foreach (var departmentGroup in Model.Where(d => d.DepartmentNavigation != null).GroupBy(d => d.DepartmentNavigation))
+{
+    <div class="department-section">
+        <h2 class="department-name">@departmentGroup.Key.Name</h2>
+        <div>
+            @foreach (var doctor in departmentGroup)
+            {
+                <div class="doctor-card">
+                    <h3 class="doctor-name">@doctor.Name</h3>
+                    <img src="@(doctor.ProfilePictureUrl ?? "/images/default.jpg")" alt="Profile Picture" />
+                    <p class="doctor-contact"><strong>Contact:</strong> @doctor.Contact</p>
+                    <div class="doctor-actions">
+                        @if (Utils.CheckRole.IsInRoles(User, new string[] { "admin", "manager" }))
+                        {
+                            @Html.ActionLink("View", "Details", new { id = doctor.Id }, new { @class = "btn btn-info" })
+                            @Html.ActionLink("Edit", "Edit", new { id = doctor.Id }, new { @class = "btn btn-warning" })
+                            @Html.ActionLink("Delete", "Delete", new { id = doctor.Id }, new { @class = "btn btn-danger" })
+                        }
+                    </div>
+                </div>
+            }
+        </div>
     </div>
 }
