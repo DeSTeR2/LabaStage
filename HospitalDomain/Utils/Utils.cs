@@ -4,7 +4,7 @@
     {
         public static int GetId(IList<int> ids)
         {
-            int id = 0;
+            int id = 1;
             for (int i = 0; i < ids.Count; i++)
             {
                 if (i + 1 != ids[i])
@@ -14,7 +14,7 @@
                 }
             }
 
-            if (id == 0 && ids.Count > 0)
+            if (id == 1 && ids.Count > 0)
             {
                 id = ids[^1] + 1;
             } 

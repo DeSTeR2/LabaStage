@@ -8,5 +8,8 @@
         public static string User = "user";
 
         public static string DefaultProfileImage = "/css/images/defaultPicture.png";
+
+        public static int StartWork = 9;
+        public static int EndWork = 17;
     }
 }

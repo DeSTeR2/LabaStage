@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 
 namespace HospitalDomain.Model;
 
@@ -18,7 +19,7 @@ public partial class Appointment
 
     public int Patient { get; set; }
 
-    public int Room { get; set; }
+    public int? Room { get; set; }
 
     [DisplayName("Doctor name")]
     public virtual Doctor DoctorNavigation { get; set; } = null!;
@@ -27,5 +28,6 @@ public partial class Appointment
     public virtual Patient PatientNavigation { get; set; } = null!;
 
     [DisplayName("Room type")]
-    public virtual Room RoomNavigation { get; set; } = null!;
+    [AllowNull]
+    public virtual Room RoomNavigation { get; set; }
 }

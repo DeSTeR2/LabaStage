@@ -129,18 +129,17 @@ namespace HospitalMVC.HospitalInfrastructure.Controllers
             }
 
             ViewBag.DoctorId = doctor.Id;
+            appointment.Doctor = doctor.Id;
+            var closedDates = GetClossedDatesForDoctor(doctor.Id);
+            string json = JsonConvert.SerializeObject(closedDates.Select(d => d.ToString("yyyy-MM-dd")).ToArray());
+
+            ViewBag.PossibleDatesJson = json;
+
+            DateTime dateTime = DateTime.Today;
+            DateOnly currentDay = new DateOnly(dateTime.Year, dateTime.Month, dateTime.Day);
+            ViewBag.SelectedDate = currentDay;
             if (Utils.CheckRole.IsInRoles(User, new string[] { Constants.Admin, Constants.Manager }))
             {
-                var possibleDates = GetPossibleDatesForDoctor(doctor.Id);
-                string json = JsonConvert.SerializeObject(possibleDates.Select(d => d.ToString("yyyy-MM-dd")).ToArray());
-
-                ViewBag.PossibleDatesJson = json;
-
-                DateTime dateTime = DateTime.Today;
-                DateOnly currentDay = new DateOnly(dateTime.Year, dateTime.Month, dateTime.Day);
-                ViewBag.SelectedDate = currentDay;
-
-
                 ViewBag.Patient = new SelectList(
                     _hospitalContext.Patients.Select(p => new { p.Id, Name = p.Name + " (" + p.Contacts + ")" }),
                     "Id", "Name");
@@ -151,27 +150,9 @@ namespace HospitalMVC.HospitalInfrastructure.Controllers
             }
             else if (Utils.CheckRole.IsInRoles(User, new string[] { Constants.User }))
             {
-                var availableDoctors = _hospitalContext.Doctors.Where(d => d.Id == doctroId).ToList();
-                ViewBag.Doctor = new SelectList(availableDoctors, "Id", "Name");
-
-                var availableRooms = await _hospitalContext.Rooms
-                    .Where(r => !_hospitalContext.Appointments
-                        .Any(a => a.Room == r.Id && a.Date == appointment.Date &&
-                                  a.Time < appointment.Time.Add(TimeSpan.FromHours(1)) &&
-                                  a.Time.Add(TimeSpan.FromHours(1)) > appointment.Time))
-                    .ToListAsync();
-                ViewBag.Room = new SelectList(availableRooms, "Id", "Type");
-
-                ViewBag.PossibleDates = new List<SelectListItem>
-        {
-            new SelectListItem { Value = "2025-04-01", Text = "April 01, 2025" },
-            new SelectListItem { Value = "2025-04-02", Text = "April 02, 2025" }
-        };
-                ViewBag.PossibleTimes = new List<SelectListItem>
-        {
-            new SelectListItem { Value = "10:04", Text = "10:04 AM" },
-            new SelectListItem { Value = "11:04", Text = "11:04 AM" }
-        };
+                var patient = _hospitalContext.Patients
+                    .First(p => p.Email == user.Email);
+                ViewBag.Patient = patient.Id;
 
                 return View(appointment);
             }
@@ -179,29 +160,69 @@ namespace HospitalMVC.HospitalInfrastructure.Controllers
             return RedirectToAction("Index", "Home");
         }
 
-        public List<DateOnly> GetPossibleDatesForDoctor(int doctorId)
+        public List<DateOnly> GetClossedDatesForDoctor(int doctorId)
         {
-            return new List<DateOnly>
+            var doctor = _hospitalContext.Doctors.First(d => d.Id == doctorId);
+            var appointments = _hospitalContext.Appointments
+                .Where(a => a.Doctor == doctorId)
+                .GroupBy(a => a.Date)
+                .ToList();
+
+            int workingHours = Constants.EndWork - Constants.StartWork - 1;
+            List<DateOnly> closedDates = new();
+
+            foreach (var group in appointments)
+            {
+                int dateNumber = group.Count();
+                if (dateNumber >= workingHours)
                 {
-                    new DateOnly(2025, 03,13),
-                    new DateOnly(2025, 03,13),
-                    new DateOnly(1999, 01,04),
-                    new DateOnly(1999, 01,05),
-                    new DateOnly(1999, 01,06)
-                }; 
+                    closedDates.Add(group.Key);
+                }
+            }
+            
+            return closedDates;
         }
 
         [HttpGet]
-        public void GetPossibleTimesForDoctor(int doctroId, DateOnly date)
+        public JsonResult GetPossibleTimesForDoctor(int doctorId, DateOnly date)
         {
-            var possibleTimes = new List<SelectListItem>
+            var possibleTimes = GetAllWorkingHours();
+
+            var dateTimes = _hospitalContext.Appointments
+                .Where(a => a.Doctor == doctorId && a.Date == date)
+                .Select(a => a.Time)
+                .ToList();
+            for (int i=0; i<dateTimes.Count; i++)
+            {
+                possibleTimes.Remove(dateTimes[i]);
+            }
+
+            List<SelectListItem> selectTimes = new List<SelectListItem>();
+            for (int i=0; i<possibleTimes.Count;i++)
+            {
+                selectTimes.Add(new SelectListItem()
                 {
-                    new SelectListItem { Value = "10:04", Text = "10:04 AM" },
-                    new SelectListItem { Value = "11:04", Text = "11:04 AM" },
-                    new SelectListItem { Value = "12:04", Text = "12:04 PM" },
-                    new SelectListItem { Value = "13:04", Text = "01:04 PM" }
-                };
-            ViewBag.PossibleTimes = possibleTimes;
+                    Value = possibleTimes[i].ToString("hh:mm"),
+                    Text = possibleTimes[i].ToString()
+                });
+            }   
+
+            JsonResult result = Json(selectTimes);
+            return result;
+        }
+
+        public List<TimeOnly> GetAllWorkingHours()
+        {
+            var possibleTimes = new List<TimeOnly>();
+            for (int i=Constants.StartWork; i<Constants.EndWork; i++)
+            {
+                int hours = i;
+                int minutes = 0;
+                TimeOnly date = new TimeOnly(hours, minutes);
+                possibleTimes.Add(date);
+            }
+
+            return possibleTimes;
         }
 
         // POST: Appointments/Create
@@ -209,37 +230,6 @@ namespace HospitalMVC.HospitalInfrastructure.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("Id,Date,Time,Reason,Doctor,Patient,Room")] Appointment appointment)
         {
-            // Check if the selected doctor and room are available at the selected date and time
-            var doctorAvailable = !_hospitalContext.Appointments
-                .Any(a => a.Doctor == appointment.Doctor && a.Date == appointment.Date &&
-                          a.Time < appointment.Time.AddHours(1) && a.Time.AddHours(1) > appointment.Time);
-
-            var roomAvailable = !_hospitalContext.Appointments
-                .Any(a => a.Room == appointment.Room && a.Date == appointment.Date &&
-                          a.Time < appointment.Time.AddHours(1) && a.Time.AddHours(1) > appointment.Time);
-
-            if (!doctorAvailable || !roomAvailable)
-            {
-                ModelState.AddModelError("", "The selected doctor or room is not available at the specified time.");
-                // Re-fetch available doctors and rooms if the selected ones are unavailable
-                ViewData["Doctor"] = new SelectList(
-                    _hospitalContext.Doctors.Where(d => !_hospitalContext.Appointments
-                        .Any(a => a.Doctor == d.Id && a.Date == appointment.Date &&
-                                  a.Time < appointment.Time.AddHours(1) && a.Time.AddHours(1) > appointment.Time))
-                    .ToList(), "Id", "Name");
-
-                ViewData["Room"] = new SelectList(
-                    _hospitalContext.Rooms.Where(r => !_hospitalContext.Appointments
-                        .Any(a => a.Room == r.Id && a.Date == appointment.Date &&
-                                  a.Time < appointment.Time.AddHours(1) && a.Time.AddHours(1) > appointment.Time))
-                    .ToList(), "Id", "Type");
-
-                ViewData["Patient"] = new SelectList(
-                    _hospitalContext.Patients.Select(p => new { p.Id, Name = p.Name + " (" + p.Contacts + ")" }),
-                    "Id", "Name");
-
-                return View(appointment); // Return the view with error and keep the selected data
-            }
             var indexes = _hospitalContext.Appointments.Select(a => a.Id).OrderBy(id => id).ToList();
             appointment.Id = Utils.Util.GetId(indexes);
             var user = await _userManager.GetUserAsync(User);
@@ -263,7 +253,18 @@ namespace HospitalMVC.HospitalInfrastructure.Controllers
                 appointment.Patient = patient.Id;
             }
 
-            // If doctor and room are available, proceed with appointment creation
+            appointment.DoctorNavigation = _hospitalContext.Doctors.First(d => d.Id == appointment.Doctor);
+            appointment.PatientNavigation = _hospitalContext.Patients.First(d => d.Id == appointment.Patient);
+
+            if (appointment.Room != 0 && appointment.Room != null)
+            {
+                appointment.RoomNavigation = _hospitalContext.Rooms.First(d => d.Id == appointment.Room);
+            } else
+            {
+                appointment.RoomNavigation = null;
+                appointment.Room = null;
+            }
+
             _hospitalContext.Appointments.Add(appointment);
             await _hospitalContext.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
