@@ -101,6 +101,14 @@ namespace HospitalMVC.HospitalInfrastructure.Controllers
                 return NotFound();
             }
 
+            List<AppointmentChangeHistoryModel> changes = await _hospitalContext
+                .AppointmentChanges
+                .Where(a => a.AppointmentId == id)
+                .OrderByDescending(a => a.ChangeTime)
+                .ToListAsync();
+
+            ViewBag.ChangeHistory = changes;
+
             return View(appointment);
         }
 
@@ -138,7 +146,8 @@ namespace HospitalMVC.HospitalInfrastructure.Controllers
 
             DateTime dateTime = DateTime.Today;
             DateOnly currentDay = new DateOnly(dateTime.Year, dateTime.Month, dateTime.Day);
-            ViewBag.SelectedDate = currentDay;
+            ViewBag.SelectedDate = currentDay;            
+
             if (Utils.CheckRole.IsInRoles(User, new string[] { Constants.Admin, Constants.Manager }))
             {
                 ViewBag.Patient = new SelectList(
@@ -171,6 +180,7 @@ namespace HospitalMVC.HospitalInfrastructure.Controllers
 
             int workingHours = Constants.EndWork - Constants.StartWork - 1;
             List<DateOnly> closedDates = new();
+            closedDates.Add(DateOnly.FromDateTime(DateTime.Now));
 
             foreach (var group in appointments)
             {
@@ -239,7 +249,6 @@ namespace HospitalMVC.HospitalInfrastructure.Controllers
                 return RedirectToAction("Login", "Account");
             }
             string email = user.Email;
-
             if (!User.IsInRole("admin"))
             {
                 var patient = await _hospitalContext.Patients
@@ -267,6 +276,13 @@ namespace HospitalMVC.HospitalInfrastructure.Controllers
             }
 
             _hospitalContext.Appointments.Add(appointment);
+            AppointmentChangeHistoryModel historyModel = new AppointmentChangeHistoryModel(
+                appointment,
+                _hospitalContext,
+                Constants.CreatedAppointment,
+                CheckRole.GetUserRole(User)
+            );
+
             await _hospitalContext.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
@@ -275,9 +291,15 @@ namespace HospitalMVC.HospitalInfrastructure.Controllers
         // GET: Appointments/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
-            if (id == null)
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
             {
-                return NotFound();
+                return RedirectToAction("Login", "Account");
+            }
+
+            if (!id.HasValue)
+            {
+                return BadRequest("Appointment ID is required.");
             }
 
             var appointment = await _hospitalContext.Appointments
@@ -288,29 +310,47 @@ namespace HospitalMVC.HospitalInfrastructure.Controllers
 
             if (appointment == null)
             {
-                return NotFound();
+                return NotFound("Appointment not found.");
             }
 
-            // Filter available doctors (those who are not booked for the selected date and time, for the full 1-hour appointment, excluding the current doctor's appointment)
-            ViewData["Doctor"] = new SelectList(
-                _hospitalContext.Doctors.Where(d => !_hospitalContext.Appointments
-                    .Any(a => a.Doctor == d.Id && a.Date == appointment.Date &&
-                              a.Time < appointment.Time.AddHours(1) && a.Time.AddHours(1) > appointment.Time) || d.Id == appointment.Doctor),
-                "Id", "Name");
+            var doctor = _hospitalContext.Doctors.FirstOrDefault(d => d.Id == appointment.Doctor);
+            if (doctor == null)
+            {
+                return NotFound("Doctor not found.");
+            }
 
-            // Filter available rooms (those which are not booked for the selected date and time, for the full 1-hour appointment, excluding the current room)
-            ViewData["Room"] = new SelectList(
-                _hospitalContext.Rooms.Where(r => !_hospitalContext.Appointments
-                    .Any(a => a.Room == r.Id && a.Date == appointment.Date &&
-                              a.Time < appointment.Time.AddHours(1) && a.Time.AddHours(1) > appointment.Time) || r.Id == appointment.Room),
-                "Id", "Type");
+            // Set up ViewBag for the datepicker and doctor
+            ViewBag.DoctorId = doctor.Id;
+            var closedDates = GetClossedDatesForDoctor(doctor.Id); // Assuming this method exists
+            string json = JsonConvert.SerializeObject(closedDates.Select(d => d.ToString("yyyy-MM-dd")).ToArray());
+            ViewBag.PossibleDatesJson = json;
 
-            // Filter patients
-            ViewData["Patient"] = new SelectList(
-                _hospitalContext.Patients.Select(p => new { p.Id, Name = p.Name + " (" + p.Contacts + ")" }),
-                "Id", "Name");
+            // Set the selected date for the view
+            DateTime dateTime = appointment.Date.ToDateTime(TimeOnly.MinValue); // Convert DateOnly to DateTime
+            DateOnly currentDay = DateOnly.FromDateTime(dateTime);
+            ViewBag.SelectedDate = currentDay;
 
-            return View(appointment);
+            //ViewBag.PossibleTimes = GetPossibleTimesForDoctor(doctor.Id, appointment.Date); // Optional, if you want initial times
+
+            if (Utils.CheckRole.IsInRoles(User, new string[] { Constants.Admin, Constants.Manager }))
+            {
+                ViewBag.Patient = new SelectList(
+                    _hospitalContext.Patients.Select(p => new { p.Id, Name = p.Name + " (" + p.Contacts + ")" }),
+                    "Id", "Name", appointment.Patient);
+
+                ViewBag.Room = new SelectList(_hospitalContext.Rooms, "Id", "Type", appointment.Room);
+
+                return View(appointment);
+            }
+            else if (Utils.CheckRole.IsInRoles(User, new string[] { Constants.User }))
+            {
+                var patient = _hospitalContext.Patients.First(p => p.Email == user.Email);
+                ViewBag.Patient = patient.Id;
+
+                return View(appointment);
+            }
+
+            return RedirectToAction("Index", "Home");
         }
 
 
@@ -327,47 +367,137 @@ namespace HospitalMVC.HospitalInfrastructure.Controllers
                 return NotFound();
             }
 
-            appointment.PatientNavigation = await _hospitalContext.Patients.FindAsync(appointment.Patient);
-            appointment.DoctorNavigation = await _hospitalContext.Doctors.FindAsync(appointment.Doctor);
-            appointment.RoomNavigation = await _hospitalContext.Rooms.FindAsync(appointment.Room);
-
             ModelState.Remove("DoctorNavigation");
             ModelState.Remove("PatientNavigation");
             ModelState.Remove("RoomNavigation");
 
             TryValidateModel(ModelState);
 
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
-                try
-                {
-                    _hospitalContext.Update(appointment);
-                    await _hospitalContext.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!AppointmentExists(appointment.Id))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
-                return RedirectToAction(nameof(Index));
+                // Populate ViewData for the dropdowns in case of validation failure
+                ViewData["Doctor"] = new SelectList(_hospitalContext.Doctors, "Id", "Contact", appointment.Doctor);
+                ViewData["Patient"] = new SelectList(_hospitalContext.Patients, "Id", "Contacts", appointment.Patient);
+                return View(appointment);
             }
-            else
+
+            try
             {
-                foreach (var modelError in ModelState.Values.SelectMany(v => v.Errors))
+                var existingAppointment = await _hospitalContext.Appointments
+                    .Include(a => a.DoctorNavigation)
+                    .Include(a => a.PatientNavigation)
+                    .Include(a => a.RoomNavigation)
+                    .FirstOrDefaultAsync(a => a.Id == id);
+
+                if (existingAppointment == null)
                 {
-                    Console.WriteLine(modelError.ErrorMessage);
+                    return NotFound();
                 }
 
+                FindChangesAndCreateHistory(appointment, existingAppointment);
+                _hospitalContext.Entry(existingAppointment).CurrentValues.SetValues(appointment);
+
+                existingAppointment.Doctor = appointment.Doctor;
+                existingAppointment.Patient = appointment.Patient;
+                existingAppointment.Room = appointment.Room;
+
+
+                // Save changes
+                await _hospitalContext.SaveChangesAsync();
+
+                return RedirectToAction(nameof(Index));
             }
-            ViewData["Doctor"] = new SelectList(_hospitalContext.Doctors, "Id", "Contact", appointment.DoctorNavigation.Name);
-            ViewData["Patient"] = new SelectList(_hospitalContext.Patients, "Id", "Contacts", appointment.PatientNavigation.Name);
-            return View(appointment);
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!AppointmentExists(appointment.Id))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
+            }
+        }
+
+        private void FindChangesAndCreateHistory(Appointment appointment, Appointment oldAppointment)
+        {
+            if (appointment.Time != oldAppointment.Time)
+            {
+                AppointmentChangeHistoryModel historyModel = new AppointmentChangeHistoryModel(
+                    appointment,
+                    _hospitalContext,
+                    AppointmentHistoryAssigner.GetTransformedString(Constants.ChangeTime, oldAppointment.Time, appointment.Time),
+                    CheckRole.GetUserRole(User)
+                );
+            }
+            if (appointment.Date != oldAppointment.Date)
+            {
+                AppointmentChangeHistoryModel historyModel = new AppointmentChangeHistoryModel(
+                    appointment,
+                    _hospitalContext,
+                    AppointmentHistoryAssigner.GetTransformedString(Constants.ChangeDate, oldAppointment.Date, appointment.Date),
+                    CheckRole.GetUserRole(User)
+                );
+            }
+            if (appointment.Doctor != oldAppointment.Doctor)
+            {
+                string oldDoctorName = _hospitalContext.Doctors.First(d => d.Id == oldAppointment.Doctor).Name;
+                string newDoctorName = _hospitalContext.Doctors.First(d => d.Id == appointment.Doctor).Name;
+
+                AppointmentChangeHistoryModel historyModel = new AppointmentChangeHistoryModel(
+                    appointment,
+                    _hospitalContext,
+                    AppointmentHistoryAssigner.GetTransformedString(Constants.ChangeDoctor, oldDoctorName, newDoctorName),
+                    CheckRole.GetUserRole(User)
+                );
+            }
+            if (appointment.Reason != oldAppointment.Reason)
+            {
+                AppointmentChangeHistoryModel historyModel = new AppointmentChangeHistoryModel(
+                    appointment,
+                    _hospitalContext,
+                    AppointmentHistoryAssigner.GetTransformedString(Constants.ChangedReason, oldAppointment.Reason, appointment.Reason),
+                    CheckRole.GetUserRole(User)
+                );
+            }
+            if (appointment.Room != oldAppointment.Room)
+            {
+                if (oldAppointment.Room != 0)
+                {
+                    string oldRoomName = _hospitalContext.Rooms.First(d => d.Id == oldAppointment.Room).Type;
+                    string newRoomName = _hospitalContext.Rooms.First(d => d.Id == appointment.Room).Type;
+
+                    AppointmentChangeHistoryModel historyModel = new AppointmentChangeHistoryModel(
+                        appointment,
+                        _hospitalContext,
+                        AppointmentHistoryAssigner.GetTransformedString(Constants.ChangedRoom, oldRoomName, newRoomName),
+                        CheckRole.GetUserRole(User)
+                    );
+                } else
+                {
+                    string newRoomName = _hospitalContext.Rooms.First(d => d.Id == appointment.Room).Type;
+
+                    AppointmentChangeHistoryModel historyModel = new AppointmentChangeHistoryModel(
+                        appointment,
+                        _hospitalContext,
+                        AppointmentHistoryAssigner.GetTransformedString(Constants.SetRoom, "", newRoomName),
+                        CheckRole.GetUserRole(User)
+                    );
+                }
+            }
+            if (appointment.Patient != oldAppointment.Patient)
+            {
+                string oldPatientName = _hospitalContext.Patients.First(d => d.Id == oldAppointment.Patient).Name;
+                string newPatientName = _hospitalContext.Patients.First(d => d.Id == appointment.Patient).Name;
+
+                AppointmentChangeHistoryModel historyModel = new AppointmentChangeHistoryModel(
+                    appointment,
+                    _hospitalContext,
+                    AppointmentHistoryAssigner.GetTransformedString(Constants.ChangedPatient, oldPatientName, newPatientName),
+                    CheckRole.GetUserRole(User)
+                );
+            }
         }
 
         // GET: Appointments/Delete/5
@@ -415,6 +545,14 @@ namespace HospitalMVC.HospitalInfrastructure.Controllers
         {
             var appointment = _hospitalContext.Appointments.First(a => a.Id == id);
             appointment.AppointmentState++;
+
+            AppointmentChangeHistoryModel historyModel = new AppointmentChangeHistoryModel(
+                appointment,
+                _hospitalContext,
+                Constants.ApprovedAppointment,
+                CheckRole.GetUserRole(User)
+            );
+
             _hospitalContext.SaveChanges();
         }
 
@@ -423,6 +561,14 @@ namespace HospitalMVC.HospitalInfrastructure.Controllers
         {
             var appointment = _hospitalContext.Appointments.First(a => a.Id == id);
             appointment.AppointmentState = AppointmentStates.States.Find(a => a.Item2 == AppointmentStates.Canceled).Item1;
+
+            AppointmentChangeHistoryModel historyModel = new AppointmentChangeHistoryModel(
+                appointment,
+                _hospitalContext,
+                Constants.CanceledAppointment,
+                CheckRole.GetUserRole(User)
+            );
+
             _hospitalContext.SaveChanges();
         }
     }

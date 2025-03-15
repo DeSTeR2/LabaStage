@@ -114,6 +114,7 @@
                     <td><span class="@stateClass">@state</span></td>
                     <td class="action-links">
                         @Html.ActionLink("Edit", "Edit", new { id = item.Id }) |
+                        @Html.ActionLink("Details", "Details", new { id = item.Id }) |
                         @Html.ActionLink("Delete", "Delete", new { id = item.Id })
                     </td>
                     @if (canApproveAny)

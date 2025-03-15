@@ -1,5 +1,6 @@
 ﻿@model HospitalDomain.Model.Appointment
-@using Utils  <!-- Corrected namespace from Utils to HospitalDomain.Utils -->
+@using Utils
+
 @{
     ViewData["Title"] = "Edit Appointment";
 }
@@ -7,49 +8,45 @@
 <h1>Edit Appointment</h1>
 
 <hr />
-<div class="form-container">
-    <div class="form-column">
-        <form asp-action="Edit">
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="Edit" method="post">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <input type="hidden" asp-for="Id" />
 
             <div class="form-group">
-                <label asp-for="Date" class="control-label">Date</label>
-                <input asp-for="Date" class="form-control" type="date" />
+                <label asp-for="Date" class="control-label"></label>
+                <input asp-for="Date" class="form-control" id="datePicker" readonly="readonly" />
                 <span asp-validation-for="Date" class="text-danger"></span>
             </div>
-
             <div class="form-group">
-                <label asp-for="Time" class="control-label">Time</label>
-                <input asp-for="Time" class="form-control" type="time" />
+                <label asp-for="Time" class="control-label"></label>
+                <select asp-for="Time" class="form-control" id="timePicker" asp-items="@ViewBag.PossibleTimes">
+                    <option value="">-- Select time --</option>
+                </select>
                 <span asp-validation-for="Time" class="text-danger"></span>
             </div>
-
             <div class="form-group">
-                <label asp-for="Reason" class="control-label">Reason</label>
+                <label asp-for="Reason" class="control-label"></label>
                 <input asp-for="Reason" class="form-control" />
                 <span asp-validation-for="Reason" class="text-danger"></span>
             </div>
+            <input type="hidden" asp-for="Doctor" value="@Model.Doctor" />
 
             @if (CheckRole.IsInRoles(User, new string[] { Constants.Admin, Constants.Manager }))
             {
                 <div class="form-group">
-                    <label asp-for="Doctor" class="control-label">Doctor</label>
-                    <select asp-for="Doctor" class="form-control" asp-items="ViewBag.Doctor"></select>
-                    <span asp-validation-for="Doctor" class="text-danger"></span>
-                </div>
-                <div class="form-group">
-                    <label asp-for="Patient" class="control-label">Patient</label>
-                    <select asp-for="Patient" class="form-control" asp-items="ViewBag.Patient"></select>
+                    <label asp-for="Patient" class="control-label"></label>
+                    <select asp-for="Patient" class="form-control" asp-items="@ViewBag.Patient"></select>
                     <span asp-validation-for="Patient" class="text-danger"></span>
                 </div>
                 <div class="form-group">
-                    <label asp-for="Room" class="control-label">Room</label>
-                    <select asp-for="Room" class="form-control" asp-items="ViewBag.Room"></select>
+                    <label asp-for="Room" class="control-label"></label>
+                    <select asp-for="Room" class="form-control" asp-items="@ViewBag.Room"></select>
                     <span asp-validation-for="Room" class="text-danger"></span>
                 </div>
                 <div class="form-group">
-                    <label asp-for="AppointmentState" class="control-label">Appointment State</label>
+                    <label asp-for="AppointmentState" class="control-label"></label>
                     <select asp-for="AppointmentState" class="form-control state-select">
                         @foreach (var state in HospitalDomain.Utils.AppointmentStates.States)
                         {
@@ -67,15 +64,227 @@
                 </div>
             }
 
-            <div class="form-group mt-3">
+            <div class="form-group">
                 <input type="submit" value="Save" class="btn btn-primary" />
-                <a asp-action="Index" class="btn btn-secondary">Back</a>
+                <a asp-action="Index" class="btn btn-secondary">Back to List</a>
             </div>
         </form>
     </div>
 </div>
 
+<style>
+    /* Same styles as Create.cshtml */
+    .ui-datepicker {
+        font-family: Arial, sans-serif;
+        font-size: 16px;
+        width: 280px;
+        padding: 10px;
+        background-color: #fff;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        z-index: 1000 !important;
+    }
+
+    .ui-datepicker-header {
+        background-color: #007bff;
+        color: white;
+        padding: 8px;
+        border-radius: 6px 6px 0 0;
+        text-align: center;
+        position: relative;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .ui-datepicker-title {
+        font-weight: bold;
+        font-size: 18px;
+        flex-grow: 1;
+        text-align: center;
+    }
+
+    .ui-datepicker-prev {
+        order: 1;
+        cursor: pointer;
+        padding: 4px;
+        color: white;
+        text-decoration: none;
+    }
+
+    .ui-datepicker-next {
+        order: 2;
+        cursor: pointer;
+        padding: 4px;
+        color: white;
+        text-decoration: none;
+    }
+
+        .ui-datepicker-prev:hover,
+        .ui-datepicker-next:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+        }
+
+    .ui-datepicker-calendar {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 8px;
+    }
+
+        .ui-datepicker-calendar th {
+            font-size: 14px;
+            color: #666;
+            padding: 6px;
+            text-align: center;
+        }
+
+        .ui-datepicker-calendar td {
+            width: 40px;
+            height: 40px;
+            padding: 0;
+            text-align: center;
+            vertical-align: middle;
+        }
+
+            .ui-datepicker-calendar td a,
+            .ui-datepicker-calendar td span {
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                width: 100%;
+                height: 100%;
+                margin: 0;
+                padding: 0;
+                text-decoration: none;
+                color: #333;
+                box-sizing: border-box;
+                transition: all 0.2s ease;
+            }
+
+        .ui-datepicker-calendar .possible-date {
+            font-size: 16px;
+            font-weight: bold;
+            background-color: #e0f7fa;
+            color: #007bff;
+            border-radius: 50%;
+        }
+
+            .ui-datepicker-calendar .possible-date:hover {
+                background-color: #b3e5fc;
+                transform: scale(1.1);
+            }
+
+        .ui-datepicker-calendar .unpossible-date {
+            font-size: 16px;
+            color: #999;
+            background-color: transparent;
+        }
+
+            .ui-datepicker-calendar .unpossible-date:hover {
+                background-color: #f5f5f5;
+            }
+
+        .ui-datepicker-calendar .ui-state-highlight {
+            background-color: #fff3e0;
+            color: #ff9800;
+            border-radius: 50%;
+        }
+
+        .ui-datepicker-calendar .ui-state-active {
+            background-color: #007bff;
+            color: white !important;
+            border-radius: 50%;
+        }
+
+    .ui-datepicker-unselectable .ui-state-default {
+        color: #ccc;
+        background-color: #f9f9f9;
+        cursor: not-allowed;
+    }
+</style>
+
 @section Scripts {
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            var possibleDatesJson = '@Html.Raw(ViewBag.PossibleDatesJson ?? "[]")';
+            console.log("Raw PossibleDatesJson:", possibleDatesJson);
+
+            var possibleDates;
+            try {
+                possibleDates = JSON.parse(possibleDatesJson);
+            } catch (error) {
+                console.error("JSON Parsing Error:", error);
+                possibleDates = [];
+            }
+
+            var doctorId = @Model.Doctor ?? 0;
+            console.log("Possible Dates:", possibleDates);
+            console.log("Doctor ID:", doctorId);
+
+            $("#datePicker").datepicker({
+                dateFormat: "yy-mm-dd",
+                beforeShowDay: function (date) {
+                    var dateStr = $.datepicker.formatDate("yy-mm-dd", date);
+                    var isPossible = !(possibleDates.indexOf(dateStr) !== -1);
+                    console.log("Date:", dateStr, "Possible:", isPossible);
+                    return [isPossible, 'possible-date'];
+                },
+                minDate: 0,
+                maxDate: "+2m",
+                onSelect: function (dateText) {
+                    console.log("Selected Date:", dateText);
+                    $.ajax({
+                        url: '@Url.Action("GetPossibleTimesForDoctor", "Appointments")',
+                        type: 'GET',
+                        data: { doctorId: doctorId, date: dateText },
+                        success: function (data) {
+                            console.log("Times Received:", data);
+                            var $timeSelect = $('#timePicker');
+                            $timeSelect.empty().append('<option value="">-- Select time --</option>');
+                            $.each(data, function (index, item) {
+                                $timeSelect.append($('<option>', {
+                                    value: item.value,
+                                    text: item.text,
+                                    selected: item.value === $('#timePicker').val()
+                                }));
+                            });
+                            $timeSelect.trigger('change');
+                        },
+                        error: function (xhr, status, error) {
+                            console.error("Error fetching times:", error);
+                            $('#timePicker').empty().append('<option value="">Error loading times</option>');
+                        }
+                    });
+                }
+            }).datepicker("setDate", "@Model.Date.ToString("yyyy-MM-dd")");
+
+            $.ajax({
+                url: '@Url.Action("GetPossibleTimesForDoctor", "Appointments")',
+                type: 'GET',
+                data: { doctorId: doctorId, date: $("#datePicker").val() },
+                success: function (data) {
+                    console.log("Initial Times Received:", data);
+                    var $timeSelect = $('#timePicker');
+                    $timeSelect.empty().append('<option value="">-- Select time --</option>');
+                    $.each(data, function (index, item) {
+                        $timeSelect.append($('<option>', {
+                            value: item.value,
+                            text: item.text,
+                            selected: item.value === '@Model.Time' // Pre-select current time
+                        }));
+                    });
+                },
+                error: function (xhr, status, error) {
+                    console.error("Error fetching initial times:", error);
+                    $('#timePicker').empty().append('<option value="">Error loading times</option>');
+                }
+            });
+        });
+    </script>
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }

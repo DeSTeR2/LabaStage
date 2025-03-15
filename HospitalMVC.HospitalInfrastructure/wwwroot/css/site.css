@@ -1378,10 +1378,6 @@ dl.row dt {
         color: #258cfb;
     }
 
-    .form-group input {
-        padding: 20px 10px 5px 10px; /* Adjusted padding to accommodate floating label */
-    }
-
     /* Required Field Indicator */
     .form-group label.required::after {
         content: " *"; /* Add asterisk for required fields */
@@ -1422,4 +1418,8 @@ dl.row dt {
     background-color: #dc3545; /* Red for Canceled */
     padding: 4px 8px;
     border-radius: 4px;
+}
+
+.mt-5 {
+    padding-bottom: 50px;
 }

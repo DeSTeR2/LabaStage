@@ -45,7 +45,79 @@
     </table>
 </div>
 
-<div>
+<!-- Appointment Change History Timeline -->
+<div class="mt-4">
+    <h2>Change History Timeline</h2>
+    <hr />
+    @if (ViewBag.ChangeHistory != null)
+    {
+        <div class="timeline">
+            @foreach (var history in ViewBag.ChangeHistory)
+            {
+                <div class="timeline-item">
+                    <div class="timeline-date">@history.ChangeTime.ToString("yyyy-MM-dd HH:mm:ss")</div>
+                    <div class="timeline-content">
+                        <p><strong>Changed By:</strong> @(history.ChangedBy ?? "Unknown")</p>
+                        <p><strong>Change Info:</strong> @(history.ChangeInfo ?? "No details provided")</p>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <p>No change history available for this appointment.</p>
+    }
+</div>
+
+<div class="mt-5">
     <a asp-action="Edit" class="btn btn-primary" asp-route-id="@Model?.Id">Edit</a> |
     <a asp-action="Index" class="btn btn-secondary">Back to List</a>
 </div>
+
+<!-- Optional CSS for timeline styling -->
+<style>
+    .timeline {
+        position: relative;
+        padding: 20px 0;
+    }
+
+    .timeline-item {
+        margin-bottom: 20px;
+        padding-left: 30px;
+        position: relative;
+    }
+
+        .timeline-item:before {
+            content: '';
+            position: absolute;
+            left: 10px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: #ddd;
+        }
+
+    .timeline-date {
+        font-weight: bold;
+        color: #555;
+        margin-bottom: 5px;
+    }
+
+    .timeline-content {
+        background: #f8f9fa;
+        padding: 10px;
+        border-radius: 5px;
+    }
+
+    .timeline-item:after {
+        content: '';
+        position: absolute;
+        left: 7px;
+        top: 5px;
+        width: 8px;
+        height: 8px;
+        background: #007bff;
+        border-radius: 50%;
+    }
+</style>

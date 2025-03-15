@@ -26,6 +26,8 @@ public partial class HospitalContext : DbContext
 
     public virtual DbSet<Room> Rooms { get; set; }
 
+    public virtual DbSet<AppointmentChangeHistoryModel> AppointmentChanges { get; set; }
+
 
 //    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 //#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
@@ -159,6 +161,27 @@ public partial class HospitalContext : DbContext
                 .HasColumnName("type");
         });
 
+        modelBuilder.Entity<AppointmentChangeHistoryModel>(entity =>
+        {
+            entity.HasKey(e => new { e.AppointmentId, e.ChangeTime }); // Assuming composite key
+
+            entity.Property(e => e.AppointmentId)
+                .IsRequired();
+
+            entity.Property(e => e.ChangeTime)
+                .IsRequired();
+
+            entity.Property(e => e.ChangeInfo)
+                .IsUnicode(true);
+
+            entity.Property(e => e.ChangedBy)
+                .IsUnicode(true);
+
+            entity.HasOne(e => e.AppointmentNavigation)
+                .WithMany()
+                .HasForeignKey(e => e.AppointmentId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
         OnModelCreatingPartial(modelBuilder);
     }
 

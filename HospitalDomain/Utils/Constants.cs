@@ -12,5 +12,18 @@
 
         public static int StartWork = 9;
         public static int EndWork = 17;
+
+        public static string CreatedAppointment = "Appointment was created";
+        public static string ApprovedAppointment = "Appointment was approved";
+        public static string CanceledAppointment = "Appointment was canceled";
+        public static string AttendentedAppointment = "Appointment was attendented";
+        public static string CompletedAppointment = "Appointment was completed";
+        public static string SetRoom = "Set room {new}{old}";
+        public static string ChangeTime = "Changed time from {old} to {new}";
+        public static string ChangedReason = "Changed reason from {old} to {new}";
+        public static string ChangeDate = "Changed date from {old} to {new}";
+        public static string ChangeDoctor = "Changed doctor from {old} to {new}";
+        public static string ChangedRoom = "Changed room from {old} to {new}";
+        public static string ChangedPatient = "Changed patient from {old} to {new}";
     }
 }
