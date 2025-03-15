@@ -27,9 +27,9 @@ public partial class HospitalContext : DbContext
     public virtual DbSet<Room> Rooms { get; set; }
 
 
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
-        => optionsBuilder.UseSqlServer("Server=ADMIN\\SQLEXPRESS; Database=Hospital; Trusted_Connection=True; TrustServerCertificate=True; ");
+//    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+//#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
+//        => optionsBuilder.UseSqlServer("Server=ADMIN\\SQLEXPRESS; Database=Hospital; Trusted_Connection=True; TrustServerCertificate=True; ");
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -88,13 +88,10 @@ public partial class HospitalContext : DbContext
                 .IsUnicode(false)
                 .IsFixedLength();
         });
-
         modelBuilder.Entity<Doctor>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("PK__doctor__3213E83F4AF846E6");
-
             entity.ToTable("doctor");
-
             entity.HasIndex(e => e.Department, "IX_doctor_Department");
 
             entity.Property(e => e.Id)
@@ -120,6 +117,7 @@ public partial class HospitalContext : DbContext
                 .HasForeignKey(d => d.Department)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_doctor_department");
+
         });
 
         modelBuilder.Entity<Patient>(entity =>

@@ -87,7 +87,7 @@
 </form>
 
 <!-- Display Doctors Grouped by Department -->
-@foreach (var department in Model.GroupBy(d => d.DepartmentNavigation))
+@foreach (var department in Model.Where(d => d.DepartmentNavigation != null).GroupBy(d => d.DepartmentNavigation))
 {
     <div class="department-section">
         <h2 class="department-name">@department.Key.Name</h2>

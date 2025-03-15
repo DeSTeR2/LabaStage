@@ -289,6 +289,28 @@
         padding-bottom: 15px;
         }
 
+        .nav-link {
+            position: relative;
+            padding-right: 30px; /* More space for icon + number */
+        }
+
+        .appointment-count {
+            position: absolute;
+            top: -10px; /* Adjust for icon height */
+            right: 0;
+            background-color: #007bff;
+            color: #fff;
+            font-size: 12px;
+            padding: 2px 6px;
+            border-radius: 12px; /* Slightly oval for icon + text */
+            display: flex;
+            align-items: center;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+        }
+
+            .appointment-count i {
+                margin-right: 3px; /* Space between icon and number */
+            }
     </style>
 </head>
 <body>
@@ -330,7 +352,15 @@
                         </li>
                     }
                     <li class="nav-item">
-                        <a class="nav-link" href="@Url.Action("Index", "Appointments")">Appointments</a>
+                        <a class="nav-link" href="@Url.Action("Index", "Appointments")">
+                            Appointments
+                            @if (ViewBag.AppointmentCount > 0)
+                            {
+                                <span class="appointment-count">
+                                    <i class="fas fa-calendar-check"></i> @ViewBag.AppointmentCount
+                                </span>
+                            }
+                        </a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="@Url.Action("Index", "Rooms")">Rooms</a>

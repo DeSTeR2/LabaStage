@@ -21,6 +21,7 @@ public partial class Doctor
 
     public string? ProfilePictureUrl { get; set; }
 
+
     public virtual ICollection<Appointment> Appointments { get; set; } = new List<Appointment>();
 
     [Display(Name = "Department")]

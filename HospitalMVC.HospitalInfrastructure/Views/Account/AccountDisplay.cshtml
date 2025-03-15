@@ -88,7 +88,7 @@
         <form asp-controller="Account" asp-action="UpdateProfile" method="post" enctype="multipart/form-data" class="mt-4">
             <!-- Profile Picture -->
             <div class="profile-picture-container">
-                <img src="@(Model.ProfilePictureUrl != null ? $"/css/images/profiles/{Model.ProfilePictureUrl}" : "/css/images/defaultPicture.png")" class="profile-picture" alt="Profile Picture" />
+                <img id="profile-img" src="@(Model.ProfilePictureUrl != null ? $"/css/images/profiles/{Model.ProfilePictureUrl}" : "/css/images/defaultPicture.png")" class="profile-picture" alt="Profile Picture" />
                 <div class="upload-overlay" onclick="document.getElementById('profilePictureInput').click();">
                     <i class="fas fa-camera upload-icon"></i>
                     <span class="upload-text">Change Photo</span>
@@ -133,15 +133,16 @@
 
 <script>
     document.getElementById('profilePictureInput').addEventListener('change', function(event) {
-        const file = event.target.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                document.querySelector('.pr
-                <div class="col-md-6">ofile-picture').src = e.target.result;
-            };
-            reader.readAsDataURL(file);
-        }
+        $('#profilePictureInput').on('change', function(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    $('.profile-picture').attr('src', e.target.result); // Update image src
+                };
+                reader.readAsDataURL(file);
+            }
+        });
     });
 
         function RemovePhoto() {

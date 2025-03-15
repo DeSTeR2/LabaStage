@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using HospitalDomain.Model;
 using Utils;
 using Microsoft.Build.Logging;
+using Microsoft.AspNetCore.Identity;
 
 namespace HospitalMVC.HospitalInfrastructure.Controllers
 {
@@ -13,11 +14,13 @@ namespace HospitalMVC.HospitalInfrastructure.Controllers
     {
         private readonly HospitalContext _hospitalContext;
         private readonly IdentityContext _identityContext;
+        private readonly UserManager<User> _userManager;
 
-        public DoctorsController(HospitalContext context, IdentityContext identityContext)
+        public DoctorsController(HospitalContext context, IdentityContext identityContext, UserManager<User> userManager)
         {
             _hospitalContext = context;
             _identityContext = identityContext;
+            _userManager = userManager;
         }
 
         // GET: Doctors
@@ -137,7 +140,6 @@ namespace HospitalMVC.HospitalInfrastructure.Controllers
         }
 
 
-        // POST: Doctors/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Speciality,Contact,Department")] Doctor doctor)
@@ -145,6 +147,7 @@ namespace HospitalMVC.HospitalInfrastructure.Controllers
             Console.WriteLine($"Edit Called - ID: {id}, Name: {doctor.Name}, Speciality: {doctor.Speciality}");
 
             ModelState.Remove("DepartmentNavigation");
+            ModelState.Remove("UserNavigation");
             ModelState.Remove("Email");
             TryValidateModel(ModelState);
 
@@ -174,11 +177,39 @@ namespace HospitalMVC.HospitalInfrastructure.Controllers
                     return NotFound();
                 }
 
+                // Validate User exists
+                var user = _identityContext.Users.FirstOrDefault(u => u.PhoneNumber == doctor.Contact);
+                if (user == null)
+                {
+                    Console.WriteLine("Error: No user found with this phone number!");
+                    ModelState.AddModelError("Contact", "No user found with this phone number.");
+                    ViewData["Department"] = new SelectList(_hospitalContext.Departments, "Id", "Name", doctor.Department);
+                    return View(doctor);
+                }
+
+                doctor.Email = user.Email;
+
+                // Verify UserId exists in the same context as Doctors
+                var userExists = await _identityContext.Users.AnyAsync(u => u.PhoneNumber == doctor.Contact);
+                if (!userExists)
+                {
+                    ModelState.AddModelError("UserId", "The selected user does not exist in the system.");
+                    ViewData["Department"] = new SelectList(_hospitalContext.Departments, "Id", "Name", doctor.Department);
+                    return View(doctor);
+                }
+
                 _hospitalContext.Doctors.Update(doctor);
                 await _hospitalContext.SaveChangesAsync();
                 Console.WriteLine("✅ Doctor updated successfully!");
             }
-            catch (DbUpdateConcurrencyException)
+            catch (DbUpdateException ex)
+            {
+                Console.WriteLine($"DbUpdateException: {ex.InnerException?.Message}");
+                ModelState.AddModelError("", $"An error occurred while saving the doctor. Please check the data and try again. {ex.InnerException?.Message}");
+                ViewData["Department"] = new SelectList(_hospitalContext.Departments, "Id", "Name", doctor.Department);
+                return View(doctor);
+            }
+            catch (Exception)
             {
                 if (!DoctorExists(doctor.Id))
                 {
