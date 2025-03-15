@@ -1,6 +1,7 @@
 ﻿@{
     ViewData["Title"] = "Hospital";
 }
+
 <style>
     body {
         font-family: Arial, sans-serif;
@@ -42,7 +43,7 @@
     }
 
     .content-image {
-        flex: 2; /* Takes up more space */
+        flex: 2;
         text-align: center;
     }
 
@@ -55,11 +56,11 @@
         }
 
     .content-text {
-        flex: 3; /* Takes up more space */
+        flex: 3;
         display: flex;
         flex-direction: column;
-        justify-content: flex-start; /* Start the content at the top */
-        height: 100%; /* Allow content to take up full space */
+        justify-content: flex-start;
+        height: 100%;
         position: relative;
     }
 
@@ -68,30 +69,43 @@
         color: #444;
         text-align: justify;
         line-height: 1.6;
-        margin-bottom: 20px; /* Adds space between content and button */
+        margin-bottom: 20px;
     }
 
-    .button-spacer {
-        flex-grow: 1; /* Pushes the button to the bottom */
+
+    .options-list {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+        align-items: flex-start;
     }
 
     .btn-hospital {
-        font-size: 1rem; /* Smaller font size */
+        font-size: 1rem;
         font-weight: 600;
         border-radius: 8px;
         transition: background-color 0.3s ease, transform 0.2s ease;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 10px;
         text-decoration: none;
         color: white;
         box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        padding: 10px 20px; /* Consistent padding */
+        padding: 0; /* Remove padding from <a>, let button handle it */
+        display: block; /* Ensure it takes full width */
     }
 
-        .btn-hospital i {
-            font-size: 1.4rem;
+        .btn-hospital button {
+            background: none; /* Remove default button background */
+            border: none; /* Remove default button border */
+            font-size: 1rem; /* Match btn-hospital font size */
+            font-weight: 600;
+            color: white; /* Inherit color from parent */
+            padding: 10px 20px; /* Consistent padding */
+            width: 100%; /* Full width of the <a> */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px; /* Space between icon and text */
+            cursor: pointer; /* Button cursor */
+            border-radius: 8px; /* Match btn-hospital */
         }
 
     .btn-primary {
@@ -123,24 +137,22 @@
         filter: brightness(1.1);
     }
 
-    /* Updated options-list to align right */
-    .options-container {
-        position: absolute; /* Position the container absolutely */
-        right: 20px; /* Align to the right with some margin */
-        top: 50%; /* Vertically center */
-        transform: translateY(-50%); /* Adjust to be exactly centered */
+    /* Icon inside button */
+    .btn-hospital button i {
+        font-size: 1.2rem; /* Slightly larger icon */
     }
 
-    .options-list {
+    .content-text {
+        flex: 3;
         display: flex;
         flex-direction: column;
-        gap: 5px;
-        align-items: flex-start;
+        justify-content: flex-start;
+        height: 100%;
+        position: relative;
+        min-height: 300px; /* Optional: Ensure there's enough height */
     }
 
 </style>
-
-
 
 <div class="container">
     <div class="text-center">
@@ -159,18 +171,19 @@
                 that every patient receives the best treatment possible. Whether you need an appointment,
                 specialist consultation, or emergency care, we are here for you 24/7.
             </div>
-            <div class="options-list">
-                <a class="btn btn-primary btn-hospital">
-                    <i class="fas fa-calendar-check"></i> Make an Appointment
-                </a>
-                <a class="btn btn-success btn-hospital">
-                    <i class="fas fa-user-md"></i> See All Doctors
-                </a>
-                <a class="btn btn-info btn-hospital">
-                    <i class="fas fa-file-medical"></i> View Patient Records
-                </a>
+            <div class="options-container">
+                <div class="options-list">
+                    <a class="btn btn-primary btn-hospital" href="@Url.Action("DoctorsByDepartment", "Doctors")">
+                        <button><i class="fas fa-calendar-check"></i> Make an appointment</button>
+                    </a>
+                    <a class="btn btn-success btn-hospital" href="@Url.Action("Index", "Doctors")">
+                        <button><i class="fas fa-user-md"></i> All doctors</button>
+                    </a>
+                    <a class="btn btn-info btn-hospital" href="@Url.Action("Index", "Appointments")">
+                        <button><i class="fas fa-file-medical"></i> View appointments</button>
+                    </a>
+                </div>
             </div>
         </div>
     </div>
-
 </div>
