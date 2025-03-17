@@ -1,5 +1,11 @@
-﻿@{
+﻿@model HospitalMVC.ViewModels.HomeIndexViewModel
+@{
     ViewData["Title"] = "Hospital";
+
+    var canApproveAny = (Model is null || (Utils.CheckRole.IsInRoles(User, new string[] { Utils.Constants.Admin, Utils.Constants.Manager })
+        && Model.Appointments.Any(a => a.AppointmentState == 1)));
+    var canCancelAny = (Model is null || (Utils.CheckRole.IsInRoles(User, new string[] { Utils.Constants.Admin, Utils.Constants.Manager, Utils.Constants.Doctor })
+        && Model.Appointments.Any(a => a.AppointmentState <= 3)));
 }
 
 <style>
@@ -62,6 +68,7 @@
         justify-content: flex-start;
         height: 100%;
         position: relative;
+        min-height: 300px;
     }
 
     .text-content {
@@ -71,7 +78,6 @@
         line-height: 1.6;
         margin-bottom: 20px;
     }
-
 
     .options-list {
         display: flex;
@@ -88,24 +94,24 @@
         text-decoration: none;
         color: white;
         box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        padding: 0; /* Remove padding from <a>, let button handle it */
-        display: block; /* Ensure it takes full width */
+        padding: 0;
+        display: block;
     }
 
         .btn-hospital button {
-            background: none; /* Remove default button background */
-            border: none; /* Remove default button border */
-            font-size: 1rem; /* Match btn-hospital font size */
+            background: none;
+            border: none;
+            font-size: 1rem;
             font-weight: 600;
-            color: white; /* Inherit color from parent */
-            padding: 10px 20px; /* Consistent padding */
-            width: 100%; /* Full width of the <a> */
+            color: white;
+            padding: 10px 20px;
+            width: 100%;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 10px; /* Space between icon and text */
-            cursor: pointer; /* Button cursor */
-            border-radius: 8px; /* Match btn-hospital */
+            gap: 10px;
+            cursor: pointer;
+            border-radius: 8px;
         }
 
     .btn-primary {
@@ -137,21 +143,81 @@
         filter: brightness(1.1);
     }
 
-    /* Icon inside button */
     .btn-hospital button i {
-        font-size: 1.2rem; /* Slightly larger icon */
+        font-size: 1.2rem;
     }
 
-    .content-text {
-        flex: 3;
+    /* Table Styles */
+    .department-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 30px;
+        background: #fff;
+        border-radius: 10px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .table-header th {
+        background-color: #0077cc;
+        color: white;
+        padding: 12px 15px;
+        text-align: left;
+        font-weight: 600;
+    }
+
+    .department-table td, .department-table th {
+        padding: 12px 15px;
+        border-bottom: 1px solid #ddd;
+    }
+
+    .department-table tr:hover {
+        background-color: #f9f9f9;
+    }
+
+    .action-buttons {
         display: flex;
-        flex-direction: column;
-        justify-content: flex-start;
-        height: 100%;
-        position: relative;
-        min-height: 300px; /* Optional: Ensure there's enough height */
+        gap: 10px;
     }
 
+    .btn-approve {
+        background-color: #28a745;
+        color: white;
+        padding: 8px 15px;
+        border-radius: 6px;
+        text-decoration: none;
+        transition: background-color 0.3s ease;
+    }
+
+        .btn-approve:hover {
+            background-color: #218838;
+        }
+
+    .btn-cancel {
+        background-color: #dc3545;
+        color: white;
+        padding: 8px 15px;
+        border-radius: 6px;
+        text-decoration: none;
+        transition: background-color 0.3s ease;
+    }
+
+        .btn-cancel:hover {
+            background-color: #c82333;
+        }
+    .no-appointments {
+        text-align: center;
+        margin-top: 30px;
+        padding: 20px;
+        background: #fff;
+        border-radius: 10px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    }
+
+        .no-appointments p {
+            font-size: 1.2rem;
+            color: #555;
+            margin-bottom: 15px;
+        }
 </style>
 
 <div class="container">
@@ -187,3 +253,84 @@
         </div>
     </div>
 </div>
+
+@if (Model is not null && Model.Appointments != null && Model.Appointments.Any())
+{
+    <table class="department-table">
+        <thead class="table-header">
+            <tr>
+                <th>Date</th>
+                <th>Time</th>
+                <th>Reason</th>
+                <th>Doctor Name</th>
+                <th>Patient Name</th>
+                <th>Room Type</th>
+                <th>Appointment State</th>
+                <th>Actions</th>
+                @if (canApproveAny)
+                {
+                    <th>Approval</th>
+                }
+                @if (canCancelAny)
+                {
+                    <th>Cancellation</th>
+                }
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.Appointments)
+            {
+                var state = HospitalDomain.Utils.AppointmentStates.States
+                .FirstOrDefault(s => s.Item1 == item.AppointmentState)?.Item2 ?? "Unknown";
+                var stateClass = $"state-{state.ToLower()}";
+
+                <tr>
+                    <td>@Html.DisplayFor(modelItem => item.Date)</td>
+                    <td>@Html.DisplayFor(modelItem => item.Time)</td>
+                    <td>@Html.DisplayFor(modelItem => item.Reason)</td>
+                    <td>@Html.DisplayFor(modelItem => item.DoctorNavigation.Name)</td>
+                    <td>@Html.DisplayFor(modelItem => item.PatientNavigation.Name)</td>
+                    <td>@Html.DisplayFor(modelItem => item.RoomNavigation.Type)</td>
+                    <td><span class="@stateClass">@state</span></td>
+                    <td class="action-buttons">
+                        <a href="@Url.Action("Edit", "Appointments", new { id = item.Id })" class="btn-action btn-edit">Edit</a>
+                        <a href="@Url.Action("Details", "Appointments", new { id = item.Id })" class="btn-action btn-details">Details</a>
+                        <a href="@Url.Action("Delete", "Appointments", new { id = item.Id })" class="btn-action btn-delete">Delete</a>
+                    </td>
+                    @if (canApproveAny)
+                    {
+                        <td>
+                            @{
+                                var isAuthorized = Utils.CheckRole.IsInRoles(User, new string[] { Utils.Constants.Admin, Utils.Constants.Manager });
+                                var canApprove = isAuthorized && item.AppointmentState == 1;
+                            }
+                            @if (canApprove)
+                            {
+                                <a onclick="approve(@item.Id)" class="btn-approve">Approve</a>
+                            }
+                        </td>
+                    }
+                    @if (canCancelAny)
+                    {
+                        <td>
+                            @{
+                                var isAuthorized = Utils.CheckRole.IsInRoles(User, new string[] { Utils.Constants.Admin, Utils.Constants.Manager, Utils.Constants.Doctor });
+                                var canCancel = isAuthorized && item.AppointmentState <= 3;
+                            }
+                            @if (canCancel)
+                            {
+                                <a onclick="cancel(@item.Id)" class="btn-cancel">Cancel</a>
+                            }
+                        </td>
+                    }
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+else
+{
+    <div class="no-appointments">
+        <p>There are no appointments. </p>
+    </div>
+}

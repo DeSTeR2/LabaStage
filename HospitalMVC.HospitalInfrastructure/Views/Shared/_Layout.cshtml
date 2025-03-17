@@ -290,27 +290,27 @@
         }
 
         .nav-link {
-            position: relative;
-            padding-right: 30px; /* More space for icon + number */
+        position: relative;
+        padding-right: 30px; /* More space for icon + number */
         }
 
         .appointment-count {
-            position: absolute;
-            top: -10px; /* Adjust for icon height */
-            right: 0;
-            background-color: #007bff;
-            color: #fff;
-            font-size: 12px;
-            padding: 2px 6px;
-            border-radius: 12px; /* Slightly oval for icon + text */
-            display: flex;
-            align-items: center;
-            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+        position: absolute;
+        top: -10px; /* Adjust for icon height */
+        right: 0;
+        background-color: #007bff;
+        color: #fff;
+        font-size: 12px;
+        padding: 2px 6px;
+        border-radius: 12px; /* Slightly oval for icon + text */
+        display: flex;
+        align-items: center;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
         }
 
-            .appointment-count i {
-                margin-right: 3px; /* Space between icon and number */
-            }
+        .appointment-count i {
+        margin-right: 3px; /* Space between icon and number */
+        }
     </style>
 </head>
 <body>
@@ -362,14 +362,14 @@
                             }
                         </a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="@Url.Action("Index", "Rooms")">Rooms</a>
-                    </li>
-                    @if (User.IsInRole(Constants.Admin))
+                    @if (CheckRole.IsInRoles(User, new string[] { Constants.Admin, Constants.Manager }))
                     {
                         <li class="nav-item">
-                            <a class="nav-link" href="@Url.Action("Index", "Roles")">User roles</a>
+                            <a class="nav-link" href="@Url.Action("Index", "Rooms")">Rooms</a>
                         </li>
+                    }
+                    @if (User.IsInRole(Constants.Admin))
+                    {
                         <li class="nav-item">
                             <a class="nav-link" href="@Url.Action("UserList", "Roles")">User list</a>
                         </li>

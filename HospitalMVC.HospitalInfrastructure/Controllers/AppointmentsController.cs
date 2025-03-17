@@ -72,7 +72,6 @@ namespace HospitalMVC.HospitalInfrastructure.Controllers
                     .Include(a => a.DoctorNavigation)
                     .Include(a => a.RoomNavigation)
                     .Where(a => a.PatientNavigation.Email == email);
-
             }
 
             if (hospitalContext == null)
