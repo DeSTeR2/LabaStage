@@ -32,4 +32,11 @@ public partial class Appointment
     [DisplayName("Room type")]
     [AllowNull]
     public virtual Room RoomNavigation { get; set; }
+
+    public override string ToString()
+    {
+        string result = "";
+        result = $"Appointment on date {Date} at {Time}. Reason - {Reason}\n";
+        return result;
+    }
 }

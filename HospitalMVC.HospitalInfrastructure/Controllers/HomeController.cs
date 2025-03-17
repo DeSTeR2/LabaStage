@@ -1,5 +1,6 @@
 using HospitalDomain;
 using HospitalDomain.Model;
+using HospitalDomain.Utils;
 using HospitalMVC.ViewModels;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -29,7 +30,7 @@ namespace HospitalMVC.Controllers
                 {
                     Doctor doctor = _hospitalContext.Doctors.First(d => d.Email == user.Email);
                     var appointments = _hospitalContext.Appointments
-                        .Include(a => a.PatientNavigation)
+                         .Include(a => a.PatientNavigation)
                         .Include(a => a.DoctorNavigation)
                         .Include(a => a.RoomNavigation)
                         .Where(a => a.Doctor == doctor.Id).ToList();
@@ -60,12 +61,10 @@ namespace HospitalMVC.Controllers
             }
             return View();
         }
-
         public IActionResult Statistics()
         {
 
             return View();
         }
-
     }
 }

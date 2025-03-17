@@ -338,18 +338,23 @@ namespace HospitalMVC.HospitalInfrastructure.Controllers
                     "Id", "Name", appointment.Patient);
 
                 ViewBag.Room = new SelectList(_hospitalContext.Rooms, "Id", "Type", appointment.Room);
-
-                return View(appointment);
             }
-            else if (Utils.CheckRole.IsInRoles(User, new string[] { Constants.User }))
+            else if (Utils.CheckRole.IsInRoles(User, new string[] { Constants.User, Constants.Doctor }))
             {
-                var patient = _hospitalContext.Patients.First(p => p.Email == user.Email);
-                ViewBag.Patient = patient.Id;
+                var patient = _hospitalContext.Patients.FirstOrDefault(p => p.Email == user.Email);
+                if (patient == null)
+                {
+                    return NotFound("Patient not found.");
+                }
 
-                return View(appointment);
+                ViewBag.Patient = new SelectList(
+                new List<object> { new { Id = patient.Id, Name = patient.Name } },
+                "Id", "Name", patient.Id);
             }
-
+            else 
             return RedirectToAction("Index", "Home");
+            
+            return View(appointment);
         }
 
 
@@ -421,6 +426,7 @@ namespace HospitalMVC.HospitalInfrastructure.Controllers
 
         private void FindChangesAndCreateHistory(Appointment appointment, Appointment oldAppointment)
         {
+            string changes = "";
             if (appointment.Time != oldAppointment.Time)
             {
                 AppointmentChangeHistoryModel historyModel = new AppointmentChangeHistoryModel(
@@ -429,6 +435,8 @@ namespace HospitalMVC.HospitalInfrastructure.Controllers
                     AppointmentHistoryAssigner.GetTransformedString(Constants.ChangeTime, oldAppointment.Time, appointment.Time),
                     CheckRole.GetUserRole(User)
                 );
+
+                changes += historyModel.ChangeInfo + "\n";
             }
             if (appointment.Date != oldAppointment.Date)
             {
@@ -438,6 +446,7 @@ namespace HospitalMVC.HospitalInfrastructure.Controllers
                     AppointmentHistoryAssigner.GetTransformedString(Constants.ChangeDate, oldAppointment.Date, appointment.Date),
                     CheckRole.GetUserRole(User)
                 );
+                changes += historyModel.ChangeInfo + "\n";
             }
             if (appointment.Doctor != oldAppointment.Doctor)
             {
@@ -450,6 +459,7 @@ namespace HospitalMVC.HospitalInfrastructure.Controllers
                     AppointmentHistoryAssigner.GetTransformedString(Constants.ChangeDoctor, oldDoctorName, newDoctorName),
                     CheckRole.GetUserRole(User)
                 );
+                changes += historyModel.ChangeInfo + "\n";
             }
             if (appointment.Reason != oldAppointment.Reason)
             {
@@ -459,6 +469,7 @@ namespace HospitalMVC.HospitalInfrastructure.Controllers
                     AppointmentHistoryAssigner.GetTransformedString(Constants.ChangedReason, oldAppointment.Reason, appointment.Reason),
                     CheckRole.GetUserRole(User)
                 );
+                changes += historyModel.ChangeInfo + "\n";
             }
             if (appointment.Room != oldAppointment.Room)
             {
@@ -473,6 +484,7 @@ namespace HospitalMVC.HospitalInfrastructure.Controllers
                         AppointmentHistoryAssigner.GetTransformedString(Constants.ChangedRoom, oldRoomName, newRoomName),
                         CheckRole.GetUserRole(User)
                     );
+                    changes += historyModel.ChangeInfo + "\n";
                 } else
                 {
                     string newRoomName = _hospitalContext.Rooms.First(d => d.Id == appointment.Room).Type;
@@ -483,6 +495,7 @@ namespace HospitalMVC.HospitalInfrastructure.Controllers
                         AppointmentHistoryAssigner.GetTransformedString(Constants.SetRoom, "", newRoomName),
                         CheckRole.GetUserRole(User)
                     );
+                    changes += historyModel.ChangeInfo + "\n";
                 }
             }
             if (appointment.Patient != oldAppointment.Patient)
@@ -496,7 +509,29 @@ namespace HospitalMVC.HospitalInfrastructure.Controllers
                     AppointmentHistoryAssigner.GetTransformedString(Constants.ChangedPatient, oldPatientName, newPatientName),
                     CheckRole.GetUserRole(User)
                 );
+                changes += historyModel.ChangeInfo + "\n";
             }
+
+            Patient patient = _hospitalContext.Patients.First(a => a.Id == appointment.Patient);
+            Doctor doctor = _hospitalContext.Doctors.First(a => a.Id == appointment.Doctor);
+
+            changes = appointment.ToString() + changes;
+
+            MailManager.SendMail(new Mail()
+            {
+                message = changes,
+                subject = "Appointment changes",
+                recieverName = patient.Name,
+                recieverEmail = patient.Email
+            });
+
+            MailManager.SendMail(new Mail()
+            {
+                message = changes,
+                subject = "Appointment changes",
+                recieverName = doctor.Name,
+                recieverEmail = doctor.Email
+            });
         }
 
         // GET: Appointments/Delete/5
@@ -529,6 +564,11 @@ namespace HospitalMVC.HospitalInfrastructure.Controllers
             {
                 _hospitalContext.Appointments.Remove(appointment);
             }
+
+            _hospitalContext.AppointmentChanges
+                .RemoveRange(
+                    _hospitalContext.AppointmentChanges.Where(c => c.AppointmentId == appointment.Id)
+                );
 
             await _hospitalContext.SaveChangesAsync();
             return RedirectToAction(nameof(Index));

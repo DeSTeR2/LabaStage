@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using HospitalMVC;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking.Internal;
 
 namespace HospitalDomain.Model;
 
