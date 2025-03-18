@@ -3,6 +3,7 @@ using HospitalDomain.Model;
 using LibraryWebApplication;
 using Microsoft.AspNetCore.Identity;
 using HospitalMVC;
+using HospitalDomain.MailService;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -35,6 +36,7 @@ builder.Services.AddIdentity<User, IdentityRole>()
     .AddEntityFrameworkStores<IdentityContext>()
     .AddDefaultTokenProviders(); // Add this if you need token generation (for password reset, etc.)
 
+
 var app = builder.Build();
 
 using (var scope = app.Services.CreateScope())
@@ -44,6 +46,7 @@ using (var scope = app.Services.CreateScope())
     {
         var userManager = services.GetRequiredService<UserManager<User>>();
         var rolesManager = services.GetRequiredService<RoleManager<IdentityRole>>();
+
         await RoleInitializer.InitializeAsync(userManager, rolesManager);
     }
     catch (Exception ex)

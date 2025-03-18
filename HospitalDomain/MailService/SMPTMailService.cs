@@ -1,15 +1,12 @@
-﻿using System;
-
+﻿using HospitalDomain.Utils;
 using MailKit.Net.Smtp;
-using MailKit;
 using MimeKit;
 
-
-namespace HospitalDomain.Utils
+namespace HospitalDomain.MailService
 {
-    public class MailManager
+    public class SMPTMailService : IMailService
     {
-        public static void SendMail(Mail mail)
+        public void SentMail(Mail mail)
         {
             var email = new MimeMessage();
 
@@ -30,12 +27,5 @@ namespace HospitalDomain.Utils
                 smtp.Disconnect(true);
             }
         }
-    }
-    public class Mail
-    {
-        public string subject;
-        public string message;
-        public string recieverEmail;
-        public string recieverName;
     }
 }

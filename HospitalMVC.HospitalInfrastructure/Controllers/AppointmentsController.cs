@@ -7,6 +7,7 @@ using Utils;
 using Newtonsoft.Json;
 using System.Text.Json;
 using HospitalDomain.Utils;
+using HospitalDomain.MailService;
 
 namespace HospitalMVC.HospitalInfrastructure.Controllers
 {
@@ -16,17 +17,20 @@ namespace HospitalMVC.HospitalInfrastructure.Controllers
         private readonly IdentityContext _identityContext;
         private readonly UserManager<User> _userManager;
         private readonly SignInManager<User> _signInManager;
+        private readonly IMailService _mailService;
 
         public AppointmentsController(
             HospitalContext context,
             IdentityContext identityContext,
             UserManager<User> userManager,
-            SignInManager<User> signInManager)
+            SignInManager<User> signInManager,
+            IMailService mailService)
         {
             _hospitalContext = context;
             _identityContext = identityContext;
             _userManager = userManager;
             _signInManager = signInManager;
+            _mailService = mailService;
         }
 
         // GET: Appointments
@@ -58,7 +62,7 @@ namespace HospitalMVC.HospitalInfrastructure.Controllers
                     .Include(a => a.PatientNavigation)
                     .Include(a => a.DoctorNavigation)
                     .Include(a => a.RoomNavigation)
-                    .Where(a => a.PatientNavigation.Email == email);
+                    .Where(a => a.DoctorNavigation.Email == email);
             }
             else if (await _userManager.IsInRoleAsync(user, Constants.User))
             {
@@ -475,27 +479,35 @@ namespace HospitalMVC.HospitalInfrastructure.Controllers
             {
                 if (oldAppointment.Room != 0)
                 {
-                    string oldRoomName = _hospitalContext.Rooms.First(d => d.Id == oldAppointment.Room).Type;
-                    string newRoomName = _hospitalContext.Rooms.First(d => d.Id == appointment.Room).Type;
+                    Room oldRoomName = _hospitalContext.Rooms.FirstOrDefault(d => d.Id == oldAppointment.Room);
+                    Room newRoomName = _hospitalContext.Rooms.FirstOrDefault(d => d.Id == appointment.Room);
 
-                    AppointmentChangeHistoryModel historyModel = new AppointmentChangeHistoryModel(
-                        appointment,
-                        _hospitalContext,
-                        AppointmentHistoryAssigner.GetTransformedString(Constants.ChangedRoom, oldRoomName, newRoomName),
-                        CheckRole.GetUserRole(User)
-                    );
-                    changes += historyModel.ChangeInfo + "\n";
-                } else
+                    if (oldRoomName != default && newRoomName != default)
+                    {
+
+                        AppointmentChangeHistoryModel historyModel = new AppointmentChangeHistoryModel(
+                            appointment,
+                            _hospitalContext,
+                            AppointmentHistoryAssigner.GetTransformedString(Constants.ChangedRoom, oldRoomName.Type, newRoomName.Type),
+                            CheckRole.GetUserRole(User)
+                        );
+                        changes += historyModel.ChangeInfo + "\n";
+                    }
+                }
+                else
                 {
-                    string newRoomName = _hospitalContext.Rooms.First(d => d.Id == appointment.Room).Type;
+                    Room newRoomName = _hospitalContext.Rooms.FirstOrDefault(d => d.Id == appointment.Room);
 
-                    AppointmentChangeHistoryModel historyModel = new AppointmentChangeHistoryModel(
-                        appointment,
-                        _hospitalContext,
-                        AppointmentHistoryAssigner.GetTransformedString(Constants.SetRoom, "", newRoomName),
-                        CheckRole.GetUserRole(User)
-                    );
-                    changes += historyModel.ChangeInfo + "\n";
+                    if (newRoomName != default)
+                    {
+                        AppointmentChangeHistoryModel historyModel = new AppointmentChangeHistoryModel(
+                            appointment,
+                            _hospitalContext,
+                            AppointmentHistoryAssigner.GetTransformedString(Constants.SetRoom, "", newRoomName.Type),
+                            CheckRole.GetUserRole(User)
+                        );
+                        changes += historyModel.ChangeInfo + "\n";
+                    }
                 }
             }
             if (appointment.Patient != oldAppointment.Patient)
@@ -517,18 +529,25 @@ namespace HospitalMVC.HospitalInfrastructure.Controllers
 
             changes = appointment.ToString() + changes;
 
-            MailManager.SendMail(new Mail()
+            SetMail("Appointment changes", changes, appointment);
+        }
+
+        private async void SetMail(string subject, string changes, Appointment appointment)
+        {
+            Patient patient = await _hospitalContext.Patients.FirstAsync(a => a.Id == appointment.Patient);
+            Doctor doctor = await _hospitalContext.Doctors.FirstAsync(a => a.Id == appointment.Doctor);
+            _mailService.SentMail(new Mail()
             {
                 message = changes,
-                subject = "Appointment changes",
+                subject = subject,
                 recieverName = patient.Name,
                 recieverEmail = patient.Email
             });
 
-            MailManager.SendMail(new Mail()
+            _mailService.SentMail(new Mail()
             {
                 message = changes,
-                subject = "Appointment changes",
+                subject = subject,
                 recieverName = doctor.Name,
                 recieverEmail = doctor.Email
             });
@@ -580,9 +599,9 @@ namespace HospitalMVC.HospitalInfrastructure.Controllers
         }
 
         [HttpGet]
-        public void Approve(int id)
+        public async void Approve(int id)
         {
-            var appointment = _hospitalContext.Appointments.First(a => a.Id == id);
+            var appointment = await _hospitalContext.Appointments.FirstAsync(a => a.Id == id);
             appointment.AppointmentState++;
 
             AppointmentChangeHistoryModel historyModel = new AppointmentChangeHistoryModel(
@@ -592,13 +611,14 @@ namespace HospitalMVC.HospitalInfrastructure.Controllers
                 CheckRole.GetUserRole(User)
             );
 
+            SetMail($"Appointment on date {appointment.Date} at time {appointment.Time} approved!", "Your appointment was approved!", appointment);
             _hospitalContext.SaveChanges();
         }
 
         [HttpGet]
-        public void Cancel(int id)
+        public async void Cancel(int id)
         {
-            var appointment = _hospitalContext.Appointments.First(a => a.Id == id);
+            var appointment = await _hospitalContext.Appointments.FirstAsync(a => a.Id == id);
             appointment.AppointmentState = AppointmentStates.States.Find(a => a.Item2 == AppointmentStates.Canceled).Item1;
 
             AppointmentChangeHistoryModel historyModel = new AppointmentChangeHistoryModel(
@@ -608,6 +628,7 @@ namespace HospitalMVC.HospitalInfrastructure.Controllers
                 CheckRole.GetUserRole(User)
             );
 
+            SetMail($"Appointment on date {appointment.Date} at time {appointment.Time} approved!", "Your appointment was approved!", appointment);
             _hospitalContext.SaveChanges();
         }
     }

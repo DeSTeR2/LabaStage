@@ -22,7 +22,7 @@ namespace HospitalMVC.Controllers
 
         public async Task<IActionResult> Index()
         {
-            if (User != null)
+            if (User != null && User.Identity.IsAuthenticated)
             {
                 var viewModel = new HospitalMVC.ViewModels.HomeIndexViewModel();
                 User user = await _userManager.GetUserAsync(User);

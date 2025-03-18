@@ -27,6 +27,7 @@ namespace HospitalMVC.HospitalInfrastructure.Controllers
         public async Task<IActionResult> Index()
         {
             var doctors = _hospitalContext.Doctors.Include(d => d.DepartmentNavigation);
+
             FillDoctorPhotos(doctors);
             return View(await doctors.ToListAsync());
         }
