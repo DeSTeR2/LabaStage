@@ -4,6 +4,7 @@ using LibraryWebApplication;
 using Microsoft.AspNetCore.Identity;
 using HospitalMVC;
 using HospitalDomain.MailService;
+using MailKit;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -21,7 +22,7 @@ builder.Services.Configure<CookiePolicyOptions>(options =>
     options.HttpOnly = Microsoft.AspNetCore.CookiePolicy.HttpOnlyPolicy.Always;
 });
 
-// ✅ Add services
+// Add services
 builder.Services.AddControllersWithViews();
 
 builder.Services.AddDbContext<HospitalContext>(options => options.UseSqlServer(
@@ -34,8 +35,15 @@ builder.Services.AddDbContext<IdentityContext>(options => options.UseSqlServer(
 
 builder.Services.AddIdentity<User, IdentityRole>()
     .AddEntityFrameworkStores<IdentityContext>()
-    .AddDefaultTokenProviders(); // Add this if you need token generation (for password reset, etc.)
+    .AddDefaultTokenProviders();
 
+// Register IMailService with its implementation
+builder.Services.AddScoped<HospitalDomain.MailService.IMailService, SMPTMailService>();
+builder.Services.Configure<IdentityOptions>(options =>
+{
+    options.User.AllowedUserNameCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 -._@"; // Allow space, hyphen, dot, underscore, at
+    options.User.RequireUniqueEmail = true; // Optional, ensures email uniqueness if usernames are less strict
+});
 
 var app = builder.Build();
 

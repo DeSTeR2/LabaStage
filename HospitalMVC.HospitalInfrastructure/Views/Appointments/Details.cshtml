@@ -11,11 +11,7 @@
     <table class="table">
         <tr>
             <th>@Html.DisplayNameFor(model => model.Date)</th>
-            <td>@Html.DisplayFor(model => model.Date)</td>
-        </tr>
-        <tr>
-            <th>@Html.DisplayNameFor(model => model.Time)</th>
-            <td>@Html.DisplayFor(model => model.Time)</td>
+            <td>@Html.DisplayFor(model => model.Date) @Html.DisplayFor(model => model.Time)</td>
         </tr>
         <tr>
             <th>@Html.DisplayNameFor(model => model.Reason)</th>
@@ -23,15 +19,31 @@
         </tr>
         <tr>
             <th>@Html.DisplayNameFor(model => model.DoctorNavigation)</th>
-            <td>@Html.DisplayFor(model => model.DoctorNavigation.Name)</td>
+            <td>
+                @Html.ActionLink(Model.DoctorNavigation.Name, "Details", "Doctors", new { Id = Model.DoctorNavigation.Id }, new { @class = "action-link" })
+            </td>
         </tr>
         <tr>
             <th>@Html.DisplayNameFor(model => model.PatientNavigation)</th>
-            <td>@Html.DisplayFor(model => model.PatientNavigation.Name)</td>
+            <td>
+                @if (Utils.CheckRole.IsInRoles(User, new string[] { Utils.Constants.Admin, Utils.Constants.Manager }))
+                {
+                    @Html.ActionLink(Model.PatientNavigation.Name, "Details", "Patients", new { Id = Model.PatientNavigation.Id }, new { @class = "action-link" })
+                }
+                else
+                {
+                    @Html.DisplayFor(model => model.PatientNavigation.Name)
+                }
+            </td>
         </tr>
         <tr>
             <th>@Html.DisplayNameFor(model => model.RoomNavigation)</th>
-            <td>@Html.DisplayFor(model => model.RoomNavigation.Type)</td>
+            <td>
+                @if (Model.RoomNavigation != null)
+                {
+                    @Html.ActionLink(Model.RoomNavigation.Type, "Details", "Rooms", new { Id = Model.RoomNavigation.Id }, new { @class = "action-link" })
+                }
+            </td>
         </tr>
         <tr>
             <th>@Html.DisplayNameFor(model => model.AppointmentState)</th>
@@ -75,7 +87,7 @@
     <a asp-action="Index" class="btn btn-secondary">Back to List</a>
 </div>
 
-<!-- Optional CSS for timeline styling -->
+<!-- CSS for timeline styling and action links -->
 <style>
     .timeline {
         position: relative;

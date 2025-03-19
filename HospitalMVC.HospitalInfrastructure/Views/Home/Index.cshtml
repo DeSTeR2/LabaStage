@@ -1,4 +1,5 @@
 ﻿@model HospitalMVC.ViewModels.HomeIndexViewModel
+@using HospitalDomain.Utils  <!-- Ensure namespace is included -->
 @{
     ViewData["Title"] = "Hospital";
 
@@ -14,12 +15,6 @@
         background-color: #f4f8fb;
         margin: 0;
         padding: 0;
-    }
-
-    .container {
-        max-width: 1200px;
-        margin: 20px auto;
-        padding: 0 20px;
     }
 
     .page-title {
@@ -204,6 +199,7 @@
         .btn-cancel:hover {
             background-color: #c82333;
         }
+
     .no-appointments {
         text-align: center;
         margin-top: 30px;
@@ -288,9 +284,24 @@
                     <td>@Html.DisplayFor(modelItem => item.Date)</td>
                     <td>@Html.DisplayFor(modelItem => item.Time)</td>
                     <td>@Html.DisplayFor(modelItem => item.Reason)</td>
-                    <td>@Html.DisplayFor(modelItem => item.DoctorNavigation.Name)</td>
-                    <td>@Html.DisplayFor(modelItem => item.PatientNavigation.Name)</td>
-                    <td>@Html.DisplayFor(modelItem => item.RoomNavigation.Type)</td>
+                    <td>
+                        @Html.ActionLink(item.DoctorNavigation.Name, "Details", "Doctors", new { Id = item.DoctorNavigation.Id }, new { @class = "action-link" })
+                    </td>
+                    <td>
+                        @if (Utils.CheckRole.IsInRoles(User, new string[] { Utils.Constants.Admin, Utils.Constants.Manager }))
+                        {
+                            @Html.ActionLink(item.PatientNavigation.Name, "Details", "Patients", new { Id = item.PatientNavigation.Id }, new { @class = "action-link" })
+                        }
+                        else
+                        {
+                            @Html.DisplayFor(modelItem => item.PatientNavigation.Name)
+                        }
+                    </td>
+                    <td>
+                        @if(item.RoomNavigation != null) { 
+                        @Html.ActionLink(item.RoomNavigation.Type, "Details", "Rooms", new { Id = item.RoomNavigation.Id }, new { @class = "action-link" })
+                        }
+                        </td>
                     <td><span class="@stateClass">@state</span></td>
                     <td class="action-buttons">
                         <a href="@Url.Action("Edit", "Appointments", new { id = item.Id })" class="btn-action btn-edit">Edit</a>
@@ -327,10 +338,4 @@
             }
         </tbody>
     </table>
-}
-else
-{
-    <div class="no-appointments">
-        <p>There are no appointments. </p>
-    </div>
 }

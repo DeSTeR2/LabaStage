@@ -59,7 +59,7 @@ namespace LibraryWebApplication.Controllers
             var user = new User
             {
                 Email = model.Email,
-                UserName = model.Email
+                UserName = model.FullName
             };
 
             var result = await _userManager.CreateAsync(user, model.Passworld);
@@ -164,9 +164,8 @@ namespace LibraryWebApplication.Controllers
 
             var user = new User
             {
-                FullName = model.FullName,
+                UserName = model.FullName,
                 Email = model.Email,
-                UserName = model.Email,
                 PhoneNumber = model.PhoneNumber,
                 DateOfBirth = model.DateOfBirth ?? DateTime.MinValue
             };
@@ -218,7 +217,7 @@ namespace LibraryWebApplication.Controllers
 
             var model = new AccountViewModel
             {
-                FullName = user.FullName,
+                FullName = user.UserName,
                 Email = user.Email,
                 PhoneNumber = user.PhoneNumber,
                 DateOfBirth = user.DateOfBirth,
@@ -247,7 +246,7 @@ namespace LibraryWebApplication.Controllers
             }
 
             // Update scalar properties from the model
-            user.FullName = model.FullName;
+            user.UserName = model.FullName;
             user.Email = model.Email;
             user.PhoneNumber = model.PhoneNumber;
             user.DateOfBirth = model.DateOfBirth;

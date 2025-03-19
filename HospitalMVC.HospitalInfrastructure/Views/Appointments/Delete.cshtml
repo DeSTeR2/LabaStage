@@ -34,23 +34,40 @@
                 @Html.DisplayNameFor(model => model.DoctorNavigation)
             </dt>
             <dd class="col-sm-10">
-                @Html.DisplayFor(model => model.DoctorNavigation.Name)
+                @Html.ActionLink(Model.DoctorNavigation.Name, "Details", "Doctors", new { Id = Model.DoctorNavigation.Id }, new { @class = "action-link" })
             </dd>
             <dt class="col-sm-2">
                 @Html.DisplayNameFor(model => model.PatientNavigation)
             </dt>
             <dd class="col-sm-10">
-                @Html.DisplayFor(model => model.PatientNavigation.Name)
+                @if (Utils.CheckRole.IsInRoles(User, new string[] { Utils.Constants.Admin, Utils.Constants.Manager }))
+                {
+                    @Html.ActionLink(Model.PatientNavigation.Name, "Details", "Patients", new { Id = Model.PatientNavigation.Id }, new { @class = "action-link" })
+                }
+                else
+                {
+                    @Html.DisplayFor(model => model.PatientNavigation.Name)
+                }
             </dd>
             <dt class="col-sm-2">
                 @Html.DisplayNameFor(model => model.RoomNavigation)
             </dt>
             <dd class="col-sm-10">
-                @Html.DisplayFor(model => model.RoomNavigation.Type)
+                @if (Model.RoomNavigation != null)
+                {
+                    @Html.ActionLink(Model.RoomNavigation.Type, "Details", "Rooms", new { Id = Model.RoomNavigation.Id }, new { @class = "action-link" })
+                }
             </dd>
             <dt class="col-sm-2">
                 @Html.DisplayNameFor(model => model.AppointmentState)
             </dt>
+            <dd class="col-sm-10">
+                @{
+                    var state = HospitalDomain.Utils.AppointmentStates.States
+                    .FirstOrDefault(s => s.Item1 == Model.AppointmentState)?.Item2 ?? "Unknown";
+                }
+                @state
+            </dd>
         </dl>
 
         <form asp-action="Delete">

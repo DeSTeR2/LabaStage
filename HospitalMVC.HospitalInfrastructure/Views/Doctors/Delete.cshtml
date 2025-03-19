@@ -1,5 +1,5 @@
 ﻿@model HospitalDomain.Model.Doctor
-
+@using HospitalDomain.Utils  <!-- Ensure the namespace is correct -->
 @{
     ViewData["Title"] = "Delete";
 }
@@ -34,7 +34,7 @@
                 @Html.DisplayNameFor(model => model.DepartmentNavigation)
             </dt>
             <dd class="col-sm-10">
-                @Html.DisplayFor(model => model.DepartmentNavigation.Name)
+                @Html.ActionLink(Model.DepartmentNavigation.Name, "Details", "Departments", new { Id = Model.DepartmentNavigation.Id }, new { @class = "action-link" })
             </dd>
         </dl>
 

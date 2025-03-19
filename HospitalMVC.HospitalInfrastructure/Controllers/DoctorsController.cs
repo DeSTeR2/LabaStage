@@ -28,7 +28,7 @@ namespace HospitalMVC.HospitalInfrastructure.Controllers
         {
             var doctors = _hospitalContext.Doctors.Include(d => d.DepartmentNavigation);
 
-            FillDoctorPhotos(doctors);
+            FillDoctorWithUserData(doctors);
             return View(await doctors.ToListAsync());
         }
 
@@ -143,13 +143,15 @@ namespace HospitalMVC.HospitalInfrastructure.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Speciality,Contact,Department")] Doctor doctor)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Speciality,Department")] Doctor doctor)
         {
             Console.WriteLine($"Edit Called - ID: {id}, Name: {doctor.Name}, Speciality: {doctor.Speciality}");
 
             ModelState.Remove("DepartmentNavigation");
             ModelState.Remove("UserNavigation");
             ModelState.Remove("Email");
+            ModelState.Remove("Contact");
+            ModelState.Remove("Name");
             TryValidateModel(ModelState);
 
             if (id != doctor.Id)
@@ -188,7 +190,9 @@ namespace HospitalMVC.HospitalInfrastructure.Controllers
                     return View(doctor);
                 }
 
-                doctor.Email = user.Email;
+                doctor.Email = existingDoctor.Email;
+                doctor.Name = existingDoctor.Name;
+                doctor.Contact = existingDoctor.Contact;
 
                 // Verify UserId exists in the same context as Doctors
                 var userExists = await _identityContext.Users.AnyAsync(u => u.PhoneNumber == doctor.Contact);
@@ -277,7 +281,7 @@ namespace HospitalMVC.HospitalInfrastructure.Controllers
         {
             var doctors = _hospitalContext.Doctors.Include(d => d.DepartmentNavigation);
 
-            FillDoctorPhotos(doctors);
+            FillDoctorWithUserData(doctors);
 
             ViewBag.Departments = _hospitalContext.Departments.ToList();
             ViewBag.SelectedDepartmentId = departmentId;
@@ -285,7 +289,7 @@ namespace HospitalMVC.HospitalInfrastructure.Controllers
             return View(doctors.ToList());
         }
 
-        private void FillDoctorPhotos(Microsoft.EntityFrameworkCore.Query.IIncludableQueryable<Doctor, Department> doctors)
+        private void FillDoctorWithUserData(Microsoft.EntityFrameworkCore.Query.IIncludableQueryable<Doctor, Department> doctors)
         {
             if (doctors == null) return;
             foreach (var doctor in doctors)
@@ -299,6 +303,9 @@ namespace HospitalMVC.HospitalInfrastructure.Controllers
                 {
                     doctor.ProfilePictureUrl = Constants.RootProfileImagesPath + user.ProfilePictureUrl ?? Constants.DefaultProfileImage;
                 }
+
+                doctor.Name = user.UserName;
+                doctor.Contact = user.PhoneNumber;
             }
         }
 

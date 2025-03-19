@@ -100,13 +100,15 @@
 @foreach (var departmentGroup in Model.Where(d => d.DepartmentNavigation != null).GroupBy(d => d.DepartmentNavigation))
 {
     <div class="department-section">
-        <h2 class="department-name">@departmentGroup.Key.Name</h2>
+        <h2 class="department-name">
+            @Html.ActionLink(departmentGroup.Key.Name, "Details", "Departments", new { Id = departmentGroup.Key.Id }, new { @class = "action-link" })
+        </h2>
         <div>
             @foreach (var doctor in departmentGroup)
             {
                 <div class="doctor-card">
                     <h3 class="doctor-name">@doctor.Name</h3>
-                    <img src="@(doctor.ProfilePictureUrl ?? "/images/default.jpg")" alt="Profile Picture" />
+                    <img src="@(doctor.ProfilePictureUrl ?? Utils.Constants.DefaultProfileImage)" alt="Profile Picture" />
                     <p class="doctor-contact"><strong>Contact:</strong> @doctor.Contact</p>
                     <div class="doctor-actions">
                         @if (Utils.CheckRole.IsInRoles(User, new string[] { "admin", "manager" }))

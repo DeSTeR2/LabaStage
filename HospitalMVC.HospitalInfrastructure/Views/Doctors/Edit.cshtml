@@ -15,7 +15,7 @@
 
             <div class="form-group">
                 <label asp-for="Name" class="control-label">Doctor's Name</label>
-                <input asp-for="Name" class="form-control" required />
+                <input asp-for="Name" class="form-control" readonly />
                 <span asp-validation-for="Name" class="text-danger"></span>
             </div>
 
@@ -27,7 +27,7 @@
 
             <div class="form-group">
                 <label asp-for="Contact" class="control-label">Contact Information</label>
-                <input asp-for="Contact" class="form-control" required />
+                <input asp-for="Contact" class="form-control" readonly />
                 <span asp-validation-for="Contact" class="text-danger"></span>
             </div>
 
@@ -38,7 +38,7 @@
             </div>
 
             <div class="form-group mt-3">
-                <button asp-action="Edit" class="btn btn-primary">Save</button>
+                <button type="submit" class="btn btn-primary">Save</button>
                 <a asp-action="Index" class="btn btn-secondary">Back</a>
             </div>
         </form>

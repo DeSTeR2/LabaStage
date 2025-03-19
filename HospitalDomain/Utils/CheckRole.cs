@@ -8,6 +8,8 @@ namespace Utils
     {
         public static bool IsInRoles(ClaimsPrincipal user, string[] roles)
         {
+            if (user.Identity.IsAuthenticated == false) return false;
+
             bool isInRoles = false;
             foreach (var role in roles) {
                 if (user.IsInRole(role))

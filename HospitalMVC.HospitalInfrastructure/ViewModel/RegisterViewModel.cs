@@ -6,6 +6,7 @@ namespace HospitalDomain.Model
     {
         [Required]
         [Display(Name = "Full name")]
+        [DataType(DataType.Text)]
         public string FullName { get; set; } = null!;
 
         [Required]

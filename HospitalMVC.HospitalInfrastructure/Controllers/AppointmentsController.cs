@@ -283,7 +283,7 @@ namespace HospitalMVC.HospitalInfrastructure.Controllers
                 appointment,
                 _hospitalContext,
                 Constants.CreatedAppointment,
-                CheckRole.GetUserRole(User)
+                User    
             );
 
             await _hospitalContext.SaveChangesAsync();
@@ -437,7 +437,7 @@ namespace HospitalMVC.HospitalInfrastructure.Controllers
                     appointment,
                     _hospitalContext,
                     AppointmentHistoryAssigner.GetTransformedString(Constants.ChangeTime, oldAppointment.Time, appointment.Time),
-                    CheckRole.GetUserRole(User)
+                    User
                 );
 
                 changes += historyModel.ChangeInfo + "\n";
@@ -448,7 +448,7 @@ namespace HospitalMVC.HospitalInfrastructure.Controllers
                     appointment,
                     _hospitalContext,
                     AppointmentHistoryAssigner.GetTransformedString(Constants.ChangeDate, oldAppointment.Date, appointment.Date),
-                    CheckRole.GetUserRole(User)
+                    User        
                 );
                 changes += historyModel.ChangeInfo + "\n";
             }
@@ -461,7 +461,7 @@ namespace HospitalMVC.HospitalInfrastructure.Controllers
                     appointment,
                     _hospitalContext,
                     AppointmentHistoryAssigner.GetTransformedString(Constants.ChangeDoctor, oldDoctorName, newDoctorName),
-                    CheckRole.GetUserRole(User)
+                    User
                 );
                 changes += historyModel.ChangeInfo + "\n";
             }
@@ -471,7 +471,7 @@ namespace HospitalMVC.HospitalInfrastructure.Controllers
                     appointment,
                     _hospitalContext,
                     AppointmentHistoryAssigner.GetTransformedString(Constants.ChangedReason, oldAppointment.Reason, appointment.Reason),
-                    CheckRole.GetUserRole(User)
+                    User
                 );
                 changes += historyModel.ChangeInfo + "\n";
             }
@@ -489,7 +489,7 @@ namespace HospitalMVC.HospitalInfrastructure.Controllers
                             appointment,
                             _hospitalContext,
                             AppointmentHistoryAssigner.GetTransformedString(Constants.ChangedRoom, oldRoomName.Type, newRoomName.Type),
-                            CheckRole.GetUserRole(User)
+                            User
                         );
                         changes += historyModel.ChangeInfo + "\n";
                     }
@@ -504,7 +504,7 @@ namespace HospitalMVC.HospitalInfrastructure.Controllers
                             appointment,
                             _hospitalContext,
                             AppointmentHistoryAssigner.GetTransformedString(Constants.SetRoom, "", newRoomName.Type),
-                            CheckRole.GetUserRole(User)
+                            User
                         );
                         changes += historyModel.ChangeInfo + "\n";
                     }
@@ -519,7 +519,7 @@ namespace HospitalMVC.HospitalInfrastructure.Controllers
                     appointment,
                     _hospitalContext,
                     AppointmentHistoryAssigner.GetTransformedString(Constants.ChangedPatient, oldPatientName, newPatientName),
-                    CheckRole.GetUserRole(User)
+                    User
                 );
                 changes += historyModel.ChangeInfo + "\n";
             }
@@ -532,10 +532,10 @@ namespace HospitalMVC.HospitalInfrastructure.Controllers
             SetMail("Appointment changes", changes, appointment);
         }
 
-        private async void SetMail(string subject, string changes, Appointment appointment)
+        private void SetMail(string subject, string changes, Appointment appointment)
         {
-            Patient patient = await _hospitalContext.Patients.FirstAsync(a => a.Id == appointment.Patient);
-            Doctor doctor = await _hospitalContext.Doctors.FirstAsync(a => a.Id == appointment.Doctor);
+            Patient patient =  _hospitalContext.Patients.First(a => a.Id == appointment.Patient);
+            Doctor doctor = _hospitalContext.Doctors.First(a => a.Id == appointment.Doctor);
             _mailService.SentMail(new Mail()
             {
                 message = changes,
@@ -599,16 +599,16 @@ namespace HospitalMVC.HospitalInfrastructure.Controllers
         }
 
         [HttpGet]
-        public async void Approve(int id)
+        public void Approve(int id)
         {
-            var appointment = await _hospitalContext.Appointments.FirstAsync(a => a.Id == id);
+            var appointment = _hospitalContext.Appointments.First(a => a.Id == id);
             appointment.AppointmentState++;
 
             AppointmentChangeHistoryModel historyModel = new AppointmentChangeHistoryModel(
                 appointment,
                 _hospitalContext,
                 Constants.ApprovedAppointment,
-                CheckRole.GetUserRole(User)
+                User
             );
 
             SetMail($"Appointment on date {appointment.Date} at time {appointment.Time} approved!", "Your appointment was approved!", appointment);
@@ -616,19 +616,19 @@ namespace HospitalMVC.HospitalInfrastructure.Controllers
         }
 
         [HttpGet]
-        public async void Cancel(int id)
+        public void Cancel(int id)
         {
-            var appointment = await _hospitalContext.Appointments.FirstAsync(a => a.Id == id);
+            var appointment = _hospitalContext.Appointments.First(a => a.Id == id);
             appointment.AppointmentState = AppointmentStates.States.Find(a => a.Item2 == AppointmentStates.Canceled).Item1;
 
             AppointmentChangeHistoryModel historyModel = new AppointmentChangeHistoryModel(
                 appointment,
                 _hospitalContext,
                 Constants.CanceledAppointment,
-                CheckRole.GetUserRole(User)
+                User
             );
 
-            SetMail($"Appointment on date {appointment.Date} at time {appointment.Time} approved!", "Your appointment was approved!", appointment);
+            SetMail($"Appointment on date {appointment.Date} at time {appointment.Time} canceled!", "Your appointment was cancel!", appointment);
             _hospitalContext.SaveChanges();
         }
     }
