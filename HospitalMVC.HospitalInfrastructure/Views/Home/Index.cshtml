@@ -298,15 +298,22 @@
                         }
                     </td>
                     <td>
-                        @if(item.RoomNavigation != null) { 
-                        @Html.ActionLink(item.RoomNavigation.Type, "Details", "Rooms", new { Id = item.RoomNavigation.Id }, new { @class = "action-link" })
+                        @if (item.RoomNavigation != null)
+                        {
+                            @Html.ActionLink(item.RoomNavigation.Type, "Details", "Rooms", new { Id = item.RoomNavigation.Id }, new { @class = "action-link" })
                         }
-                        </td>
+                    </td>
                     <td><span class="@stateClass">@state</span></td>
                     <td class="action-buttons">
-                        <a href="@Url.Action("Edit", "Appointments", new { id = item.Id })" class="btn-action btn-edit">Edit</a>
-                        <a href="@Url.Action("Details", "Appointments", new { id = item.Id })" class="btn-action btn-details">Details</a>
-                        <a href="@Url.Action("Delete", "Appointments", new { id = item.Id })" class="btn-action btn-delete">Delete</a>
+                        @if (item.AppointmentState < 3)
+                        {
+                            <a href="@Url.Action("Edit", "Appointments", new { id = item.Id })" class="btn-action btn-edit action-link">Edit</a>
+                        }
+                        | <a href="@Url.Action("Details", "Appointments", new { id = item.Id })" class="btn-action btn-details action-link">Details</a> |
+                        @if (Utils.CheckRole.IsInRoles(User, new string[] { Utils.Constants.Admin, Utils.Constants.Manager }))
+                        {
+                            <a href="@Url.Action("Delete", "Appointments", new { id = item.Id })" class="btn-action btn-delete action-link">Delete</a>
+                        }
                     </td>
                     @if (canApproveAny)
                     {

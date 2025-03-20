@@ -14,63 +14,63 @@
 
 <style>
     .no-appointments {
-        text-align: center;
-        padding: 20px;
-        background-color: #f8f9fa;
-        border: 1px solid #ddd;
-        border-radius: 8px;
-        margin: 20px auto;
-        max-width: 500px;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    padding: 20px;
+    background-color: #f8f9fa;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    margin: 20px auto;
+    max-width: 500px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     }
 
-        .no-appointments p {
-            font-size: 18px;
-            color: #333;
-            margin-bottom: 15px;
-        }
+    .no-appointments p {
+    font-size: 18px;
+    color: #333;
+    margin-bottom: 15px;
+    }
 
-        .no-appointments .btn {
-            font-size: 16px;
-            padding: 10px 20px;
-        }
+    .no-appointments .btn {
+    font-size: 16px;
+    padding: 10px 20px;
+    }
 
     /* Custom Button Styles */
     .btn-approve {
-        color: #fff;
-        background-color: #28a745;
-        border: 1px solid #218838;
-        padding: 4px 10px;
-        border-radius: 4px;
-        text-decoration: none;
-        font-size: 14px;
-        transition: background-color 0.3s ease;
-        cursor: pointer;
+    color: #fff;
+    background-color: #28a745;
+    border: 1px solid #218838;
+    padding: 4px 10px;
+    border-radius: 4px;
+    text-decoration: none;
+    font-size: 14px;
+    transition: background-color 0.3s ease;
+    cursor: pointer;
     }
 
-        .btn-approve:hover {
-            background-color: #218838;
-            text-decoration: none;
-            color: #fff;
-        }
+    .btn-approve:hover {
+    background-color: #218838;
+    text-decoration: none;
+    color: #fff;
+    }
 
     .btn-cancel {
-        color: #fff;
-        background-color: #dc3545;
-        border: 1px solid #c82333;
-        padding: 4px 10px;
-        border-radius: 4px;
-        text-decoration: none;
-        font-size: 14px;
-        transition: background-color 0.3s ease;
-        cursor: pointer;
+    color: #fff;
+    background-color: #dc3545;
+    border: 1px solid #c82333;
+    padding: 4px 10px;
+    border-radius: 4px;
+    text-decoration: none;
+    font-size: 14px;
+    transition: background-color 0.3s ease;
+    cursor: pointer;
     }
 
-        .btn-cancel:hover {
-            background-color: #c82333;
-            text-decoration: none;
-            color: #fff;
-        }
+    .btn-cancel:hover {
+    background-color: #c82333;
+    text-decoration: none;
+    color: #fff;
+    }
 
 </style>
 
@@ -127,9 +127,14 @@
                     </td>
                     <td><span class="@stateClass">@state</span></td>
                     <td class="action-links">
-                        @Html.ActionLink("Edit", "Edit", new { id = item.Id }, new { @class = "action-link" }) |
-                        @Html.ActionLink("Details", "Details", new { id = item.Id }, new { @class = "action-link" }) |
-                        @Html.ActionLink("Delete", "Delete", new { id = item.Id }, new { @class = "action-link" })
+                        @if (item.AppointmentState < 3)
+                        {
+                            @Html.ActionLink("Edit", "Edit", new { id = item.Id }, new { @class = "action-link" })
+                        }
+                        | @Html.ActionLink("Details", "Details", new { id = item.Id }, new { @class = "action-link" }) |
+                        @if (Utils.CheckRole.IsInRoles(User, new string[] { Utils.Constants.Admin, Utils.Constants.Manager })) { 
+                            @Html.ActionLink("Delete", "Delete", new { id = item.Id }, new { @class = "action-link" })
+                        }
                     </td>
                     @if (canApproveAny)
                     {
@@ -161,9 +166,12 @@
             }
         </tbody>
     </table>
-    <p>
-        <a class="btn btn-primary" asp-action="SelectDoctor">Create New Appointment</a>
-    </p>
+    @if (Utils.CheckRole.IsInRoles(User, new string[] { Utils.Constants.User, Utils.Constants.Admin, Utils.Constants.Manager }))
+    {
+        <p>
+            <a class="btn btn-primary" asp-action="SelectDoctor">Create New Appointment</a>
+        </p>
+    }
 }
 else
 {

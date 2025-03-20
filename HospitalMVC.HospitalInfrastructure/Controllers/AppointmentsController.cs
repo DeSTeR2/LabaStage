@@ -8,6 +8,8 @@ using Newtonsoft.Json;
 using System.Text.Json;
 using HospitalDomain.Utils;
 using HospitalDomain.MailService;
+using AspNetCoreGeneratedDocument;
+using System.ComponentModel;
 
 namespace HospitalMVC.HospitalInfrastructure.Controllers
 {
@@ -630,6 +632,34 @@ namespace HospitalMVC.HospitalInfrastructure.Controllers
 
             SetMail($"Appointment on date {appointment.Date} at time {appointment.Time} canceled!", "Your appointment was cancel!", appointment);
             _hospitalContext.SaveChanges();
+        }
+
+        [HttpGet]
+        public async void UpdateAppointmentsState()
+        {
+            DateOnly currentDate = DateOnly.FromDateTime(DateTime.Now);
+            var appointments = _hospitalContext.Appointments
+                .Where(ap => ap.Date == currentDate && ap.AppointmentState <= 2)
+                .ToList();
+
+            TimeOnly currentTime = TimeOnly.FromDateTime(DateTime.Now);
+
+            foreach (var app in appointments)
+            {
+                TimeOnly endTime = app.Time.Add(TimeSpan.FromHours(1));
+
+                if (app.Time <= currentTime && endTime > currentTime)
+                {
+                    app.AppointmentState = 3;
+                    AppointmentChangeHistoryModel model = new AppointmentChangeHistoryModel
+                } else if (endTime < currentTime)
+                {
+                    app.AppointmentState = 4;
+                }
+            }
+
+            _hospitalContext.Update(appointments);
+            await _hospitalContext.SaveChangesAsync();
         }
     }
 }

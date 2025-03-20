@@ -226,11 +226,16 @@ namespace LibraryWebApplication.Controllers
                 UserId = user.Id
             };
 
+            if (User.IsInRole(Utils.Constants.Doctor)) {
+                Doctor doctor = _hospitalContext.Doctors.First(d => d.Email == user.Email);
+                ViewBag.SignatureUrl = doctor.SignaturePictireUrl;
+            }
+
             return View(model);
         }
 
         [HttpPost]
-        public async Task<IActionResult> UpdateProfile(AccountViewModel model, IFormFile profilePicture)
+        public async Task<IActionResult> UpdateProfile(AccountViewModel model, IFormFile profilePicture, string? SignatureData)
         {
             string userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
@@ -255,7 +260,12 @@ namespace LibraryWebApplication.Controllers
             // Handle profile picture upload if a file was provided
             if (profilePicture != null && profilePicture.Length > 0)
             {
+
                 var fileName = Guid.NewGuid().ToString() + Path.GetExtension(profilePicture.FileName);
+                if (!string.IsNullOrEmpty(user.ProfilePictureUrl))
+                {
+                    fileName = user.ProfilePictureUrl;
+                }
                 var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/css/images/profiles", fileName);
 
                 // Save the file to the server
@@ -268,8 +278,33 @@ namespace LibraryWebApplication.Controllers
                 user.ProfilePictureUrl = fileName;
             }
 
-            // Save changes to the database
             await _identityContext.SaveChangesAsync();
+
+            if (User.IsInRole(Utils.Constants.Doctor))
+            {
+                if (!string.IsNullOrEmpty(SignatureData))
+                {
+                    // Convert base64 data to bytes
+                    string base64Data = SignatureData.Split(',')[1];
+                    byte[] convertedData = Convert.FromBase64String(base64Data);
+
+                    // Define file path
+                    string fileName = $"{user.Id}_signature.jpg";
+                    string directoryPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/css/images/signatures");
+                    string filePath = Path.Combine(directoryPath, fileName);
+
+                    using (var fileStream = new FileStream(filePath, FileMode.Create, FileAccess.Write))
+                    {
+                        await fileStream.WriteAsync(convertedData, 0, convertedData.Length);
+                    }
+
+                    Doctor doctor = _hospitalContext.Doctors.First(d => d.Email == user.Email);
+                    doctor.SignaturePictireUrl = $"/css/images/signatures/{fileName}"; // Store relative path
+                    _hospitalContext.Update(doctor);
+                    await _hospitalContext.SaveChangesAsync();
+
+                }
+            }
 
             return RedirectToAction("Index", "Home");
         }
@@ -301,10 +336,10 @@ namespace LibraryWebApplication.Controllers
         [HttpPost]
         public async Task<IActionResult> ProcessButtonClicks(AccountViewModel model, string action)
         {
-/*            if (action == "save")
-            {
-                return await UpdateProfile(model);
-            } */
+            /*            if (action == "save")
+                        {
+                            return await UpdateProfile(model);
+                        } */
 
             if (action == "logout")
             {

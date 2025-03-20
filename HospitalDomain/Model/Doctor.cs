@@ -20,6 +20,7 @@ public partial class Doctor
     public int? Department { get; set; }
 
     public string? ProfilePictureUrl { get; set; }
+    public string? SignaturePictireUrl { get; set; }
 
 
     public virtual ICollection<Appointment> Appointments { get; set; } = new List<Appointment>();

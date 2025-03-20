@@ -982,7 +982,7 @@ header {
 
 /* Form input and select styling */
 .form-control {
-    width: 100%;
+    width: 97%;
     padding: 10px;
     margin: 5px 0 15px 0;
     border: 1px solid #ccc;
@@ -1418,3 +1418,7 @@ dl.row dt {
         background-color: #007bff;
         text-decoration: none;
     }
+
+.mb-3 {
+    display: grid;
+}
