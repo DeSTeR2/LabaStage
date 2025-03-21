@@ -1,5 +1,5 @@
 ﻿@model HospitalDomain.Model.Appointment
-@using HospitalDomain.Utils  <!-- Ensure the namespace is correct -->
+@using HospitalDomain.Utils
 @{
     ViewData["Title"] = "Details";
 }
@@ -9,6 +9,7 @@
 <div>
     <hr />
     <table class="table">
+        <!-- Existing table content unchanged -->
         <tr>
             <th>@Html.DisplayNameFor(model => model.Date)</th>
             <td>@Html.DisplayFor(model => model.Date) @Html.DisplayFor(model => model.Time)</td>
@@ -57,7 +58,47 @@
     </table>
 </div>
 
-<!-- Appointment Change History Timeline -->
+<div class="mt-5">
+    <a asp-action="Edit" class="btn btn-primary" asp-route-id="@Model?.Id">Edit</a> |
+    @if (User.IsInRole(Utils.Constants.Doctor) && Model.AppointmentState == 4)
+    {
+        <a class="btn btn-primary" onclick="showReceiptModal('@Model?.Id')">Add receipt</a>
+    }
+    <a asp-action="Index" class="btn btn-secondary">Back to List</a>
+</div>
+
+<div id="receiptModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Create Receipt</h3>
+            <span class="close" onclick="hideReceiptModal()">×</span>
+        </div>
+        <div class="modal-body">
+            <form id="receiptForm">
+                <input type="hidden" id="appointmentId" name="appointmentId" />
+                <div class="form-card" id="formCard">
+                    <div class="form-group" id="record-0-name">
+                        <label for="receiptDescription" class="form-label">Medical product name</label>
+                        <textarea class="form-control" id="receiptDescription"
+                                  name="name[0]" rows="1" required></textarea>
+                    </div>
+                    <div class="form-group" id="record-0-desc">
+                        <label for="receiptDescription" class="form-label">Description</label>
+                        <textarea class="form-control" id="receiptDescription"
+                                  name="description[0]" rows="4" required></textarea>
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-add" onclick="addNewRecord()">Add Another Item</button>
+                    <button type="submit" class="btn btn-success" onclick="saveReceipt()">Save Receipt</button>
+                    <button type="button" class="btn btn-outline" onclick="hideReceiptModal()">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Change History unchanged -->
 <div class="mt-4">
     <h2>Change History Timeline</h2>
     <hr />
@@ -69,8 +110,11 @@
                 <div class="timeline-item">
                     <div class="timeline-date">@history.ChangeTime.ToString("yyyy-MM-dd HH:mm:ss")</div>
                     <div class="timeline-content">
-                        <p><strong>Changed By:</strong> @(history.ChangedBy ?? "Unknown")</p>
-                        <p><strong>Change Info:</strong> @(history.ChangeInfo ?? "No details provided")</p>
+                        @if (string.IsNullOrEmpty(@history.ChangedBy) == false)
+                        {
+                            <p><strong>Changing author:</strong> @(history.ChangedBy ?? "Unknown")</p>
+                        }
+                        <p><strong>Changes: </strong> @(history.ChangeInfo ?? "No details provided")</p>
                     </div>
                 </div>
             }
@@ -80,11 +124,6 @@
     {
         <p>No change history available for this appointment.</p>
     }
-</div>
-
-<div class="mt-5">
-    <a asp-action="Edit" class="btn btn-primary" asp-route-id="@Model?.Id">Edit</a> |
-    <a asp-action="Index" class="btn btn-secondary">Back to List</a>
 </div>
 
 <!-- CSS for timeline styling and action links -->
@@ -132,4 +171,339 @@
         background: #007bff;
         border-radius: 50%;
     }
+
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0,0,0,0.7);
+        overflow: auto;
+        animation: fadeIn 0.4s ease-out;
+    }
+
+    .modal-content {
+        background: linear-gradient(135deg, #ffffff 0%, #f9fbfc 100%);
+        margin: 10% auto;
+        padding: 0;
+        border-radius: 12px;
+        width: 90%;
+        max-width: 480px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+        overflow: hidden;
+    }
+
+    .modal-header {
+        background: #2c3e50;
+        color: white;
+        padding: 15px 25px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+        .modal-header h3 {
+            margin: 0;
+            font-size: 1.4rem;
+            font-weight: 500;
+        }
+
+    .close {
+        color: #fff;
+        font-size: 28px;
+        font-weight: 300;
+        cursor: pointer;
+        opacity: 0.7;
+        transition: opacity 0.2s ease;
+    }
+
+        .close:hover {
+            opacity: 1;
+        }
+
+    .modal-body {
+        padding: 25px;
+    }
+
+    .form-card {
+        background: #fff;
+        border-radius: 8px;
+        padding: 15px 40px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+
+    .form-group {
+        margin-bottom: 20px;
+        position: relative;
+    }
+
+    .form-label {
+        display: block;
+        color: #2c3e50;
+        font-weight: 600;
+        font-size: 0.95rem;
+        margin-bottom: 8px;
+        letter-spacing: 0.5px;
+    }
+
+    .input-wrapper {
+        position: relative;
+    }
+
+    .input-icon {
+        position: absolute;
+        left: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #7f8c8d;
+        font-size: 1.1rem;
+        transition: opacity 0.2s ease;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 12px 12px 12px 35px;
+        border: 2px solid #ecf0f1;
+        border-radius: 6px;
+        font-size: 1rem;
+    }
+
+    textarea.form-control {
+        padding: 12px;
+        resize: none;
+    }
+
+    .form-control:focus {
+        outline: none;
+        border-color: #3498db;
+        box-shadow: 0 0 8px rgba(52,152,219,0.2);
+    }
+
+    .form-actions {
+        text-align: right;
+        padding-top: 10px;
+    }
+
+    .btn-success {
+        background: #27ae60;
+        border: none;
+        padding: 10px 25px;
+        border-radius: 6px;
+        color: white;
+        font-weight: 500;
+        transition: transform 0.2s ease, background 0.2s ease;
+    }
+
+        .btn-success:hover {
+            background: #219653;
+            transform: translateY(-2px);
+        }
+
+    .btn-add {
+        background: #143D60;
+        border: none;
+        padding: 10px 25px;
+        border-radius: 6px;
+        color: white;
+        font-weight: 500;
+        transition: transform 0.2s ease, background 0.2s ease;
+    }
+
+        .btn-add:hover {
+            background: #143D60;
+            transform: translateY(-2px);
+        }
+
+    .btn-outline {
+        background: transparent;
+        border: 2px solid #7f8c8d;
+        padding: 8px 25px;
+        border-radius: 6px;
+        color: #7f8c8d;
+        font-weight: 500;
+        transition: all 0.2s ease;
+    }
+
+        .btn-outline:hover {
+            border-color: #2c3e50;
+            color: #2c3e50;
+            transform: translateY(-2px);
+        }
+
+    .btn-primary {
+        background: #3498db;
+        border: none;
+        padding: 10px 25px;
+        border-radius: 6px;
+        color: white;
+        font-weight: 500;
+        margin-right: 10px;
+    }
+
+    .btn-remove {
+        position: absolute;
+        top: 5px;
+        right: 5px;
+        background: #e74c3c;
+        border: none;
+        color: white;
+        padding: 5px 10px;
+        border-radius: 4px;
+        font-size: 0.85rem;
+        cursor: pointer;
+        transition: background 0.2s ease;
+    }
+
+        .btn-remove:hover {
+            background: #c0392b;
+        }
 </style>
+
+<script>
+            let recordCount = 1;
+
+        function showReceiptModal(appointmentId) {
+            document.getElementById('appointmentId').value = appointmentId;
+            document.getElementById('receiptModal').style.display = 'block';
+            toggleDollarSign('receiptAmount', 'span-icon');
+        }
+
+        function hideReceiptModal() {
+            document.getElementById('receiptModal').style.display = 'none';
+            document.getElementById('receiptForm').reset();
+            const formCard = document.getElementById('formCard');
+            while (formCard.children.length > 2) {
+                formCard.removeChild(formCard.lastChild);
+            }
+            recordCount = 1;
+            toggleDollarSign('receiptAmount', 'span-icon');
+        }
+
+        window.onclick = function (event) {
+            var modal = document.getElementById('receiptModal');
+            if (event.target == modal) {
+                hideReceiptModal();
+            }
+        }
+
+        function toggleDollarSign(inputId, spanId) {
+            const input = document.getElementById(inputId);
+            const dollarSign = document.getElementById(spanId);
+            if (input && dollarSign) {
+                if (input.value.length > 0) {
+                    dollarSign.style.opacity = '0';
+                    dollarSign.style.pointerEvents = 'none';
+                } else {
+                    dollarSign.style.opacity = '1';
+                    dollarSign.style.pointerEvents = 'auto';
+                }
+            }
+        }
+
+        function addNewRecord() {
+            const formCard = document.getElementById('formCard');
+
+            const newAmountGroup = document.createElement('div');
+            newAmountGroup.className = 'form-group';
+            newAmountGroup.id = `record-${recordCount}-name`;
+            newAmountGroup.innerHTML = `
+                    <label for="receiptAmount${recordCount}" class="form-label">Medical product name</label>
+                    <textarea class="form-control" id="receiptDescription${recordCount}"
+                              name="name[${recordCount}]" rows="1" required></textarea>
+                    <button type="button" class="btn-remove" onclick="removeRecord(${recordCount})">×</button>
+                `;
+
+            const newDescGroup = document.createElement('div');
+            newDescGroup.className = 'form-group';
+            newDescGroup.id = `record-${recordCount}-desc`;
+            newDescGroup.innerHTML = `
+                    <label for="receiptDescription${recordCount}" class="form-label">Description</label>
+                    <textarea class="form-control" id="receiptDescription${recordCount}"
+                              name="description[${recordCount}]" rows="4" required></textarea>
+                `;
+
+            formCard.appendChild(newAmountGroup);
+            formCard.appendChild(newDescGroup);
+
+            const newInput = document.getElementById(`receiptAmount${recordCount}`);
+            const newSpan = document.getElementById(`span-icon${recordCount}`);
+            newInput.addEventListener('input', () => toggleDollarSign(`receiptAmount${recordCount}`, `span-icon${recordCount}`));
+            newInput.addEventListener('focus', () => toggleDollarSign(`receiptAmount${recordCount}`, `span-icon${recordCount}`));
+            newInput.addEventListener('blur', () => toggleDollarSign(`receiptAmount${recordCount}`, `span-icon${recordCount}`));
+
+            recordCount++;
+        }
+
+        function removeRecord(index) {
+            const amountGroup = document.getElementById(`record-${index}`);
+            const descGroup = document.getElementById(`record-${index}-desc`);
+            if (amountGroup && descGroup) {
+                amountGroup.remove();
+                descGroup.remove();
+            }
+        }
+
+    function saveReceipt() {
+        var names = [];
+        var description = [];
+        const formCard = document.getElementById('formCard');
+
+        // Loop through all form-group elements
+        const groups = formCard.getElementsByClassName('form-group');
+        for (let i = 0; i < groups.length; i++) {
+            const group = groups[i];
+            if (group.id.endsWith('-desc')) {
+                // Description field
+                const textarea = group.querySelector('textarea');
+                if (textarea) {
+                    description.push(textarea.value);
+                }
+            }
+            if (group.id.endsWith('-name')) {
+                    // Description field
+                    const textarea = group.querySelector('textarea');
+                    if (textarea) {
+                        names.push(textarea.value);
+                    }
+                }
+            }
+
+        // Get appId from the hidden input
+        const appId = document.getElementById('appointmentId').value;
+
+        $.ajax({
+            method: 'POST',
+            url: '@Url.Action("AddReceipt", "Appointments")',
+            data: {
+                appId: appId,
+                names: names,
+                description: description
+            },
+            success: function(response) {
+                console.log("Success:", response);
+                if (response.success) {
+                    alert(response.message); // Or update UI
+                    hideReceiptModal(); // Close modal on success
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error("Error:", error);
+                alert("Failed to save receipt: " + error);
+            }
+        });
+    }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            const initialInput = document.getElementById('receiptAmount');
+            if (initialInput) {
+                initialInput.addEventListener('input', () => toggleDollarSign('receiptAmount', 'span-icon'));
+                initialInput.addEventListener('focus', () => toggleDollarSign('receiptAmount', 'span-icon'));
+                initialInput.addEventListener('blur', () => toggleDollarSign('receiptAmount', 'span-icon'));
+            }
+        });
+
+
+</script>

@@ -15,6 +15,7 @@
 
   <ItemGroup>
     <PackageReference Include="brevo_csharp" Version="1.0.0" />
+    <PackageReference Include="DinkToPdf" Version="1.0.8" />
     <PackageReference Include="FubarCoder.RestSharp.Portable.Core" Version="4.0.8" />
     <PackageReference Include="FubarCoder.RestSharp.Portable.HttpClient" Version="4.0.8" />
     <PackageReference Include="JsonSubTypes" Version="2.0.1" />
@@ -43,5 +44,13 @@
   <ItemGroup>
     <Folder Include="wwwroot\css\images\profiles\" />
   </ItemGroup>
+	<ItemGroup>
+		<None Remove="libwkhtmltox.dll" />
+	</ItemGroup>
 
+	<ItemGroup>
+		<EmbeddedResource Include="libwkhtmltox.dll">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</EmbeddedResource>
+	</ItemGroup>
 </Project>

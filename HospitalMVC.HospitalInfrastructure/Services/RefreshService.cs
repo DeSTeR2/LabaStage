@@ -4,54 +4,38 @@ namespace HospitalMVC.HospitalInfrastructure.Services
 {
     public class RefreshService : BackgroundService
     {
-        private readonly ILogger<RefreshService> _logger;
         private readonly IHttpClientFactory _httpClientFactory;
-        private readonly TimeSpan _delay = new TimeSpan(0, 0, Utils.Constants.RefreshAppointmentStateInMinutes);
+        private readonly IConfiguration _configuration;
+        private readonly TimeSpan _delay = TimeSpan.FromMinutes(Utils.Constants.RefreshAppointmentStateInMinutes);
 
-        public RefreshService(ILogger<RefreshService> logger, IHttpClientFactory httpClientFactory)
+        public RefreshService(IHttpClientFactory httpClientFactory, IConfiguration configuration)
         {
-            _logger = logger;
             _httpClientFactory = httpClientFactory;
+            _configuration = configuration;
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            await Task.Yield();
-            await Task.Run(async () =>
+            while (!stoppingToken.IsCancellationRequested)
             {
-                _logger.LogInformation("Refresh started");
-                while (!stoppingToken.IsCancellationRequested)
+                try
                 {
-                    try
-                    {
-                        await RefreshAppointmentsAsync();
-                        _logger.LogInformation("Appointments refreshed successfully.");
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogError(ex, "Error refreshing appointments.");
-                    }
-
-                    await Task.Delay(_delay, stoppingToken);
+                    await RefreshAppointmentsAsync();
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex.Message);
                 }
 
-                _logger.LogInformation("Appointment Refresh Service stopped.");
-            });
+                await Task.Delay(_delay, stoppingToken);
+            }
         }
 
         private async Task RefreshAppointmentsAsync()
         {
             var client = _httpClientFactory.CreateClient();
+            client.BaseAddress = new Uri(_configuration["BaseUrl"] ?? "https://localhost:44326/");
             var response = await client.PostAsync("/Appointments/UpdateAppointmentsState", null);
-
-            if (response.IsSuccessStatusCode)
-            {
-                _logger.LogInformation("Appointments refreshed via server-side call.");
-            }
-            else
-            {
-                _logger.LogWarning("Failed to refresh appointments. Status: {StatusCode}", response.StatusCode);
-            }
         }
     }
 }

@@ -10,6 +10,10 @@ using HospitalDomain.Utils;
 using HospitalDomain.MailService;
 using AspNetCoreGeneratedDocument;
 using System.ComponentModel;
+using DinkToPdf;
+using Mono.TextTemplating;
+using HospitalMVC.HospitalInfrastructure.Services.PdfService;
+using DinkToPdf.Contracts;
 
 namespace HospitalMVC.HospitalInfrastructure.Controllers
 {
@@ -20,19 +24,22 @@ namespace HospitalMVC.HospitalInfrastructure.Controllers
         private readonly UserManager<User> _userManager;
         private readonly SignInManager<User> _signInManager;
         private readonly IMailService _mailService;
+        private readonly IConverter _converter;
 
         public AppointmentsController(
             HospitalContext context,
             IdentityContext identityContext,
             UserManager<User> userManager,
             SignInManager<User> signInManager,
-            IMailService mailService)
+            IMailService mailService,
+            IConverter converter)
         {
             _hospitalContext = context;
             _identityContext = identityContext;
             _userManager = userManager;
             _signInManager = signInManager;
             _mailService = mailService;
+            _converter = converter;
         }
 
         // GET: Appointments
@@ -677,6 +684,54 @@ namespace HospitalMVC.HospitalInfrastructure.Controllers
 
             _hospitalContext.Appointments.UpdateRange(appointments);
             _hospitalContext.SaveChanges();
+        }
+
+        [HttpPost]
+        public void AddReceipt(int appId, string[] names, string[] description)
+        {
+            Appointment app = _hospitalContext.Appointments.First(a => a.Id == appId);
+            Patient patient = _hospitalContext.Patients.First(p => p.Id == app.Patient);
+            Doctor doctor = _hospitalContext.Doctors.First(p => p.Id == app.Doctor);
+            DateTime date = DateTime.Parse(app.Date.ToString());
+
+            DataContainer dataContainer = new DataContainer()
+            {
+                names = names,
+                descriptions = description,
+                patient = patient,
+                doctor = doctor,
+                createTime = date
+            };
+
+            GeneratePDF(dataContainer);
+        }
+
+        private bool GeneratePDF(DataContainer dataContainer)
+        {
+            var globalSettings = new GlobalSettings
+            {
+                ColorMode = ColorMode.Color,
+                Orientation = Orientation.Portrait,
+                PaperSize = PaperKind.A4,
+                Margins = new MarginSettings { Top = 10 },
+                DocumentTitle = "PDF Report",
+                Out = @"D:\Employee_Report.pdf"
+            };
+            var objectSettings = new ObjectSettings
+            {
+                PagesCount = true,
+                HtmlContent = PDFTemplateGenerator.Generate(dataContainer),
+                WebSettings = { DefaultEncoding = "utf-8", UserStyleSheet = Path.Combine(Directory.GetCurrentDirectory(), "assets", "styles.css") },
+                HeaderSettings = { FontName = "Arial", FontSize = 9, Right = "Page [page] of [toPage]", Line = true },
+                FooterSettings = { FontName = "Arial", FontSize = 9, Line = true, Center = "Report Footer" }
+            };
+            var pdf = new HtmlToPdfDocument()
+            {
+                GlobalSettings = globalSettings,
+                Objects = { objectSettings }
+            };
+            _converter.Convert(pdf);
+            return true;
         }
     }
 }

@@ -4,8 +4,8 @@ using Microsoft.AspNetCore.Identity;
 using HospitalMVC;
 using HospitalDomain.MailService;
 using HospitalMVC.HospitalInfrastructure.Services;
-using Microsoft.Extensions.Logging.File;
-using Microsoft.Extensions.Logging;
+using DinkToPdf.Contracts;
+using DinkToPdf;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -16,6 +16,9 @@ builder.Services.AddLogging(logging =>
     logging.AddDebug();
     logging.SetMinimumLevel(LogLevel.Debug); // Ensure Debug logs are included
 });
+
+// Add HttpClientFactory for RefreshService
+builder.Services.AddHttpClient(); // This registers IHttpClientFactory
 
 builder.Services.AddAntiforgery(options =>
 {
@@ -48,6 +51,7 @@ builder.Services.Configure<IdentityOptions>(options =>
 });
 
 builder.Services.AddHostedService<RefreshService>();
+builder.Services.AddSingleton(typeof(IConverter), new SynchronizedConverter(new PdfTools()));
 
 var app = builder.Build();
 

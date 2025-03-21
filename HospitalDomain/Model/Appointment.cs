@@ -21,6 +21,8 @@ public partial class Appointment
 
     public int? Room { get; set; }
 
+    public int? ReceiptId { get; set; }
+
     public int AppointmentState { get; set; } = 1;
 
     [DisplayName("Doctor name")]
@@ -28,6 +30,9 @@ public partial class Appointment
 
     [DisplayName("Patient name")]
     public virtual Patient PatientNavigation { get; set; } = null!;
+
+    [DisplayName("Receipt")]
+    public virtual ReceiptModel? ReceiptNavigation { get; set; } = null!;
 
     [DisplayName("Room type")]
     [AllowNull]

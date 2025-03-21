@@ -48,6 +48,9 @@ namespace HospitalDomain.Migrations
                         .HasColumnType("varchar(max)")
                         .HasColumnName("reason");
 
+                    b.Property<int?>("ReceiptId")
+                        .HasColumnType("int");
+
                     b.Property<int?>("Room")
                         .HasColumnType("int")
                         .HasColumnName("room");
@@ -60,6 +63,8 @@ namespace HospitalDomain.Migrations
                         .HasName("PK__appointm__3213E83FBAFA03D0");
 
                     b.HasIndex("Doctor");
+
+                    b.HasIndex("ReceiptId");
 
                     b.HasIndex("Room");
 
@@ -201,6 +206,43 @@ namespace HospitalDomain.Migrations
                     b.ToTable("patient", (string)null);
                 });
 
+            modelBuilder.Entity("HospitalDomain.Model.ReceiptModel", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Receipts");
+                });
+
+            modelBuilder.Entity("HospitalDomain.Model.ReceiptRecord", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int?>("Amound")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("ReceiptId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ReceiptId");
+
+                    b.ToTable("ReceiptRecords");
+                });
+
             modelBuilder.Entity("HospitalDomain.Model.Room", b =>
                 {
                     b.Property<int>("Id")
@@ -238,6 +280,10 @@ namespace HospitalDomain.Migrations
                         .IsRequired()
                         .HasConstraintName("FK_appointment_patient");
 
+                    b.HasOne("HospitalDomain.Model.ReceiptModel", "ReceiptNavigation")
+                        .WithMany()
+                        .HasForeignKey("ReceiptId");
+
                     b.HasOne("HospitalDomain.Model.Room", "RoomNavigation")
                         .WithMany("Appointments")
                         .HasForeignKey("Room")
@@ -246,6 +292,8 @@ namespace HospitalDomain.Migrations
                     b.Navigation("DoctorNavigation");
 
                     b.Navigation("PatientNavigation");
+
+                    b.Navigation("ReceiptNavigation");
 
                     b.Navigation("RoomNavigation");
                 });
@@ -271,6 +319,17 @@ namespace HospitalDomain.Migrations
                     b.Navigation("DepartmentNavigation");
                 });
 
+            modelBuilder.Entity("HospitalDomain.Model.ReceiptRecord", b =>
+                {
+                    b.HasOne("HospitalDomain.Model.ReceiptModel", "ReceiptNavigation")
+                        .WithMany("ReceiptRecords")
+                        .HasForeignKey("ReceiptId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ReceiptNavigation");
+                });
+
             modelBuilder.Entity("HospitalDomain.Model.Department", b =>
                 {
                     b.Navigation("Doctors");
@@ -284,6 +343,11 @@ namespace HospitalDomain.Migrations
             modelBuilder.Entity("HospitalDomain.Model.Patient", b =>
                 {
                     b.Navigation("Appointments");
+                });
+
+            modelBuilder.Entity("HospitalDomain.Model.ReceiptModel", b =>
+                {
+                    b.Navigation("ReceiptRecords");
                 });
 
             modelBuilder.Entity("HospitalDomain.Model.Room", b =>
