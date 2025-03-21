@@ -1,49 +1,53 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using HospitalDomain.Model;
-using LibraryWebApplication;
 using Microsoft.AspNetCore.Identity;
 using HospitalMVC;
 using HospitalDomain.MailService;
-using MailKit;
+using HospitalMVC.HospitalInfrastructure.Services;
+using Microsoft.Extensions.Logging.File;
+using Microsoft.Extensions.Logging;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// ✅ Add support for HTTP Antiforgery token (for local development)
-builder.Services.AddAntiforgery(options =>
+// Configure logging
+builder.Services.AddLogging(logging =>
 {
-    options.Cookie.SecurePolicy = CookieSecurePolicy.None; // Allow cookies over HTTP
+    logging.AddConsole();
+    logging.AddDebug();
+    logging.SetMinimumLevel(LogLevel.Debug); // Ensure Debug logs are included
 });
 
-// ✅ Allow SameSite cookies over HTTP (important for local dev)
+builder.Services.AddAntiforgery(options =>
+{
+    options.Cookie.SecurePolicy = CookieSecurePolicy.None;
+});
+
 builder.Services.Configure<CookiePolicyOptions>(options =>
 {
-    options.MinimumSameSitePolicy = SameSiteMode.Lax; // Fixes the SameSite cookie issue
-    options.Secure = CookieSecurePolicy.None; // Allow HTTP
+    options.MinimumSameSitePolicy = SameSiteMode.Lax;
+    options.Secure = CookieSecurePolicy.None;
     options.HttpOnly = Microsoft.AspNetCore.CookiePolicy.HttpOnlyPolicy.Always;
 });
 
-// Add services
 builder.Services.AddControllersWithViews();
-
 builder.Services.AddDbContext<HospitalContext>(options => options.UseSqlServer(
     builder.Configuration.GetConnectionString("DefaultConnection")
 ));
-
 builder.Services.AddDbContext<IdentityContext>(options => options.UseSqlServer(
     builder.Configuration.GetConnectionString("DefaultConnection")
 ));
-
 builder.Services.AddIdentity<User, IdentityRole>()
     .AddEntityFrameworkStores<IdentityContext>()
     .AddDefaultTokenProviders();
 
-// Register IMailService with its implementation
 builder.Services.AddScoped<HospitalDomain.MailService.IMailService, SMPTMailService>();
 builder.Services.Configure<IdentityOptions>(options =>
 {
-    options.User.AllowedUserNameCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 -._@"; // Allow space, hyphen, dot, underscore, at
-    options.User.RequireUniqueEmail = true; // Optional, ensures email uniqueness if usernames are less strict
+    options.User.AllowedUserNameCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 -._@";
+    options.User.RequireUniqueEmail = true;
 });
+
+builder.Services.AddHostedService<RefreshService>();
 
 var app = builder.Build();
 
@@ -54,50 +58,34 @@ using (var scope = app.Services.CreateScope())
     {
         var userManager = services.GetRequiredService<UserManager<User>>();
         var rolesManager = services.GetRequiredService<RoleManager<IdentityRole>>();
-
         await RoleInitializer.InitializeAsync(userManager, rolesManager);
     }
     catch (Exception ex)
     {
         var logger = services.GetRequiredService<ILogger<Program>>();
-        logger.LogError(ex, "An error occurred while seeding the database." + DateTime.Now.ToString());
+        logger.LogError(ex, "An error occurred while seeding the database at {Time}", DateTime.Now);
     }
 }
 
-// Configure the HTTP request pipeline.
-if (!app.Environment.IsDevelopment())
-{
-    app.UseExceptionHandler("/Home/Error");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
-    app.UseHsts();
-}
-
-
-// Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
     app.UseHsts();
 }
 
-// ✅ Ensure HTTPS Redirection is only in production (fixes local HTTP issue)
 if (app.Environment.IsProduction())
 {
     app.UseHttpsRedirection();
 }
 
 app.UseRouting();
-
-// ✅ Ensure cookie policies are applied
 app.UseCookiePolicy();
-
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseStaticFiles();
 
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
-
-app.UseStaticFiles(); // Maps static assets (css, js, images, etc.)
 
 app.Run();

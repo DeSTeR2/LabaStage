@@ -531,16 +531,16 @@ namespace HospitalMVC.HospitalInfrastructure.Controllers
 
             changes = appointment.ToString() + changes;
 
-            SetMail("Appointment changes", changes, appointment);
+            SentMail("Appointment changes", changes, appointment);
         }
 
-        private void SetMail(string subject, string changes, Appointment appointment)
+        private void SentMail(string subject, string message, Appointment appointment)
         {
             Patient patient =  _hospitalContext.Patients.First(a => a.Id == appointment.Patient);
             Doctor doctor = _hospitalContext.Doctors.First(a => a.Id == appointment.Doctor);
             _mailService.SentMail(new Mail()
             {
-                message = changes,
+                message = message,
                 subject = subject,
                 recieverName = patient.Name,
                 recieverEmail = patient.Email
@@ -548,7 +548,7 @@ namespace HospitalMVC.HospitalInfrastructure.Controllers
 
             _mailService.SentMail(new Mail()
             {
-                message = changes,
+                message = message,
                 subject = subject,
                 recieverName = doctor.Name,
                 recieverEmail = doctor.Email
@@ -613,7 +613,7 @@ namespace HospitalMVC.HospitalInfrastructure.Controllers
                 User
             );
 
-            SetMail($"Appointment on date {appointment.Date} at time {appointment.Time} approved!", "Your appointment was approved!", appointment);
+            SentMail($"Appointment on date {appointment.Date} at time {appointment.Time} approved!", "Your appointment was approved!", appointment);
             _hospitalContext.SaveChanges();
         }
 
@@ -630,36 +630,53 @@ namespace HospitalMVC.HospitalInfrastructure.Controllers
                 User
             );
 
-            SetMail($"Appointment on date {appointment.Date} at time {appointment.Time} canceled!", "Your appointment was cancel!", appointment);
+            SentMail($"Appointment on date {appointment.Date} at time {appointment.Time} canceled!", "Your appointment was cancel!", appointment);
             _hospitalContext.SaveChanges();
         }
 
-        [HttpGet]
-        public async void UpdateAppointmentsState()
+        [HttpPost]
+        public void UpdateAppointmentsState()
         {
             DateOnly currentDate = DateOnly.FromDateTime(DateTime.Now);
             var appointments = _hospitalContext.Appointments
-                .Where(ap => ap.Date == currentDate && ap.AppointmentState <= 2)
+                .Where(ap => ap.Date == currentDate && ap.AppointmentState <= 3)
                 .ToList();
 
+            if (appointments.Count == 0) return;
+
             TimeOnly currentTime = TimeOnly.FromDateTime(DateTime.Now);
+            TimeOnly timeIn2Hourd = currentTime.Add(TimeSpan.FromHours(2));
+            TimeOnly startRange = timeIn2Hourd.Add(TimeSpan.FromMinutes(-3));
+            TimeOnly endRange = timeIn2Hourd.Add(TimeSpan.FromMinutes(3));
 
             foreach (var app in appointments)
             {
                 TimeOnly endTime = app.Time.Add(TimeSpan.FromHours(1));
 
+                if (app.Time >= startRange && app.Time <= endRange) {
+                    SentMail("Appointment reminder", $"Your appointemtn in 2 hours\nAppointment scheduled at {app.Date} {app.Time}", app);
+                }
+
                 if (app.Time <= currentTime && endTime > currentTime)
                 {
                     app.AppointmentState = 3;
-                    AppointmentChangeHistoryModel model = new AppointmentChangeHistoryModel
-                } else if (endTime < currentTime)
+                    AppointmentChangeHistoryModel model = new AppointmentChangeHistoryModel(
+                        app,
+                        _hospitalContext,
+                        Constants.AttendentedAppointment);
+                } 
+                else if (endTime < currentTime)
                 {
                     app.AppointmentState = 4;
+                    AppointmentChangeHistoryModel model = new AppointmentChangeHistoryModel(
+                    app,
+                    _hospitalContext,
+                    Constants.CompletedAppointment);
                 }
             }
 
-            _hospitalContext.Update(appointments);
-            await _hospitalContext.SaveChangesAsync();
+            _hospitalContext.Appointments.UpdateRange(appointments);
+            _hospitalContext.SaveChanges();
         }
     }
 }

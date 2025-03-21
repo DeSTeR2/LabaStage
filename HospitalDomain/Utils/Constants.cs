@@ -25,5 +25,7 @@
         public static string ChangeDoctor = "Changed doctor from {old} to {new}";
         public static string ChangedRoom = "Changed room from {old} to {new}";
         public static string ChangedPatient = "Changed patient from {old} to {new}";
+
+        public static int RefreshAppointmentStateInMinutes = 10;
     }
 }

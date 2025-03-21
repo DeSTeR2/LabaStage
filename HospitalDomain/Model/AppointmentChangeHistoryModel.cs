@@ -30,9 +30,9 @@ namespace HospitalDomain.Model
             AppointmentNavigation = appointmentNavigation;
         }
 
-        public AppointmentChangeHistoryModel(Appointment appointment, HospitalContext hospitalContext ,string? changeInfo, ClaimsPrincipal User)
+        public AppointmentChangeHistoryModel(Appointment appointment, HospitalContext hospitalContext ,string? changeInfo, ClaimsPrincipal User = null)
         {
-            string changedBy = User.Identity.Name + $" ({CheckRole.GetUserRole(User)})";
+            string changedBy = User != null ? User.Identity.Name + $" ({CheckRole.GetUserRole(User)})" : "";
 
             AppointmentId = appointment.Id;
             AppointmentNavigation = appointment;
