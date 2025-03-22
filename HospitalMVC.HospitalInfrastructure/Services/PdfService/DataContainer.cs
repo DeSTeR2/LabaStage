@@ -4,6 +4,7 @@ namespace HospitalMVC.HospitalInfrastructure.Services.PdfService
 {
     public class DataContainer
     {
+        public int receiptId;
         public string[] names;
         public string[] descriptions;
         public Doctor doctor;

@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using HospitalMVC;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking.Internal;
@@ -28,8 +27,8 @@ public partial class HospitalContext : DbContext
     public virtual DbSet<Room> Rooms { get; set; }
 
     public virtual DbSet<AppointmentChangeHistoryModel> AppointmentChanges { get; set; }
-    public DbSet<ReceiptModel> Receipts { get; set; } // New table
-    public DbSet<ReceiptRecord> ReceiptRecords { get; set; } // New table
+    public virtual DbSet<ReceiptModel> Receipts { get; set; } // New table
+    public virtual DbSet<ReceiptRecord> ReceiptRecords { get; set; } // New table
 
 
     //    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
@@ -62,6 +61,7 @@ public partial class HospitalContext : DbContext
                 .HasForeignKey(d => d.Doctor)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_appointment_doctor");
+
 
             entity.HasOne(d => d.PatientNavigation).WithMany(p => p.Appointments)
                 .HasForeignKey(d => d.Patient)
@@ -183,7 +183,7 @@ public partial class HospitalContext : DbContext
             entity.HasOne(e => e.AppointmentNavigation)
                 .WithMany()
                 .HasForeignKey(e => e.AppointmentId)
-                .OnDelete(DeleteBehavior.Restrict);
+                .OnDelete(DeleteBehavior.Cascade);
         });
 
         modelBuilder.Entity<Appointment>()
@@ -192,13 +192,27 @@ public partial class HospitalContext : DbContext
                 .HasForeignKey(a => a.ReceiptId)
                 .IsRequired(false);
 
+        modelBuilder.Entity<ReceiptModel>()
+                .Property(r => r.Id)
+                .ValueGeneratedOnAdd();
+
+        modelBuilder.Entity<ReceiptRecord>()
+            .Property(r => r.Id)
+            .ValueGeneratedOnAdd();
+
         // Configure ReceiptModel -> ReceiptRecord (one-to-many)
         modelBuilder.Entity<ReceiptRecord>()
             .HasOne(r => r.ReceiptNavigation)
             .WithMany(r => r.ReceiptRecords)
             .HasForeignKey(r => r.ReceiptId)
             .IsRequired(true);
-        OnModelCreatingPartial(modelBuilder);
+
+        // Appointment -> Receipt relationship
+        modelBuilder.Entity<Appointment>()
+            .HasOne(a => a.ReceiptNavigation)
+            .WithMany()
+            .HasForeignKey(a => a.ReceiptId)
+            .IsRequired(false);
     }
 
     partial void OnModelCreatingPartial(ModelBuilder modelBuilder);

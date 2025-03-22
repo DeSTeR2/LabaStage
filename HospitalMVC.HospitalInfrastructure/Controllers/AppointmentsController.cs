@@ -25,6 +25,7 @@ namespace HospitalMVC.HospitalInfrastructure.Controllers
         private readonly SignInManager<User> _signInManager;
         private readonly IMailService _mailService;
         private readonly IConverter _converter;
+        private readonly IWebHostEnvironment webHostEnvironment;
 
         public AppointmentsController(
             HospitalContext context,
@@ -32,7 +33,8 @@ namespace HospitalMVC.HospitalInfrastructure.Controllers
             UserManager<User> userManager,
             SignInManager<User> signInManager,
             IMailService mailService,
-            IConverter converter)
+            IConverter converter,
+            IWebHostEnvironment webHostEnvironment)
         {
             _hospitalContext = context;
             _identityContext = identityContext;
@@ -40,9 +42,9 @@ namespace HospitalMVC.HospitalInfrastructure.Controllers
             _signInManager = signInManager;
             _mailService = mailService;
             _converter = converter;
+            this.webHostEnvironment = webHostEnvironment;
         }
 
-        // GET: Appointments
         public async Task<IActionResult> Index()
         {
             var user = await _userManager.GetUserAsync(User);
@@ -158,7 +160,7 @@ namespace HospitalMVC.HospitalInfrastructure.Controllers
 
             DateTime dateTime = DateTime.Today;
             DateOnly currentDay = new DateOnly(dateTime.Year, dateTime.Month, dateTime.Day);
-            ViewBag.SelectedDate = currentDay;            
+            ViewBag.SelectedDate = currentDay;
 
             if (Utils.CheckRole.IsInRoles(User, new string[] { Constants.Admin, Constants.Manager }))
             {
@@ -202,7 +204,7 @@ namespace HospitalMVC.HospitalInfrastructure.Controllers
                     closedDates.Add(group.Key);
                 }
             }
-            
+
             return closedDates;
         }
 
@@ -215,20 +217,20 @@ namespace HospitalMVC.HospitalInfrastructure.Controllers
                 .Where(a => a.Doctor == doctorId && a.Date == date && a.AppointmentState != 5)
                 .Select(a => a.Time)
                 .ToList();
-            for (int i=0; i<dateTimes.Count; i++)
+            for (int i = 0; i < dateTimes.Count; i++)
             {
                 possibleTimes.Remove(dateTimes[i]);
             }
 
             List<SelectListItem> selectTimes = new List<SelectListItem>();
-            for (int i=0; i<possibleTimes.Count;i++)
+            for (int i = 0; i < possibleTimes.Count; i++)
             {
                 selectTimes.Add(new SelectListItem()
                 {
                     Value = possibleTimes[i].ToString("hh:mm"),
                     Text = possibleTimes[i].ToString()
                 });
-            }   
+            }
 
             JsonResult result = Json(selectTimes);
             return result;
@@ -237,7 +239,7 @@ namespace HospitalMVC.HospitalInfrastructure.Controllers
         public List<TimeOnly> GetAllWorkingHours()
         {
             var possibleTimes = new List<TimeOnly>();
-            for (int i=Constants.StartWork; i<Constants.EndWork; i++)
+            for (int i = Constants.StartWork; i < Constants.EndWork; i++)
             {
                 int hours = i;
                 int minutes = 0;
@@ -292,7 +294,7 @@ namespace HospitalMVC.HospitalInfrastructure.Controllers
                 appointment,
                 _hospitalContext,
                 Constants.CreatedAppointment,
-                User    
+                User
             );
 
             await _hospitalContext.SaveChangesAsync();
@@ -364,9 +366,9 @@ namespace HospitalMVC.HospitalInfrastructure.Controllers
                 new List<object> { new { Id = patient.Id, Name = patient.Name } },
                 "Id", "Name", patient.Id);
             }
-            else 
-            return RedirectToAction("Index", "Home");
-            
+            else
+                return RedirectToAction("Index", "Home");
+
             return View(appointment);
         }
 
@@ -457,7 +459,7 @@ namespace HospitalMVC.HospitalInfrastructure.Controllers
                     appointment,
                     _hospitalContext,
                     AppointmentHistoryAssigner.GetTransformedString(Constants.ChangeDate, oldAppointment.Date, appointment.Date),
-                    User        
+                    User
                 );
                 changes += historyModel.ChangeInfo + "\n";
             }
@@ -543,7 +545,7 @@ namespace HospitalMVC.HospitalInfrastructure.Controllers
 
         private void SentMail(string subject, string message, Appointment appointment)
         {
-            Patient patient =  _hospitalContext.Patients.First(a => a.Id == appointment.Patient);
+            Patient patient = _hospitalContext.Patients.First(a => a.Id == appointment.Patient);
             Doctor doctor = _hospitalContext.Doctors.First(a => a.Id == appointment.Doctor);
             _mailService.SentMail(new Mail()
             {
@@ -671,7 +673,7 @@ namespace HospitalMVC.HospitalInfrastructure.Controllers
                         app,
                         _hospitalContext,
                         Constants.AttendentedAppointment);
-                } 
+                }
                 else if (endTime < currentTime)
                 {
                     app.AppointmentState = 4;
@@ -690,24 +692,50 @@ namespace HospitalMVC.HospitalInfrastructure.Controllers
         public void AddReceipt(int appId, string[] names, string[] description)
         {
             Appointment app = _hospitalContext.Appointments.First(a => a.Id == appId);
+            ReceiptModel.CreateReceipt(app, names, description, _hospitalContext);
+        }
+
+        [HttpPost]
+        public void DownloadReceipt(int appId)
+        {
+            Appointment app = _hospitalContext.Appointments.First(a => a.Id == appId);
             Patient patient = _hospitalContext.Patients.First(p => p.Id == app.Patient);
             Doctor doctor = _hospitalContext.Doctors.First(p => p.Id == app.Doctor);
             DateTime date = DateTime.Parse(app.Date.ToString());
 
+            ReceiptModel receiptModel = app.ReceiptNavigation;
+            if (receiptModel == null)
+            {
+                receiptModel = _hospitalContext.Receipts.First(r => r.Id == app.ReceiptId);
+            }
+
+            List<ReceiptRecord> records = _hospitalContext.ReceiptRecords
+                .Where(r => r.ReceiptId == receiptModel.Id)
+                .ToList();
+
+            string[] names = records.Select(r => r.Name).ToArray();
+            string[] descriptions = records.Select(r => r.Description).ToArray();
+
             DataContainer dataContainer = new DataContainer()
             {
+                receiptId = receiptModel.Id,
                 names = names,
-                descriptions = description,
+                descriptions = descriptions,
                 patient = patient,
                 doctor = doctor,
                 createTime = date
             };
 
-            GeneratePDF(dataContainer);
+            GenerateAndDownloadPDF(dataContainer);
         }
 
-        private bool GeneratePDF(DataContainer dataContainer)
+        private bool GenerateAndDownloadPDF(DataContainer dataContainer)
         {
+            string download = Environment.ExpandEnvironmentVariables("%userprofile%/downloads/");
+
+            string fileName = $"Receipt_{dataContainer.patient.Name.Trim()}_{DateTime.Now.Ticks}.pdf";
+            string filePath = Path.Combine(download, fileName);
+
             var globalSettings = new GlobalSettings
             {
                 ColorMode = ColorMode.Color,
@@ -715,15 +743,13 @@ namespace HospitalMVC.HospitalInfrastructure.Controllers
                 PaperSize = PaperKind.A4,
                 Margins = new MarginSettings { Top = 10 },
                 DocumentTitle = "PDF Report",
-                Out = @"D:\Employee_Report.pdf"
+                Out = filePath
             };
             var objectSettings = new ObjectSettings
             {
                 PagesCount = true,
-                HtmlContent = PDFTemplateGenerator.Generate(dataContainer),
+                HtmlContent = PDFTemplateGenerator.Generate(dataContainer, webHostEnvironment),
                 WebSettings = { DefaultEncoding = "utf-8", UserStyleSheet = Path.Combine(Directory.GetCurrentDirectory(), "assets", "styles.css") },
-                HeaderSettings = { FontName = "Arial", FontSize = 9, Right = "Page [page] of [toPage]", Line = true },
-                FooterSettings = { FontName = "Arial", FontSize = 9, Line = true, Center = "Report Footer" }
             };
             var pdf = new HtmlToPdfDocument()
             {
@@ -731,7 +757,33 @@ namespace HospitalMVC.HospitalInfrastructure.Controllers
                 Objects = { objectSettings }
             };
             _converter.Convert(pdf);
+
+            string htmlString = PDFTemplateGenerator.Generate(dataContainer, webHostEnvironment);
             return true;
+        }
+
+        public class ReceiptRecordDto
+        {
+            public string[] Names { get; set; }
+            public string[] Descriptions { get; set; }
+        }
+
+        [HttpGet]
+        public JsonResult RecordInformation(int appId)
+        {
+            Appointment appointment = _hospitalContext.Appointments.First(a => a.Id == appId);
+            ReceiptModel receiptModel = _hospitalContext.Receipts.First(a => a.Id == appointment.ReceiptId);
+            ReceiptRecord[] receiptRecords = _hospitalContext.ReceiptRecords
+                .Where(r => r.ReceiptId == appointment.ReceiptId)
+                .ToArray();
+
+            var result = new ReceiptRecordDto
+            {
+                Names = receiptRecords.Select(r => r.Name ?? string.Empty).ToArray(),
+                Descriptions = receiptRecords.Select(r => r.Description ?? string.Empty).ToArray()
+            };
+            JsonResult json = Json(result);
+            return json;
         }
     }
 }

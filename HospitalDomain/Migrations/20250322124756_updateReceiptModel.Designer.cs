@@ -4,6 +4,7 @@ using HospitalDomain.Model;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace HospitalDomain.Migrations
 {
     [DbContext(typeof(HospitalContext))]
-    partial class HospitalContextModelSnapshot : ModelSnapshot
+    [Migration("20250322124756_updateReceiptModel")]
+    partial class updateReceiptModel
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -214,7 +217,12 @@ namespace HospitalDomain.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<int>("AppointmentId")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("AppointmentId");
 
                     b.ToTable("Receipts");
                 });
@@ -317,6 +325,17 @@ namespace HospitalDomain.Migrations
                         .HasConstraintName("FK_doctor_department");
 
                     b.Navigation("DepartmentNavigation");
+                });
+
+            modelBuilder.Entity("HospitalDomain.Model.ReceiptModel", b =>
+                {
+                    b.HasOne("HospitalDomain.Model.Appointment", "AppointmentNavigation")
+                        .WithMany()
+                        .HasForeignKey("AppointmentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("AppointmentNavigation");
                 });
 
             modelBuilder.Entity("HospitalDomain.Model.ReceiptRecord", b =>

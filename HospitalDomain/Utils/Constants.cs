@@ -1,4 +1,6 @@
-﻿namespace Utils
+﻿using Azure.Core;
+
+namespace Utils
 {
     public static class Constants
     {
@@ -27,5 +29,9 @@
         public static string ChangedPatient = "Changed patient from {old} to {new}";
 
         public static int RefreshAppointmentStateInMinutes = 10;
+
+        public static string HospitalName = "Hospital";
+        public static string HospitalAddress = "123 Hospital St, City";
+        public static string HospitalStampImagePath = "/css/images/hospitalStamp.png";
     }
 }

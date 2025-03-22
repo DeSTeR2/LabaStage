@@ -58,13 +58,32 @@
     </table>
 </div>
 
-<div class="mt-5">
-    <a asp-action="Edit" class="btn btn-primary" asp-route-id="@Model?.Id">Edit</a> |
-    @if (User.IsInRole(Utils.Constants.Doctor) && Model.AppointmentState == 4)
+<div class="mt-5 app-details-btns">
+    <div class="left-btns">
+        @if (Model.AppointmentState <= 2)
+        {
+            <a asp-action="Edit" class="btn btn-primary" asp-route-id="@Model?.Id">Edit</a>
+        }
+        @if (User.IsInRole(Utils.Constants.Doctor) && Model.AppointmentState == 4)
+        {
+            @if (Model.ReceiptId == null || Model.ReceiptId == 0)
+            {
+                <a class="btn btn-primary" onclick="showReceiptModal('@Model?.Id')">Add receipt</a>
+            }
+            else
+            {
+                <a class="btn btn-primary" onclick="showReceiptModal('@Model?.Id')">Edit receipt</a>
+            }
+        }
+        <a asp-action="Index" class="btn btn-secondary">Back to List</a>
+    </div>
+    @if (Model.ReceiptId != null && Model.ReceiptId > 0)
     {
-        <a class="btn btn-primary" onclick="showReceiptModal('@Model?.Id')">Add receipt</a>
+        <div class="right-btns">
+            <a id="download" class="btn btn-primary download-btn" onclick="downloadReceipt('@Model?.Id', '@Model?.ReceiptId')">Download receipt</a>
+            <span id="downloadedText" class="btn downloaded-btn" style="display: none">Downloaded!</span>
+        </div>
     }
-    <a asp-action="Index" class="btn btn-secondary">Back to List</a>
 </div>
 
 <div id="receiptModal" class="modal">
@@ -97,8 +116,6 @@
         </div>
     </div>
 </div>
-
-<!-- Change History unchanged -->
 <div class="mt-4">
     <h2>Change History Timeline</h2>
     <hr />
@@ -126,8 +143,23 @@
     }
 </div>
 
-<!-- CSS for timeline styling and action links -->
 <style>
+    .app-details-btns {
+        width: 100%;
+        overflow: auto;
+        padding: 10px;
+    }
+
+    .left-btns {
+        float: left;
+        margin: 10px;
+    }
+
+    .right-btns {
+        float: right;
+        margin: 10px;
+    }
+
     .timeline {
         position: relative;
         padding: 20px 0;
@@ -360,16 +392,65 @@
         .btn-remove:hover {
             background: #c0392b;
         }
+
+    .downloaded-btn {
+        background: #28a745; /* Green background to indicate success */
+        border: none;
+        padding: 10px 25px;
+        border-radius: 6px;
+        color: white;
+        font-weight: 500;
+        margin-right: 10px;
+        transition: transform 0.2s ease, background 0.2s ease;
+        cursor: default; /* No pointer cursor since it's not clickable */
+    }
 </style>
 
 <script>
             let recordCount = 1;
 
-        function showReceiptModal(appointmentId) {
+        function showReceiptModal(appointmentId, receiptId) {
             document.getElementById('appointmentId').value = appointmentId;
             document.getElementById('receiptModal').style.display = 'block';
-            toggleDollarSign('receiptAmount', 'span-icon');
+            populateRecord(appointmentId);
         }
+
+                function populateRecord(appointmentId) {
+            $.ajax({
+        type: 'GET',
+        url: '@Url.Action("RecordInformation", "Appointments")',
+        data: { appId: appointmentId },
+        success: function(data) {
+            if (data && data.names && data.descriptions && data.names.length > 0) {
+                // Clear existing records except the first one
+                const formCard = document.getElementById('formCard');
+                while (formCard.children.length > 2) {
+                    formCard.removeChild(formCard.lastChild);
+                }
+                recordCount = 1; // Reset recordCount to align with the cleared form
+
+                // Populate the first record (index 0)
+                addInformationToRecord(0, data.names[0], data.descriptions[0]);
+
+                // Add additional records if needed
+                for (var i = 1; i < data.names.length; i++) {
+                    addNewRecord();
+                }
+
+                // Populate the remaining records after adding them
+                setTimeout(() => {
+                    for (var i = 1; i < data.names.length; i++) {
+                        addInformationToRecord(i, data.names[i], data.descriptions[i]);
+                    }
+                }, 100); // 100ms pause to allow DOM updates
+            }
+        },
+        error: function(xhr, status, error) {
+            console.error("Error fetching record information:", error);
+            alert("Failed to load receipt information: " + error);
+        }
+    });
+}
 
         function hideReceiptModal() {
             document.getElementById('receiptModal').style.display = 'none';
@@ -428,12 +509,6 @@
             formCard.appendChild(newAmountGroup);
             formCard.appendChild(newDescGroup);
 
-            const newInput = document.getElementById(`receiptAmount${recordCount}`);
-            const newSpan = document.getElementById(`span-icon${recordCount}`);
-            newInput.addEventListener('input', () => toggleDollarSign(`receiptAmount${recordCount}`, `span-icon${recordCount}`));
-            newInput.addEventListener('focus', () => toggleDollarSign(`receiptAmount${recordCount}`, `span-icon${recordCount}`));
-            newInput.addEventListener('blur', () => toggleDollarSign(`receiptAmount${recordCount}`, `span-icon${recordCount}`));
-
             recordCount++;
         }
 
@@ -444,6 +519,24 @@
                 amountGroup.remove();
                 descGroup.remove();
             }
+        }
+
+        function addInformationToRecord(index, name, description) {
+    const nameTextarea = document.querySelector(`#record-${index}-name textarea`);
+        const descTextarea = document.querySelector(`#record-${index}-desc textarea`);
+
+        // Check if the elements exist before setting values
+        if (nameTextarea) {
+            nameTextarea.value = name || '';
+        } else {
+            console.error(`Name textarea for index ${index} not found`);
+        }
+
+        if (descTextarea) {
+            descTextarea.value = description || '';
+        } else {
+            console.error(`Description textarea for index ${index} not found`);
+        }
         }
 
     function saveReceipt() {
@@ -492,6 +585,31 @@
             error: function(xhr, status, error) {
                 console.error("Error:", error);
                 alert("Failed to save receipt: " + error);
+            }
+        });
+    }
+
+    function downloadReceipt(appId) {
+        $.ajax({
+            method: 'POST',
+            url: '@Url.Action("DownloadReceipt", "Appointments")',
+            data: {
+                appId: appId
+            },
+            success: function(response) {
+                console.log("Success:", response);
+                const download = document.getElementById('download');
+                download.style.display = 'none';
+
+                const downloadedText = document.getElementById('downloadedText');
+                downloadedText.style.display = 'inline';
+                if (response.success) {
+                    alert(response.message); // Or update UI
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error("Error:", error);
+                alert("Failed to save: " + error);
             }
         });
     }
