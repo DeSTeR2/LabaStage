@@ -34,7 +34,7 @@
             {
                 <div class="form-group">
                     <label asp-for="Patient" class="control-label"></label>
-                    <select asp-for="Patient" class="form-control" asp-items="@ViewBag.Patient"></select>
+                    <select asp-for="Patient" class="form-control patient-select select2-hidden-accessible" asp-items="@ViewBag.Patient"></select>
                 </div>
                 <div class="form-group">
                     <label asp-for="Room" class="control-label"></label>
@@ -49,6 +49,78 @@
         </form>
     </div>
 </div>
+
+@section Scripts {
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <script>
+            $(document).ready(function() {
+            $('.patient-select').select2({
+                placeholder: "Type to search for a patient",
+                allowClear: true // Optional: Adds an "x" to clear the selection
+            });
+        });
+
+        $(document).ready(function () {
+            // Safely handle ViewBag.PossibleDatesJson
+            var possibleDatesJson = '@Html.Raw(ViewBag.PossibleDatesJson ?? "[]")';
+            console.log("Raw PossibleDatesJson:", possibleDatesJson);
+
+            var possibleDates;
+            try {
+                possibleDates = JSON.parse(possibleDatesJson);
+            } catch (error) {
+                console.error("JSON Parsing Error:", error);
+                possibleDates = []; // Fallback to empty array
+            }
+
+            var doctorId = @ViewBag.DoctorId ?? 0;
+            console.log("Possible Dates:", possibleDates);
+            console.log("Doctor ID:", doctorId);
+
+            $("#datePicker").datepicker({
+                dateFormat: "yy-mm-dd",
+                beforeShowDay: function (date) {
+                    var dateStr = $.datepicker.formatDate("yy-mm-dd", date);
+                    var isPossible = !(possibleDates.indexOf(dateStr) !== -1);
+                    console.log("Date:", dateStr, "Possible:", isPossible);
+                    return [isPossible, 'possible-date'];
+                },
+                minDate: 0,
+                maxDate: "+2m",
+                onSelect: function (dateText) {
+                    console.log("Selected Date:", dateText);
+                    $.ajax({
+                        url: '@Url.Action("GetPossibleTimesForDoctor", "Appointments")',
+                        type: 'GET',
+                        data: { doctorId: doctorId, date: dateText },
+                        success: function (data) {
+                            console.log("Times Received:", data);
+                            var $timeSelect = $('#timePicker');
+                            $timeSelect.empty().append('<option value="">-- Select time --</option>');
+                            $.each(data, function (index, item) {
+                                $timeSelect.append($('<option>', {
+                                    value: item.value,
+                                    text: item.text,
+                                    selected: item.value === $('#timePicker').val()
+                                }));
+                            });
+                            $timeSelect.trigger('change');
+                        },
+                        error: function (xhr, status, error) {
+                            console.error("Error fetching times:", error);
+                            $('#timePicker').empty().append('<option value="">Error loading times</option>');
+                        }
+                    });
+                }
+            });
+        });
+    </script>
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}
 
 <style>
     /* Base Datepicker Styles */
@@ -143,45 +215,64 @@
                 box-sizing: border-box;
                 transition: all 0.2s ease;
             }
+    /* Style for the clear button (x) */
+    .select2-container--default .select2-selection--single .select2-selection__clear {
+        font-size: 14px; /* Matches form font size */
+        color: #6c757d; /* Matches placeholder and arrow color */
+        font-weight: bold; /* Slightly bolder for visibility */
+        margin-right: 10px; /* Space from the arrow */
+        cursor: pointer; /* Indicate clickable */
+        transition: color 0.2s ease; /* Smooth color change on hover */
+    }
 
-        /* Possible Dates */
-        .ui-datepicker-calendar .possible-date {
-            font-size: 16px;
-            font-weight: bold;
-            background-color: #e0f7fa;
-            color: #007bff;
-            border-radius: 50%;
+        /* Hover state for the clear button */
+        .select2-container--default .select2-selection--single .select2-selection__clear:hover {
+            color: #333; /* Darker on hover for feedback */
         }
 
-            .ui-datepicker-calendar .possible-date:hover {
-                background-color: #b3e5fc;
-                transform: scale(1.1);
-            }
+    /* Move button to the right of the container */
+    .form-group .btn {
+        float: right; /* Aligns button to the right */
+        margin-top: 10px; /* Space above the button */
+    }
+    /* Possible Dates */
+    .ui-datepicker-calendar .possible-date {
+        font-size: 16px;
+        font-weight: bold;
+        background-color: #e0f7fa;
+        color: #007bff;
+        border-radius: 50%;
+    }
 
-        /* Unpossible Dates */
-        .ui-datepicker-calendar .unpossible-date {
-            font-size: 16px;
-            color: #999;
-            background-color: transparent;
+        .ui-datepicker-calendar .possible-date:hover {
+            background-color: #b3e5fc;
+            transform: scale(1.1);
         }
 
-            .ui-datepicker-calendar .unpossible-date:hover {
-                background-color: #f5f5f5;
-            }
+    /* Unpossible Dates */
+    .ui-datepicker-calendar .unpossible-date {
+        font-size: 16px;
+        color: #999;
+        background-color: transparent;
+    }
 
-        /* Current Day */
-        .ui-datepicker-calendar .ui-state-highlight {
-            background-color: #fff3e0;
-            color: #ff9800;
-            border-radius: 50%;
+        .ui-datepicker-calendar .unpossible-date:hover {
+            background-color: #f5f5f5;
         }
 
-        /* Selected Day */
-        .ui-datepicker-calendar .ui-state-active {
-            background-color: #007bff;
-            color: white !important;
-            border-radius: 50%;
-        }
+    /* Current Day */
+    .ui-datepicker-calendar .ui-state-highlight {
+        background-color: #fff3e0;
+        color: #ff9800;
+        border-radius: 50%;
+    }
+
+    /* Selected Day */
+    .ui-datepicker-calendar .ui-state-active {
+        background-color: #007bff;
+        color: white !important;
+        border-radius: 50%;
+    }
 
     /* Disabled Days */
     .ui-datepicker-unselectable .ui-state-default {
@@ -190,68 +281,167 @@
         cursor: not-allowed;
     }
 
-</style>
+    .select2-hidden-accessible {
+        display: none;
+    }
 
-@section Scripts {
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
-    <script>
-        $(document).ready(function () {
-            // Safely handle ViewBag.PossibleDatesJson
-            var possibleDatesJson = '@Html.Raw(ViewBag.PossibleDatesJson ?? "[]")';
-            console.log("Raw PossibleDatesJson:", possibleDatesJson);
+    li {
+        list-style: none;
+    }
 
-            var possibleDates;
-            try {
-                possibleDates = JSON.parse(possibleDatesJson);
-            } catch (error) {
-                console.error("JSON Parsing Error:", error);
-                possibleDates = []; // Fallback to empty array
+    .select2-container {
+        width: 100%; /* Full width to match typical form controls */
+        display: inline-block; /* Ensures proper layout */
+    }
+
+        .select2-container .select2-selection--single {
+            background-color: #f8f9fa; /* Clean white background */
+            border: 1px solid #ccc; /* Light gray border */
+            padding: 8px 12px; /* Comfortable padding */
+            font-size: 16px; /* Standard font size */
+            border-radius: 6px; /* Slightly rounded corners */
+            height: 40px; /* Fixed height */
+            box-sizing: border-box; /* Include padding in height */
+            display: flex; /* Flexbox for alignment */
+            align-items: center; /* Center content vertically */
+            cursor: pointer; /* Indicate interactivity */
+            transition: border-color 0.2s ease, box-shadow 0.2s ease; /* Smooth transitions */
+        }
+
+    /* Placeholder text */
+    .select2-container--default .select2-selection--single .select2-selection__placeholder {
+        color: #999; /* Light gray for placeholder */
+    }
+
+    /* Text inside the selection */
+    .select2-container--default .select2-selection--single .select2-selection__rendered {
+        color: #333; /* Dark gray text */
+        line-height: 24px; /* Vertical centering */
+        white-space: nowrap; /* Prevent text wrapping */
+        overflow: hidden; /* Hide overflow */
+        text-overflow: ellipsis; /* Add ellipsis for long text */
+        flex-grow: 1; /* Take available space */
+    }
+
+    /* Arrow container */
+    .select2-container--default .select2-selection--single .select2-selection__arrow {
+        height: 100%; /* Full height */
+        width: 20px; /* Fixed width */
+        right: 8px; /* Inside padding */
+        display: flex;
+        align-items: center; /* Center arrow */
+        pointer-events: none; /* Prevent clicking arrow from interfering */
+    }
+
+        /* Arrow triangle */
+        .select2-container--default .select2-selection--single .select2-selection__arrow b {
+            border-color: #666 transparent transparent transparent; /* Darker gray arrow */
+            border-style: solid;
+            border-width: 6px 4px 0 4px; /* Triangle shape */
+            margin-top: -2px; /* Adjust vertical position */
+        }
+
+    /* Focus state */
+    .select2-container--default.select2-container--focus .select2-selection--single {
+        border-color: #007bff; /* Blue border on focus */
+        box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.3); /* Soft blue glow */
+        outline: none; /* Remove default outline */
+    }
+
+    /* Disabled state */
+    .select2-container--disabled .select2-selection--single {
+        background-color: #f5f5f5; /* Light gray background */
+        border-color: #ddd; /* Slightly lighter border */
+        cursor: not-allowed; /* Indicate disabled */
+        opacity: 0.7; /* Subtle fade */
+    }
+
+    /* Dropdown container */
+    .select2-dropdown {
+        background-color: #fff; /* White background */
+        border: 1px solid #ccc; /* Matches input border */
+        border-radius: 6px; /* Consistent rounding */
+        margin-top: 2px; /* Gap from input */
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); /* Deeper shadow for elevation */
+        position: absolute; /* Position below input */
+        z-index: 1000; /* Ensure it appears above other elements */
+        min-width: 200px; /* Minimum width for usability */
+    }
+
+    /* Search input inside dropdown */
+    .select2-container--default .select2-search--dropdown .select2-search__field {
+        width: 100%; /* Full width */
+        padding: 6px 10px; /* Slightly smaller padding */
+        font-size: 16px; /* Matches input */
+        border: 1px solid #ddd; /* Light border */
+        border-radius: 4px; /* Slightly tighter radius */
+        outline: none; /* Remove default outline */
+        box-sizing: border-box; /* Consistent sizing */
+    }
+
+        /* Focus state for search input */
+        .select2-container--default .select2-search--dropdown .select2-search__field:focus {
+            border-color: #007bff; /* Blue border on focus */
+            box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.2); /* Subtle glow */
+        }
+
+    /* Dropdown options container */
+    .select2-results {
+        max-height: 200px; /* Limit height for scroll */
+        overflow-y: auto; /* Enable scrolling */
+    }
+
+        /* Custom scrollbar for dropdown */
+        .select2-results::-webkit-scrollbar {
+            width: 8px; /* Slim scrollbar */
+        }
+
+        .select2-results::-webkit-scrollbar-track {
+            background: #f5f5f5; /* Light track */
+            border-radius: 4px;
+        }
+
+        .select2-results::-webkit-scrollbar-thumb {
+            background: #aaa; /* Gray thumb */
+            border-radius: 4px;
+        }
+
+            .select2-results::-webkit-scrollbar-thumb:hover {
+                background: #888; /* Darker on hover */
             }
 
-            var doctorId = @ViewBag.DoctorId ?? 0;
-            console.log("Possible Dates:", possibleDates);
-            console.log("Doctor ID:", doctorId);
-
-            $("#datePicker").datepicker({
-                dateFormat: "yy-mm-dd",
-                beforeShowDay: function (date) {
-                    var dateStr = $.datepicker.formatDate("yy-mm-dd", date);
-                    var isPossible = !(possibleDates.indexOf(dateStr) !== -1);
-                    console.log("Date:", dateStr, "Possible:", isPossible);
-                    return [isPossible, 'possible-date'];
-                },
-                minDate: 0,
-                maxDate: "+2m",
-                onSelect: function (dateText) {
-                    console.log("Selected Date:", dateText);
-                    $.ajax({
-                        url: '@Url.Action("GetPossibleTimesForDoctor", "Appointments")',
-                        type: 'GET',
-                        data: { doctorId: doctorId, date: dateText },
-                        success: function (data) {
-                            console.log("Times Received:", data);
-                            var $timeSelect = $('#timePicker');
-                            $timeSelect.empty().append('<option value="">-- Select time --</option>');
-                            $.each(data, function (index, item) {
-                                $timeSelect.append($('<option>', {
-                                    value: item.value,
-                                    text: item.text,
-                                    selected: item.value === $('#timePicker').val()
-                                }));
-                            });
-                            $timeSelect.trigger('change');
-                        },
-                        error: function (xhr, status, error) {
-                            console.error("Error fetching times:", error);
-                            $('#timePicker').empty().append('<option value="">Error loading times</option>');
-                        }
-                    });
-                }
-            });
-        });
-    </script>
-    @{
-        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    /* Dropdown options */
+    .select2-container--default .select2-results__option {
+        padding: 8px 12px; /* Matches input padding */
+        font-size: 16px; /* Consistent font size */
+        color: #333; /* Dark text */
+        cursor: pointer; /* Indicate clickable */
+        transition: background-color 0.2s ease; /* Smooth hover effect */
     }
-}
+
+    /* Hover state for options */
+    .select2-container--default .select2-results__option--highlighted {
+        background-color: #f0f0f0; /* Light gray highlight */
+        color: #000; /* Ensure readability */
+    }
+
+    /* Selected option */
+    .select2-container--default .select2-results__option--selected {
+        background-color: #e9ecef; /* Slightly darker gray */
+        color: #333;
+        font-weight: bold; /* Emphasize selection */
+    }
+
+    /* Disabled option */
+    .select2-container--default .select2-results__option[aria-disabled="true"] {
+        color: #999; /* Grayed out */
+        cursor: not-allowed;
+    }
+
+    /* No results message */
+    .select2-container--default .select2-results__option[role="alert"] {
+        padding: 8px 12px;
+        font-style: italic;
+        color: #666;
+    }
+</style>
