@@ -26,10 +26,10 @@ namespace HospitalMVC.HospitalInfrastructure.Controllers
         // GET: Doctors
         public async Task<IActionResult> Index()
         {
-            var doctors = _hospitalContext.Doctors.Include(d => d.DepartmentNavigation);
+            var doctors = await _hospitalContext.Doctors.Include(d => d.DepartmentNavigation).ToListAsync();
 
             FillDoctorWithUserData(doctors);
-            return View(await doctors.ToListAsync());
+            return View(doctors);
         }
 
         // GET: Doctors/Create
@@ -277,19 +277,27 @@ namespace HospitalMVC.HospitalInfrastructure.Controllers
             return RedirectToAction("Create", "Appontemtns");
         }
 
-        public IActionResult DoctorsByDepartment(int? departmentId)
+        public async Task<IActionResult> DoctorsByDepartment(int? departmentId)
         {
-            var doctors = _hospitalContext.Doctors.Include(d => d.DepartmentNavigation);
+            var doctors = await _hospitalContext.Doctors.ToListAsync();
+
+            if (departmentId != null)
+            {
+                doctors = await _hospitalContext.Doctors.Where(d => d.Department == departmentId).ToListAsync();
+            }
 
             FillDoctorWithUserData(doctors);
 
-            ViewBag.Departments = _hospitalContext.Departments.ToList();
+            ViewBag.Departments = _hospitalContext.Departments
+                .Where(d => d.Doctors != null && d.Doctors.Count > 0)
+                .ToList();
+
             ViewBag.SelectedDepartmentId = departmentId;
 
             return View(doctors.ToList());
         }
 
-        private void FillDoctorWithUserData(Microsoft.EntityFrameworkCore.Query.IIncludableQueryable<Doctor, Department> doctors)
+        private void FillDoctorWithUserData(List<Doctor> doctors)
         {
             if (doctors == null) return;
             foreach (var doctor in doctors)

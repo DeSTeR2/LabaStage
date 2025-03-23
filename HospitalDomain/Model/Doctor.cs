@@ -37,7 +37,7 @@ public partial class Doctor
     public Doctor(User user, int id)
     {
         Id = id;
-        Name = user.FullName;
+        Name = user.UserName;
         Contact = user.PhoneNumber;
         Email = user.Email;
         ProfilePictureUrl = user.ProfilePictureUrl;

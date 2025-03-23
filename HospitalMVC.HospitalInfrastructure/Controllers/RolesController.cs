@@ -65,13 +65,21 @@ namespace HospitalDomain.Controllers
                     .OrderBy(id => id) 
                     .ToList();
 
+                    Patient patient = _hospitalContext.Patients.First(p => p.Email == user.Email);
+
                     int id = Util.GetId(ids);
+                    _hospitalContext.Patients.Remove(patient);
                     _hospitalContext.Doctors.Add(new Doctor(user, id));
                     await _hospitalContext.SaveChangesAsync();
                 }
+                else if (role != Constants.User)
+                {
+                    Patient patient = _hospitalContext.Patients.First(p => p.Email == user.Email);
+                    _hospitalContext.Patients.Remove(patient);
+                    await _hospitalContext.SaveChangesAsync();
+                } 
 
                 await _userManager.AddToRolesAsync(user, addedRoles);
-
                 await _userManager.RemoveFromRolesAsync(user, removedRoles);
 
                 return RedirectToAction("UserList");
