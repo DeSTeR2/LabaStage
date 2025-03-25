@@ -589,30 +589,44 @@
         });
     }
 
-    function downloadReceipt(appId) {
+        function downloadReceipt(appId) {
         $.ajax({
             method: 'POST',
             url: '@Url.Action("DownloadReceipt", "Appointments")',
             data: {
                 appId: appId
             },
-            success: function(response) {
-                console.log("Success:", response);
-                const download = document.getElementById('download');
-                download.style.display = 'none';
+            xhrFields: {
+                responseType: 'blob' // Handle binary response
+            },
+            success: function(response, status, xhr) {
+                const filename = xhr.getResponseHeader('Content-Disposition')
+                    ?.split('filename=')[1]?.trim() || 'receipt.pdf';
 
-                const downloadedText = document.getElementById('downloadedText');
-                downloadedText.style.display = 'inline';
-                if (response.success) {
-                    alert(response.message); // Or update UI
+                const blob = new Blob([response], { type: xhr.getResponseHeader('Content-Type') });
+                const url = URL.createObjectURL(blob);
+
+                // Open in a new tab
+                const newTab = window.open(url, '_blank');
+                if (!newTab) {
+                    alert('Please allow pop-ups to open the file.');
                 }
+
+                // Optional: Create a download link
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
             },
             error: function(xhr, status, error) {
                 console.error("Error:", error);
-                alert("Failed to save: " + error);
+                alert("Failed to download receipt: " + error);
             }
         });
     }
+
 
         document.addEventListener('DOMContentLoaded', function () {
             const initialInput = document.getElementById('receiptAmount');

@@ -696,7 +696,7 @@ namespace HospitalMVC.HospitalInfrastructure.Controllers
         }
 
         [HttpPost]
-        public void DownloadReceipt(int appId)
+        public IActionResult DownloadReceipt(int appId)
         {
             Appointment app = _hospitalContext.Appointments.First(a => a.Id == appId);
             Patient patient = _hospitalContext.Patients.First(p => p.Id == app.Patient);
@@ -726,10 +726,10 @@ namespace HospitalMVC.HospitalInfrastructure.Controllers
                 createTime = date
             };
 
-            GenerateAndDownloadPDF(dataContainer);
+            return File(GenerateAndDownloadPDF(dataContainer), "application/pdf");
         }
 
-        private bool GenerateAndDownloadPDF(DataContainer dataContainer)
+        private byte[] GenerateAndDownloadPDF(DataContainer dataContainer)
         {
             string download = Environment.ExpandEnvironmentVariables("%userprofile%/downloads/");
 
@@ -743,7 +743,6 @@ namespace HospitalMVC.HospitalInfrastructure.Controllers
                 PaperSize = PaperKind.A4,
                 Margins = new MarginSettings { Top = 10 },
                 DocumentTitle = "PDF Report",
-                Out = filePath
             };
             var objectSettings = new ObjectSettings
             {
@@ -756,10 +755,10 @@ namespace HospitalMVC.HospitalInfrastructure.Controllers
                 GlobalSettings = globalSettings,
                 Objects = { objectSettings }
             };
-            _converter.Convert(pdf);
+            return _converter.Convert(pdf);
 
-            string htmlString = PDFTemplateGenerator.Generate(dataContainer, webHostEnvironment);
-            return true;
+            /*string htmlString = PDFTemplateGenerator.Generate(dataContainer, webHostEnvironment);*/
+            //return true;
         }
 
         public class ReceiptRecordDto

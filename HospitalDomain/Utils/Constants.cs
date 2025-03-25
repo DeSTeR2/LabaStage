@@ -28,7 +28,7 @@ namespace Utils
         public static string ChangedRoom = "Changed room from {old} to {new}";
         public static string ChangedPatient = "Changed patient from {old} to {new}";
 
-        public static int RefreshAppointmentStateInMinutes = 10;
+        public static int RefreshAppointmentStateInMinutes = 30;
 
         public static string HospitalName = "Hospital";
         public static string HospitalAddress = "123 Hospital St, City";

@@ -6,7 +6,7 @@ namespace HospitalMVC.HospitalInfrastructure.Services
     {
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly IConfiguration _configuration;
-        private readonly TimeSpan _delay = TimeSpan.FromMinutes(Utils.Constants.RefreshAppointmentStateInMinutes);
+        private readonly TimeSpan _delay = TimeSpan.FromSeconds(Utils.Constants.RefreshAppointmentStateInMinutes);
 
         public RefreshService(IHttpClientFactory httpClientFactory, IConfiguration configuration)
         {
