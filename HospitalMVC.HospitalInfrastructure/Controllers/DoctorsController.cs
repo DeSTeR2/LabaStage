@@ -303,17 +303,18 @@ namespace HospitalMVC.HospitalInfrastructure.Controllers
             foreach (var doctor in doctors)
             {
                 var user = _identityContext.Users.FirstOrDefault(u => u.Email == doctor.Email);
-                if (user == default)
+                if (user == null)
                 {
                     doctor.ProfilePictureUrl = Constants.DefaultProfileImage;
                 }
                 else
                 {
-                    doctor.ProfilePictureUrl = Constants.RootProfileImagesPath + user.ProfilePictureUrl ?? Constants.DefaultProfileImage;
+                    doctor.ProfilePictureUrl = (Constants.RootProfileImagesPath + user.ProfilePictureUrl);
+                    if (string.IsNullOrEmpty(user.ProfilePictureUrl)) doctor.ProfilePictureUrl = Constants.DefaultProfileImage;
+                    
+                    doctor.Name = user.UserName;
+                    doctor.Contact = user.PhoneNumber;
                 }
-
-                doctor.Name = user.UserName;
-                doctor.Contact = user.PhoneNumber;
             }
         }
 

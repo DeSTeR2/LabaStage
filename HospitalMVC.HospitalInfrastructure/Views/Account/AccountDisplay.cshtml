@@ -7,124 +7,128 @@
 
 <style>
     .profile-card {
-    position: relative;
-    padding-top: 80px; /* Space for the image */
-    text-align: center;
+        position: relative;
+        padding-top: 80px; /* Space for the image */
+        text-align: center;
     }
 
     .profile-picture-container {
-    position: absolute;
-    top: -55px; /* Moves the image up */
-    left: 50%;
-    transform: translateX(-50%);
-    width: 120px;
-    height: 120px;
+        position: absolute;
+        top: -55px; /* Moves the image up */
+        left: 50%;
+        transform: translateX(-50%);
+        width: 120px;
+        height: 120px;
     }
 
     .profile-picture {
-    width: 120px;
-    height: 120px;
-    border-radius: 50%;
-    object-fit: cover;
-    border: 4px solid white; /* Keeps it clean */
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); /* Adds depth */
-    transition: opacity 0.3s ease-in-out;
-    position: relative;
-    z-index: 1;
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 4px solid white; /* Keeps it clean */
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); /* Adds depth */
+        transition: opacity 0.3s ease-in-out;
+        position: relative;
+        z-index: 1;
     }
 
     .upload-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 107%;
-    height: 107%;
-    background: rgba(0, 0, 0, 0.4);
-    border-radius: 50%;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    opacity: 0;
-    transition: opacity 0.3s ease-in-out;
-    cursor: pointer;
-    z-index: 2;
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 107%;
+        height: 107%;
+        background: rgba(0, 0, 0, 0.4);
+        border-radius: 50%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        transition: opacity 0.3s ease-in-out;
+        cursor: pointer;
+        z-index: 2;
     }
 
     .profile-picture-container:hover .upload-overlay {
-    opacity: 1;
+        opacity: 1;
     }
 
     .upload-icon {
-    color: white;
-    font-size: 20px;
+        color: white;
+        font-size: 20px;
     }
 
     .upload-text {
-    color: white;
-    font-size: 11px;
-    margin-top: 3px;
+        color: white;
+        font-size: 11px;
+        margin-top: 3px;
     }
 
     .hidden-file-input {
-    display: none;
+        display: none;
     }
 
     .form-group label {
-    position: absolute;
-    top: 12px; /* Adjusted label position */
-    left: 10px;
-    pointer-events: none;
-    transition: 0.2s ease all;
-    background-color: white; /* Ensure label background matches form */
-    padding: 0 5px;
-    color: #aaa;
+        position: absolute;
+        top: 12px; /* Adjusted label position */
+        left: 10px;
+        pointer-events: none;
+        transition: 0.2s ease all;
+        background-color: white; /* Ensure label background matches form */
+        padding: 0 5px;
+        color: #aaa;
     }
 
     .signature-container {
-    position: relative;
-    margin-bottom: 1rem; /* Maintains mb-3 spacing */
+        position: relative;
+        margin-bottom: 1rem; /* Maintains mb-3 spacing */
     }
 
     .signature-container .form-label {
-    display: block;
-    margin-bottom: 0.5rem;
-    text-align: left;
+        display: block;
+        margin-bottom: 0.5rem;
+        text-align: left;
     }
 
     .canvas-wrapper {
-    display: flex;
-    align-items: center;
-    gap: 1rem; /* Space between canvas and button */
+        display: flex;
+        align-items: center;
+        gap: 1rem; /* Space between canvas and button */
     }
 
     #drawing-board {
-    border: 1px solid #ccc;
-    background: #fff;
-    cursor: crosshair;
-    width: 300px; /* Match your JS width */
-    height: 150px; /* Match your JS height */
-    flex-shrink: 0; /* Prevents canvas from shrinking */
+        border: 1px solid #ccc;
+        background: #fff;
+        cursor: crosshair;
+        width: 300px; /* Match your JS width */
+        height: 150px; /* Match your JS height */
+        flex-shrink: 0; /* Prevents canvas from shrinking */
     }
 
     .clear-btn {
-    margin-top: 0; /* Override mt-2 */
-    white-space: nowrap; /* Keeps button text on one line */
+        margin-top: 0; /* Override mt-2 */
+        white-space: nowrap; /* Keeps button text on one line */
     }
 </style>
 
 <div class="container mt-4">
     <h2 class="mb-4">Manage Your Account</h2>
     <div class="card p-4 shadow-sm profile-card">
-        <form asp-controller="Account" asp-action="UpdateProfile" method="post" enctype="multipart/form-data" class="mt-4">
+        <form asp-controller="Account" asp-action="UpdateProfile" method="post" enctype="multipart/form-data"
+              class="mt-4">
             <!-- Profile Picture -->
             <div class="profile-picture-container">
-                <img id="profile-img" src="@(Model.ProfilePictureUrl != null ? $"/css/images/profiles/{Model.ProfilePictureUrl}" : "/css/images/defaultPicture.png")" class="profile-picture" alt="Profile Picture" />
+                <img id="profile-img"
+                     src="@(Model.ProfilePictureUrl != null ? $"/css/images/profiles/{Model.ProfilePictureUrl}" : "/css/images/defaultPicture.png")"
+                     class="profile-picture" alt="Profile Picture"/>
                 <div class="upload-overlay" onclick="document.getElementById('profilePictureInput').click();">
                     <i class="fas fa-camera upload-icon"></i>
                     <span class="upload-text">Change Photo</span>
                 </div>
-                <input type="file" id="profilePictureInput" class="hidden-file-input" name="profilePicture" accept="image/*" />
+                <input type="file" id="profilePictureInput" class="hidden-file-input" name="profilePicture"
+                       accept="image/*"/>
             </div>
 
             <!-- User Details -->
@@ -132,23 +136,24 @@
                 <div class="col-md-6">
                     <div class="mb-3">
                         <label class="form-label">Full Name</label>
-                        <input type="text" class="form-control" name="FullName" value="@Model.FullName" required />
+                        <input type="text" class="form-control" name="FullName" value="@Model.FullName" required/>
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Email</label>
-                        <input type="email" class="form-control" name="Email" value="@Model.Email" required />
+                        <input type="email" class="form-control" name="Email" value="@Model.Email" required/>
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Phone</label>
-                        <input type="text" class="form-control" name="PhoneNumber" value="@Model.PhoneNumber" />
+                        <input type="text" class="form-control" name="PhoneNumber" value="@Model.PhoneNumber"/>
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Date of Birth</label>
-                        <input type="date" class="form-control" name="DateOfBirth" value="@Model.DateOfBirth.ToString("yyyy-MM-dd")" />
+                        <input type="date" class="form-control" name="DateOfBirth"
+                               value="@Model.DateOfBirth.ToString("yyyy-MM-dd")"/>
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Address</label>
-                        <input type="text" class="form-control" name="Address" value="@Model.Address" />
+                        <input type="text" class="form-control" name="Address" value="@Model.Address"/>
                     </div>
 
                     @if (User.IsInRole(Utils.Constants.Doctor))
@@ -157,7 +162,9 @@
                             <label class="form-label">Signature</label>
                             <div class="canvas-wrapper">
                                 <canvas id="drawing-board"></canvas>
-                                <button type="button" onclick="clearCanvas()" class="btn btn-secondary clear-btn">Clear Signature</button>
+                                <button type="button" onclick="clearCanvas()" class="btn btn-secondary clear-btn">Clear
+                                    Signature
+                                </button>
                             </div>
                         </div>
                     }
@@ -167,9 +174,11 @@
             <div class="d-flex justify-content-between mt-3">
                 @if (User.IsInRole(Utils.Constants.Doctor))
                 {
-                    <button type="submit" onclick="saveSignature(event)" asp-action="UpdateProfile" class="btn btn-primary">Save Changes</button>
+                    <button type="submit" onclick="saveSignature(event)" asp-action="UpdateProfile"
+                            class="btn btn-primary">Save Changes
+                    </button>
                     <!-- Added hidden input for signature -->
-                    <input type="hidden" name="SignatureData" id="signatureData" />
+                    <input type="hidden" name="SignatureData" id="signatureData"/>
                 }
                 else
                 {
@@ -183,31 +192,31 @@
 </div>
 
 <script>
-    document.getElementById('profilePictureInput').addEventListener('change', function(event) {
-    $('#profilePictureInput').on('change', function(event) {
-    const file = event.target.files[0];
-    if (file) {
-    const reader = new FileReader();
-    reader.onload = function(e) {
-    $('.profile-picture').attr('src', e.target.result); // Update image src
-    };
-    reader.readAsDataURL(file);
-    }
-    });
+    document.getElementById('profilePictureInput').addEventListener('change', function (event) {
+        $('#profilePictureInput').on('change', function (event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    $('.profile-picture').attr('src', e.target.result); // Update image src
+                };
+                reader.readAsDataURL(file);
+            }
+        });
     });
 
     function RemovePhoto() {
-    $.ajax({
-    type: "POST",
-    url: "/Account/RemovePhoto",
-    async: true,
-    success: function (msg) {
-    ServiceSucceeded(msg);
-    },
-    error: function () {
-    return "error";
-    }
-    });
+        $.ajax({
+            type: "POST",
+            url: "/Account/RemovePhoto",
+            async: true,
+            success: function (msg) {
+                ServiceSucceeded(msg);
+            },
+            error: function () {
+                return "error";
+            }
+        });
     }
 </script>
 
@@ -272,12 +281,12 @@
             const img = new Image(); // Create a new Image object
             img.src = url; // Set the source to the signature URL
 
-            img.onload = function() { // Assign the onload handler
+            img.onload = function () { // Assign the onload handler
                 ctx.clearRect(0, 0, canvas.width, canvas.height); // Optional: clear canvas first
                 ctx.drawImage(img, 0, 0, canvas.width, canvas.height); // Draw the image
             };
 
-            img.onerror = function() { // Optional: handle loading errors
+            img.onerror = function () { // Optional: handle loading errors
                 console.error("Failed to load signature image from: " + url);
             };
         }

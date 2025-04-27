@@ -1,9 +1,5 @@
-﻿using System.Reflection.Metadata;
-using System.Text;
+﻿using System.Text;
 using Utils;
-using System.IO; // For file handling
-using Microsoft.AspNetCore.Hosting; // For IWebHostEnvironment (if using .NET Core)
-// Added: For culture handling
 using System.Globalization;
 
 namespace HospitalMVC.HospitalInfrastructure.Services.PdfService

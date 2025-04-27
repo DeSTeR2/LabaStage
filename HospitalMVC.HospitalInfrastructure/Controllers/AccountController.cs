@@ -335,17 +335,11 @@ namespace LibraryWebApplication.Controllers
 
         [HttpPost]
         public async Task<IActionResult> ProcessButtonClicks(AccountViewModel model, string action)
-        {
-            /*            if (action == "save")
-                        {
-                            return await UpdateProfile(model);
-                        } */
-
+        { 
             if (action == "logout")
             {
                 return await Logout(model);
             }
-
 
             return RedirectToAction("Index", "Home");
         }

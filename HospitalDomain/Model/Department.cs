@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace HospitalDomain.Model;
+﻿namespace HospitalDomain.Model;
 
 public partial class Department
 {
